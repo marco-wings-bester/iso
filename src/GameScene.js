@@ -7,8 +7,8 @@ import {
   DEBUG_PATH,
 } from './constants.js';
 
-// direction index → name
 const DIR_NAMES = ['down', 'left', 'right', 'up'];
+const ARRIVE_THRESHOLD = 12; // pixels – stop when this close to tap target
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -20,16 +20,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
-    // Background – fill the canvas exactly
+    // Background
     this.add
       .image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'map')
       .setDisplaySize(GAME_WIDTH, GAME_HEIGHT)
       .setDepth(0);
 
-    // Build programmatic character sprite sheet
+    // Programmatic character sprite sheet
     createCharacterTexture(this);
 
-    // Register animations (4 directions × walk + idle)
+    // Animations – 4 directions × walk + idle
     DIR_NAMES.forEach((name, row) => {
       const base = row * 4;
       this.anims.create({
@@ -55,6 +55,8 @@ export default class GameScene extends Phaser.Scene {
     this.playerX = 565;
     this.playerY = 455;
     this.lastDir = 'down';
+    this.tapTargetX = null;
+    this.tapTargetY = null;
 
     this.player = this.add
       .sprite(this.playerX, this.playerY, 'player', 0)
@@ -64,7 +66,17 @@ export default class GameScene extends Phaser.Scene {
 
     this.player.play('idle-down');
 
-    // Input
+    // Tap target marker – a small pulsing circle drawn at the tap point
+    this.targetMarker = this.add.graphics().setDepth(500);
+
+    // Tap / click to move
+    this.input.on('pointerdown', (pointer) => {
+      this.tapTargetX = pointer.x;
+      this.tapTargetY = pointer.y;
+      this._drawTargetMarker(pointer.x, pointer.y);
+    });
+
+    // Keyboard input
     this.cursors = this.input.keyboard.createCursorKeys();
     this.wasd = this.input.keyboard.addKeys({
       up:    Phaser.Input.Keyboard.KeyCodes.W,
@@ -73,7 +85,7 @@ export default class GameScene extends Phaser.Scene {
       right: Phaser.Input.Keyboard.KeyCodes.D,
     });
 
-    // Optional debug overlay showing walkable zones
+    // Debug overlay
     if (DEBUG_PATH) {
       const g = this.add.graphics().setDepth(999);
       g.fillStyle(0x00ff00, 0.25);
@@ -86,7 +98,7 @@ export default class GameScene extends Phaser.Scene {
 
     // Controls hint
     this.add
-      .text(12, 10, 'WASD / Arrow Keys to walk', {
+      .text(12, 10, 'Tap to walk  •  WASD / Arrow Keys', {
         fontSize: '15px',
         fill: '#ffffff',
         stroke: '#000000',
@@ -99,25 +111,55 @@ export default class GameScene extends Phaser.Scene {
     const dt = delta / 1000;
     const { cursors, wasd } = this;
 
-    // Gather input
     let vx = 0;
     let vy = 0;
-    if (cursors.left.isDown  || wasd.left.isDown)  vx -= PLAYER_SPEED;
-    if (cursors.right.isDown || wasd.right.isDown) vx += PLAYER_SPEED;
-    if (cursors.up.isDown    || wasd.up.isDown)    vy -= PLAYER_SPEED;
-    if (cursors.down.isDown  || wasd.down.isDown)  vy += PLAYER_SPEED;
 
-    // Normalize diagonal movement
-    if (vx !== 0 && vy !== 0) {
-      vx *= 0.707;
-      vy *= 0.707;
+    // ── Keyboard input ────────────────────────────────────────────────
+    const kbActive =
+      cursors.left.isDown  || cursors.right.isDown ||
+      cursors.up.isDown    || cursors.down.isDown  ||
+      wasd.left.isDown     || wasd.right.isDown    ||
+      wasd.up.isDown       || wasd.down.isDown;
+
+    if (kbActive) {
+      // Keyboard takes over – cancel any tap target
+      this.tapTargetX = null;
+      this.tapTargetY = null;
+      this.targetMarker.clear();
+
+      if (cursors.left.isDown  || wasd.left.isDown)  vx -= PLAYER_SPEED;
+      if (cursors.right.isDown || wasd.right.isDown) vx += PLAYER_SPEED;
+      if (cursors.up.isDown    || wasd.up.isDown)    vy -= PLAYER_SPEED;
+      if (cursors.down.isDown  || wasd.down.isDown)  vy += PLAYER_SPEED;
+
+      if (vx !== 0 && vy !== 0) {
+        vx *= 0.707;
+        vy *= 0.707;
+      }
     }
 
+    // ── Tap-to-move ───────────────────────────────────────────────────
+    if (!kbActive && this.tapTargetX !== null) {
+      const dx = this.tapTargetX - this.playerX;
+      const dy = this.tapTargetY - this.playerY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist > ARRIVE_THRESHOLD) {
+        vx = (dx / dist) * PLAYER_SPEED;
+        vy = (dy / dist) * PLAYER_SPEED;
+      } else {
+        // Arrived
+        this.tapTargetX = null;
+        this.tapTargetY = null;
+        this.targetMarker.clear();
+      }
+    }
+
+    // ── Apply movement with path constraint ───────────────────────────
     if (vx !== 0 || vy !== 0) {
       const nx = this.playerX + vx * dt;
       const ny = this.playerY + vy * dt;
 
-      // Try full move, then slide along each axis
       let moved = false;
       if (isOnPath(nx, ny)) {
         this.playerX = nx;
@@ -126,19 +168,19 @@ export default class GameScene extends Phaser.Scene {
       } else {
         let movedX = false;
         let movedY = false;
-        if (isOnPath(nx, this.playerY)) {
-          this.playerX = nx;
-          movedX = true;
-        }
-        if (isOnPath(this.playerX, ny)) {
-          this.playerY = ny;
-          movedY = true;
-        }
+        if (isOnPath(nx, this.playerY)) { this.playerX = nx; movedX = true; }
+        if (isOnPath(this.playerX, ny)) { this.playerY = ny; movedY = true; }
         moved = movedX || movedY;
+
+        // If tap target is off-path, cancel it so the character stops
+        if (!moved && this.tapTargetX !== null) {
+          this.tapTargetX = null;
+          this.tapTargetY = null;
+          this.targetMarker.clear();
+        }
       }
 
       if (moved) {
-        // Pick facing direction from dominant axis
         let dir = this.lastDir;
         if (Math.abs(vx) >= Math.abs(vy)) {
           dir = vx < 0 ? 'left' : 'right';
@@ -146,7 +188,6 @@ export default class GameScene extends Phaser.Scene {
           dir = vy < 0 ? 'up' : 'down';
         }
         this.lastDir = dir;
-
         const key = `walk-${dir}`;
         if (this.player.anims.currentAnim?.key !== key) {
           this.player.play(key);
@@ -167,5 +208,15 @@ export default class GameScene extends Phaser.Scene {
     if (this.player.anims.currentAnim?.key !== key) {
       this.player.play(key);
     }
+  }
+
+  _drawTargetMarker(x, y) {
+    this.targetMarker.clear();
+    // Outer ring
+    this.targetMarker.lineStyle(2, 0xffffff, 0.8);
+    this.targetMarker.strokeCircle(x, y, 10);
+    // Inner dot
+    this.targetMarker.fillStyle(0xffffff, 0.6);
+    this.targetMarker.fillCircle(x, y, 3);
   }
 }
