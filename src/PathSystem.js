@@ -1,28 +1,30 @@
-// Rectangles that approximate the walkable dirt path in the 1376×768 farm scene.
-// Tune by setting DEBUG_PATH=true in constants.js to see green overlays.
+// All zones are defined in image-space pixels (768 × 1376).
+// The pond sits at roughly x:30–285, y:480–855 — none of these zones touch it.
 export const PATH_ZONES = [
-  // Bottom-left wide entry area
-  { x: 30,  y: 555, w: 210, h: 215 },
-  // Lower-left curve going up
-  { x: 100, y: 440, w: 190, h: 165 },
-  // Upper-left approach
-  { x: 195, y: 355, w: 210, h: 145 },
-  // Central open area (character starts here)
-  { x: 340, y: 345, w: 330, h: 210 },
-  // Right path toward barn
-  { x: 610, y: 355, w: 270, h: 135 },
-  // Near-barn approach
-  { x: 820, y: 335, w: 230, h: 155 },
-  // Barn entrance area
-  { x: 960, y: 265, w: 160, h: 230 },
+  // Bottom entry gate
+  { x: 245, y: 1155, w: 285, h: 221 },
+  // Main path going up from gate (kept right of pond at x≥300)
+  { x: 300, y: 830,  w: 215, h: 375 },
+  // Central junction (starts at x=305, safely right of pond edge ~285)
+  { x: 305, y: 700,  w: 375, h: 200 },
+  // Right branch toward barn
+  { x: 415, y: 450,  w: 265, h: 315 },
+  // Near barn / silo area
+  { x: 390, y: 200,  w: 305, h: 305 },
+  // Top area near windmill
+  { x: 415, y: 50,   w: 265, h: 215 },
 ];
 
-export function isOnPath(x, y, r = 10) {
+// sx/sy are in screen-space; scale+offsets convert to image-space before checking.
+export function isOnPath(sx, sy, scale, offX, offY, r = 10) {
+  const ix = (sx - offX) / scale;
+  const iy = (sy - offY) / scale;
+  const ri = r / scale;
   return PATH_ZONES.some(
     z =>
-      x + r > z.x &&
-      x - r < z.x + z.w &&
-      y + r > z.y &&
-      y - r < z.y + z.h
+      ix + ri > z.x &&
+      ix - ri < z.x + z.w &&
+      iy + ri > z.y &&
+      iy - ri < z.y + z.h
   );
 }

@@ -2,13 +2,13 @@ import Phaser from 'phaser';
 import { createCharacterTexture } from './CharacterSprite.js';
 import { PATH_ZONES, isOnPath } from './PathSystem.js';
 import {
-  GAME_WIDTH, GAME_HEIGHT,
-  PLAYER_SPEED, PLAYER_SCALE,
+  IMG_W, IMG_H,
+  PLAYER_SPEED, PLAYER_SCALE_BASE,
   DEBUG_PATH,
 } from './constants.js';
 
 const DIR_NAMES = ['down', 'left', 'right', 'up'];
-const ARRIVE_THRESHOLD = 12; // pixels – stop when this close to tap target
+const ARRIVE_THRESHOLD = 12;
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -20,10 +20,23 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
-    // Background
+    const W = this.scale.width;
+    const H = this.scale.height;
+
+    // Cover-scale: zoom to fill the entire screen (like CSS background-size:cover).
+    // May crop the narrow edges; no black bars.
+    this.dispScale = Math.max(W / IMG_W, H / IMG_H);
+    this.dispOffX  = Math.round((W - IMG_W * this.dispScale) / 2);
+    this.dispOffY  = Math.round((H - IMG_H * this.dispScale) / 2);
+
+    // Background fills screen exactly
     this.add
-      .image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'map')
-      .setDisplaySize(GAME_WIDTH, GAME_HEIGHT)
+      .image(
+        this.dispOffX + (IMG_W * this.dispScale) / 2,
+        this.dispOffY + (IMG_H * this.dispScale) / 2,
+        'map'
+      )
+      .setDisplaySize(IMG_W * this.dispScale, IMG_H * this.dispScale)
       .setDepth(0);
 
     // Programmatic character sprite sheet
@@ -51,32 +64,32 @@ export default class GameScene extends Phaser.Scene {
       });
     });
 
-    // Player – origin at bottom-center so playerY == feet position
-    this.playerX = 565;
-    this.playerY = 455;
-    this.lastDir = 'down';
+    // Player – start at gate (image coords 387,1265 → screen coords)
+    const { dispScale, dispOffX, dispOffY } = this;
+    this.playerX = 387 * dispScale + dispOffX;
+    this.playerY = 1265 * dispScale + dispOffY;
+    this.lastDir = 'up';
     this.tapTargetX = null;
     this.tapTargetY = null;
 
     this.player = this.add
       .sprite(this.playerX, this.playerY, 'player', 0)
-      .setScale(PLAYER_SCALE)
+      .setScale(PLAYER_SCALE_BASE * dispScale)
       .setOrigin(0.5, 1)
       .setDepth(this.playerY);
 
-    this.player.play('idle-down');
+    this.player.play('idle-up');
 
-    // Tap target marker – a small pulsing circle drawn at the tap point
+    // Tap/click target marker
     this.targetMarker = this.add.graphics().setDepth(500);
 
-    // Tap / click to move
     this.input.on('pointerdown', (pointer) => {
       this.tapTargetX = pointer.x;
       this.tapTargetY = pointer.y;
       this._drawTargetMarker(pointer.x, pointer.y);
     });
 
-    // Keyboard input
+    // Keyboard
     this.cursors = this.input.keyboard.createCursorKeys();
     this.wasd = this.input.keyboard.addKeys({
       up:    Phaser.Input.Keyboard.KeyCodes.W,
@@ -85,21 +98,25 @@ export default class GameScene extends Phaser.Scene {
       right: Phaser.Input.Keyboard.KeyCodes.D,
     });
 
-    // Debug overlay
+    // Debug overlay (path zones projected to screen space)
     if (DEBUG_PATH) {
       const g = this.add.graphics().setDepth(999);
       g.fillStyle(0x00ff00, 0.25);
-      g.lineStyle(1, 0x00ff00, 0.9);
+      g.lineStyle(2, 0x00ff00, 0.9);
       PATH_ZONES.forEach(z => {
-        g.fillRect(z.x, z.y, z.w, z.h);
-        g.strokeRect(z.x, z.y, z.w, z.h);
+        const sx = z.x * dispScale + dispOffX;
+        const sy = z.y * dispScale + dispOffY;
+        const sw = z.w * dispScale;
+        const sh = z.h * dispScale;
+        g.fillRect(sx, sy, sw, sh);
+        g.strokeRect(sx, sy, sw, sh);
       });
     }
 
     // Controls hint
     this.add
       .text(12, 10, 'Tap to walk  •  WASD / Arrow Keys', {
-        fontSize: '15px',
+        fontSize: '14px',
         fill: '#ffffff',
         stroke: '#000000',
         strokeThickness: 3,
@@ -109,12 +126,12 @@ export default class GameScene extends Phaser.Scene {
 
   update(_time, delta) {
     const dt = delta / 1000;
-    const { cursors, wasd } = this;
+    const { cursors, wasd, dispScale, dispOffX, dispOffY } = this;
 
     let vx = 0;
     let vy = 0;
 
-    // ── Keyboard input ────────────────────────────────────────────────
+    // ── Keyboard ─────────────────────────────────────────────────────
     const kbActive =
       cursors.left.isDown  || cursors.right.isDown ||
       cursors.up.isDown    || cursors.down.isDown  ||
@@ -122,20 +139,14 @@ export default class GameScene extends Phaser.Scene {
       wasd.up.isDown       || wasd.down.isDown;
 
     if (kbActive) {
-      // Keyboard takes over – cancel any tap target
       this.tapTargetX = null;
       this.tapTargetY = null;
       this.targetMarker.clear();
-
       if (cursors.left.isDown  || wasd.left.isDown)  vx -= PLAYER_SPEED;
       if (cursors.right.isDown || wasd.right.isDown) vx += PLAYER_SPEED;
       if (cursors.up.isDown    || wasd.up.isDown)    vy -= PLAYER_SPEED;
       if (cursors.down.isDown  || wasd.down.isDown)  vy += PLAYER_SPEED;
-
-      if (vx !== 0 && vy !== 0) {
-        vx *= 0.707;
-        vy *= 0.707;
-      }
+      if (vx !== 0 && vy !== 0) { vx *= 0.707; vy *= 0.707; }
     }
 
     // ── Tap-to-move ───────────────────────────────────────────────────
@@ -143,36 +154,35 @@ export default class GameScene extends Phaser.Scene {
       const dx = this.tapTargetX - this.playerX;
       const dy = this.tapTargetY - this.playerY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-
       if (dist > ARRIVE_THRESHOLD) {
         vx = (dx / dist) * PLAYER_SPEED;
         vy = (dy / dist) * PLAYER_SPEED;
       } else {
-        // Arrived
         this.tapTargetX = null;
         this.tapTargetY = null;
         this.targetMarker.clear();
       }
     }
 
-    // ── Apply movement with path constraint ───────────────────────────
+    // ── Movement with path constraint ─────────────────────────────────
     if (vx !== 0 || vy !== 0) {
       const nx = this.playerX + vx * dt;
       const ny = this.playerY + vy * dt;
 
       let moved = false;
-      if (isOnPath(nx, ny)) {
+      if (isOnPath(nx, ny, dispScale, dispOffX, dispOffY)) {
         this.playerX = nx;
         this.playerY = ny;
         moved = true;
       } else {
-        let movedX = false;
-        let movedY = false;
-        if (isOnPath(nx, this.playerY)) { this.playerX = nx; movedX = true; }
-        if (isOnPath(this.playerX, ny)) { this.playerY = ny; movedY = true; }
-        moved = movedX || movedY;
-
-        // If tap target is off-path, cancel it so the character stops
+        let mx = false, my = false;
+        if (isOnPath(nx, this.playerY, dispScale, dispOffX, dispOffY)) {
+          this.playerX = nx; mx = true;
+        }
+        if (isOnPath(this.playerX, ny, dispScale, dispOffX, dispOffY)) {
+          this.playerY = ny; my = true;
+        }
+        moved = mx || my;
         if (!moved && this.tapTargetX !== null) {
           this.tapTargetX = null;
           this.tapTargetY = null;
@@ -212,10 +222,8 @@ export default class GameScene extends Phaser.Scene {
 
   _drawTargetMarker(x, y) {
     this.targetMarker.clear();
-    // Outer ring
     this.targetMarker.lineStyle(2, 0xffffff, 0.8);
     this.targetMarker.strokeCircle(x, y, 10);
-    // Inner dot
     this.targetMarker.fillStyle(0xffffff, 0.6);
     this.targetMarker.fillCircle(x, y, 3);
   }

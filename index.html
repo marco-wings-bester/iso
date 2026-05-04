@@ -2,18 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- user-scalable=no stops pinch-zoom which causes scroll on iOS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Farm Walk</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #1a1a1a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+    html {
+      height: 100%;
       overflow: hidden;
     }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #5a9e4a;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      /* position:fixed prevents iOS Safari rubber-band scroll */
+      position: fixed;
+    }
+    canvas { display: block; }
   </style>
 </head>
 <body>

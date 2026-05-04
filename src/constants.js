@@ -1,7 +1,7 @@
-export const GAME_WIDTH   = 1376;
-export const GAME_HEIGHT  = 768;
-export const PLAYER_SPEED = 120;
-export const PLAYER_SCALE = 3;
-export const FRAME_W      = 16;
-export const FRAME_H      = 24;
-export const DEBUG_PATH   = false;
+export const IMG_W          = 768;
+export const IMG_H          = 1376;
+export const PLAYER_SPEED   = 120;   // screen px/s
+export const PLAYER_SCALE_BASE = 4;
+export const FRAME_W        = 16;
+export const FRAME_H        = 24;
+export const DEBUG_PATH     = false;
