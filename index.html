@@ -50,7 +50,59 @@
       background: #2e1d0c;
       color: #fff;
     }
+    #install-btn {
+      position: fixed;
+      right: 12px;
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      z-index: 20;
+      padding: 10px 16px;
+      border: 2px solid #f8d870;
+      border-radius: 10px;
+      background: #2e1d0c;
+      color: #f8d870;
+      font: bold 15px sans-serif;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+    #install-help {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.55);
+    }
+    .install-card {
+      max-width: 340px;
+      padding: 18px 18px 14px;
+      border: 2px solid #2e1d0c;
+      border-radius: 12px;
+      background: #f8f0e0;
+      color: #2e1d0c;
+      font: 15px/1.45 sans-serif;
+    }
+    .install-card h2 { margin: 0 0 8px; font-size: 18px; }
+    .install-card p { margin: 0 0 14px; }
+    .install-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .install-actions a, .install-actions button {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font: bold 15px sans-serif;
+      text-decoration: none;
+    }
+    .install-primary { background: #d04c3a; color: #fff; border: 0; }
+    .install-secondary { background: transparent; color: #2e1d0c; border: 2px solid #2e1d0c; }
   </style>
+  <script>
+    // Chrome offers its install prompt via this event; keep it for the
+    // "Install app" button (src/install.js).
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      window.farmWalkInstallPrompt = e;
+      window.dispatchEvent(new Event('farmwalk-installable'));
+    });
+  </script>
   <script>
     // Boot guard. If the game's code fails to load (e.g. a page cached from
     // before an update asks for a file that no longer exists), clear the

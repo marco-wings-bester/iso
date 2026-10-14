@@ -6,6 +6,12 @@ everything is shown about 3x bigger; walk out the door to leave.
 
 ## Play / install
 
+**Play: https://marco-wings-bester.github.io/iso/**
+
+Tap **⬇ Install app** in the bottom-right corner to install it. On Android this
+needs Chrome; if the link opened inside another app, the button offers
+**Open in Chrome** first.
+
 Open the GitHub Pages site (deployed from `main`). It's an installable app (PWA) that works offline once it's loaded:
 
 - **Android (Chrome):** menu ⋮ → *Install app* / *Add to Home screen*
