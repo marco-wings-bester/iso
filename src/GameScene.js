@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { createCharacterTexture } from './CharacterSprite.js';
-import { PATH_ZONES, isOnPath } from './PathSystem.js';
+import { isOnPath, isWalkable, findRoute } from './PathSystem.js';
+import { CELL, COLS, ROWS } from './walkMask.js';
 import {
   IMG_W, IMG_H,
   PLAYER_SPEED, PLAYER_SCALE_BASE,
@@ -8,7 +9,7 @@ import {
 } from './constants.js';
 
 const DIR_NAMES = ['down', 'left', 'right', 'up'];
-const ARRIVE_THRESHOLD = 12;
+const ARRIVE_THRESHOLD = 1; // px; waypoints are hit exactly so turns stay on the path
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -69,8 +70,7 @@ export default class GameScene extends Phaser.Scene {
     this.playerX = 387 * dispScale + dispOffX;
     this.playerY = 1265 * dispScale + dispOffY;
     this.lastDir = 'up';
-    this.tapTargetX = null;
-    this.tapTargetY = null;
+    this.route = []; // screen-space waypoints for tap-to-move
 
     this.player = this.add
       .sprite(this.playerX, this.playerY, 'player', 0)
@@ -84,9 +84,19 @@ export default class GameScene extends Phaser.Scene {
     this.targetMarker = this.add.graphics().setDepth(500);
 
     this.input.on('pointerdown', (pointer) => {
-      this.tapTargetX = pointer.x;
-      this.tapTargetY = pointer.y;
-      this._drawTargetMarker(pointer.x, pointer.y);
+      const toImg = (sx, sy) => [(sx - dispOffX) / dispScale, (sy - dispOffY) / dispScale];
+      const [fx, fy] = toImg(this.playerX, this.playerY);
+      const [tx, ty] = toImg(pointer.x, pointer.y);
+      this.route = findRoute(fx, fy, tx, ty).map(p => ({
+        x: p.x * dispScale + dispOffX,
+        y: p.y * dispScale + dispOffY,
+      }));
+      if (this.route.length) {
+        const end = this.route[this.route.length - 1];
+        this._drawTargetMarker(end.x, end.y);
+      } else {
+        this.targetMarker.clear();
+      }
     });
 
     // Keyboard
@@ -98,19 +108,18 @@ export default class GameScene extends Phaser.Scene {
       right: Phaser.Input.Keyboard.KeyCodes.D,
     });
 
-    // Debug overlay (path zones projected to screen space)
+    // Debug overlay (walkable cells projected to screen space)
     if (DEBUG_PATH) {
       const g = this.add.graphics().setDepth(999);
-      g.fillStyle(0x00ff00, 0.25);
-      g.lineStyle(2, 0x00ff00, 0.9);
-      PATH_ZONES.forEach(z => {
-        const sx = z.x * dispScale + dispOffX;
-        const sy = z.y * dispScale + dispOffY;
-        const sw = z.w * dispScale;
-        const sh = z.h * dispScale;
-        g.fillRect(sx, sy, sw, sh);
-        g.strokeRect(sx, sy, sw, sh);
-      });
+      g.fillStyle(0x00ff00, 0.35);
+      const size = CELL * dispScale;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (isWalkable((c + 0.5) * CELL, (r + 0.5) * CELL)) {
+            g.fillRect(c * size + dispOffX, r * size + dispOffY, size, size);
+          }
+        }
+      }
     }
 
     // Controls hint
@@ -139,9 +148,7 @@ export default class GameScene extends Phaser.Scene {
       wasd.up.isDown       || wasd.down.isDown;
 
     if (kbActive) {
-      this.tapTargetX = null;
-      this.tapTargetY = null;
-      this.targetMarker.clear();
+      this._clearRoute();
       if (cursors.left.isDown  || wasd.left.isDown)  vx -= PLAYER_SPEED;
       if (cursors.right.isDown || wasd.right.isDown) vx += PLAYER_SPEED;
       if (cursors.up.isDown    || wasd.up.isDown)    vy -= PLAYER_SPEED;
@@ -150,18 +157,20 @@ export default class GameScene extends Phaser.Scene {
     }
 
     // ── Tap-to-move ───────────────────────────────────────────────────
-    if (!kbActive && this.tapTargetX !== null) {
-      const dx = this.tapTargetX - this.playerX;
-      const dy = this.tapTargetY - this.playerY;
+    // Advance past waypoints we've reached; the last one ends the walk.
+    while (!kbActive && this.route.length) {
+      const { x, y } = this.route[0];
+      if (Math.hypot(x - this.playerX, y - this.playerY) > ARRIVE_THRESHOLD) break;
+      this.route.shift();
+      if (!this.route.length) this._clearRoute();
+    }
+    if (!kbActive && this.route.length) {
+      const dx = this.route[0].x - this.playerX;
+      const dy = this.route[0].y - this.playerY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist > ARRIVE_THRESHOLD) {
-        vx = (dx / dist) * PLAYER_SPEED;
-        vy = (dy / dist) * PLAYER_SPEED;
-      } else {
-        this.tapTargetX = null;
-        this.tapTargetY = null;
-        this.targetMarker.clear();
-      }
+      const speed = Math.min(PLAYER_SPEED, dist / dt); // don't overshoot the waypoint
+      vx = (dx / dist) * speed;
+      vy = (dy / dist) * speed;
     }
 
     // ── Movement with path constraint ─────────────────────────────────
@@ -183,11 +192,7 @@ export default class GameScene extends Phaser.Scene {
           this.playerY = ny; my = true;
         }
         moved = mx || my;
-        if (!moved && this.tapTargetX !== null) {
-          this.tapTargetX = null;
-          this.tapTargetY = null;
-          this.targetMarker.clear();
-        }
+        if (!moved) this._clearRoute();
       }
 
       if (moved) {
@@ -211,6 +216,11 @@ export default class GameScene extends Phaser.Scene {
 
     this.player.setPosition(this.playerX, this.playerY);
     this.player.setDepth(this.playerY);
+  }
+
+  _clearRoute() {
+    this.route = [];
+    this.targetMarker.clear();
   }
 
   _playIdle() {
