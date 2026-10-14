@@ -1,6 +1,6 @@
 // Offline support: precache the shell + map, then cache everything else
 // (hashed JS bundles) the first time it is fetched.
-const CACHE = 'farm-walk-v2';
+const CACHE = 'farm-walk-v3';
 const PRECACHE = ['./', 'index.html', 'manifest.webmanifest', 'assets/map.png', 'icons/icon-192.png'];
 
 self.addEventListener('install', (event) => {
@@ -18,7 +18,10 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET' || new URL(request.url).origin !== location.origin) return;
+  const url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== location.origin) return;
+  // Version checks must always reach the server.
+  if (url.pathname.endsWith('/version.json')) return;
 
   // Pages: network first so updates show up, fall back to cache offline.
   // 'no-cache' revalidates with the server instead of trusting a page the
