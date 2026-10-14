@@ -29,9 +29,80 @@
       position: fixed;
     }
     canvas { display: block; }
+    #boot {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      top: 45%;
+      z-index: 10;
+      text-align: center;
+      font: 16px/1.4 sans-serif;
+      color: #fff;
+      text-shadow: 0 1px 3px #000;
+    }
+    #boot button {
+      display: block;
+      margin: 12px auto 0;
+      padding: 8px 20px;
+      font: inherit;
+      border: 0;
+      border-radius: 6px;
+      background: #2e1d0c;
+      color: #fff;
+    }
   </style>
+  <script>
+    // Boot guard. If the game's code fails to load (e.g. a page cached from
+    // before an update asks for a file that no longer exists), clear the
+    // offline cache and reload once. Any other error is shown on screen
+    // instead of leaving a blank page.
+    (function () {
+      var KEY = 'farm-walk-recovered';
+
+      function recover() {
+        try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
+        var reload = function () { location.replace(location.pathname + '?v=' + Date.now()); };
+        Promise.all([
+          window.caches ? caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }) : 0,
+          navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); }) : 0,
+        ]).then(reload, reload);
+      }
+
+      function show(msg) {
+        var el = document.getElementById('boot');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'boot';
+          document.body.appendChild(el);
+        }
+        el.textContent = msg;
+        var btn = document.createElement('button');
+        btn.textContent = 'Reload';
+        btn.onclick = recover;
+        el.appendChild(btn);
+      }
+      window.farmWalkShowError = show;
+
+      window.addEventListener('error', function (e) {
+        if (e.target && e.target.tagName === 'SCRIPT') {
+          var retried = false;
+          try { retried = sessionStorage.getItem(KEY); } catch (err) {}
+          if (!retried) return recover();
+          return show('The game failed to load. Check your connection and try again.');
+        }
+        show('Something went wrong: ' + (e.message || 'unknown error'));
+      }, true);
+      window.addEventListener('unhandledrejection', function (e) {
+        show('Something went wrong: ' + ((e.reason && e.reason.message) || e.reason));
+      });
+      setTimeout(function () {
+        if (document.getElementById('boot') && !window.farmWalkStarted) show('Still loading…');
+      }, 20000);
+    })();
+  </script>
 </head>
 <body>
+  <div id="boot">Loading farm…</div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
