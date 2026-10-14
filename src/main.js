@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import GameScene from './GameScene.js';
+import InteriorScene from './InteriorScene.js';
+import UIScene from './UIScene.js';
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -8,7 +10,7 @@ new Phaser.Game({
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: GameScene,
+  scene: [GameScene, InteriorScene, UIScene],
 });
 
 // Register the service worker so the game can be installed and played offline.

@@ -1,10 +1,11 @@
+import Phaser from 'phaser';
 import { FRAME_W, FRAME_H, ART_PX } from './constants.js';
+import { OUTLINE, grid, outline, blit } from './pixelArt.js';
 
 // Farmer sprite, drawn as pixel art to match the map: dark outline, three-tone
 // shading lit from the top-left, warm palette sampled from the map.
 // Sheet layout: rows = directions (down, left, right, up), cols = 4 walk frames.
 
-const OUTLINE = '#2e1d0c';
 const SHADOW = 'rgba(20, 30, 0, 0.28)';
 const PALETTE = {
   H: '#f8d870', h: '#e0b050', j: '#b88038', b: '#a83a2c', // straw hat + band
@@ -87,10 +88,6 @@ const UPPER = {
 const LEG = ['OOo', 'OOo', 'ooo', 'BBd', 'BBd', 'ddd'];
 const LEG_TOP = 20;
 
-function blank() {
-  return Array.from({ length: FRAME_H }, () => Array(FRAME_W).fill(null));
-}
-
 function put(grid, x, y, ch) {
   if (ch === '.' || y < 0 || y >= FRAME_H || x < 0 || x >= FRAME_W) return;
   grid[y][x] = PALETTE[ch];
@@ -121,25 +118,12 @@ function arm(grid, rows, x, y, offsets) {
   rows.forEach((row, r) => [...row].forEach((ch, c) => put(grid, x + c + (offsets ? offsets[r] : 0), y + r, ch)));
 }
 
-// Dark 1px outline around the silhouette, like every object on the map.
-function outline(grid) {
-  const out = grid.map(row => row.slice());
-  for (let y = 0; y < FRAME_H; y++) {
-    for (let x = 0; x < FRAME_W; x++) {
-      if (grid[y][x]) continue;
-      const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => grid[y + dy]?.[x + dx]);
-      if (n) out[y][x] = OUTLINE;
-    }
-  }
-  return out;
-}
-
 const STRIDE_FWD = [0, -1, -1, -2, -2, -2];
 const STRIDE_BACK = [0, 1, 1, 2, 2, 2];
 
 // frame: 0 = stand, 1 = left foot forward, 2 = stand, 3 = right foot forward
 function buildFrame(dir, frame) {
-  const g = blank();
+  const g = grid(FRAME_W, FRAME_H);
   const step = frame % 2 === 1;
   const bob = step ? 1 : 0;
 
@@ -168,36 +152,50 @@ function buildFrame(dir, frame) {
   return dir === 'right' ? done.map(row => row.slice().reverse()) : done;
 }
 
-function drawFrame(ctx, ox, oy, pixels) {
-  const p = ART_PX;
-  // Ground shadow under the feet
-  ctx.fillStyle = SHADOW;
-  ctx.beginPath();
-  ctx.ellipse(ox + 8 * p, oy + 26 * p, 5.5 * p, 1.6 * p, 0, 0, Math.PI * 2);
-  ctx.fill();
+// Soft pixel shadow under the feet (not outlined)
+const SHADOW_ROWS = [[4, 8], [3, 10], [4, 8]];
 
-  pixels.forEach((row, y) => row.forEach((color, x) => {
-    if (!color) return;
-    ctx.fillStyle = color;
-    ctx.fillRect(ox + x * p, oy + y * p, p, p);
-  }));
+function drawFrame(ctx, ox, oy, pixels, p) {
+  ctx.fillStyle = SHADOW;
+  SHADOW_ROWS.forEach(([x, w], r) => ctx.fillRect(ox + x * p, oy + (25 + r) * p, w * p, p));
+  blit(ctx, pixels, ox, oy, p);
 }
 
 export const DIRECTIONS = ['down', 'left', 'right', 'up'];
 
-export function createCharacterTexture(scene) {
-  const cols = 4; // walk frames
-  const fw = FRAME_W * ART_PX;
-  const fh = FRAME_H * ART_PX;
-  const tex = scene.textures.createCanvas('player', fw * cols, fh * DIRECTIONS.length);
-  const ctx = tex.getContext();
+// Two copies of the sheet: 'player' at map resolution (smooth-scaled on the
+// farm, like the map) and 'player-px' at 1 texel per sprite pixel, kept crisp
+// for the zoomed-in interiors. Animations: `${key}-walk-${dir}` / `${key}-idle-${dir}`.
+export function createCharacter(scene) {
+  [['player', ART_PX], ['player-px', 1]].forEach(([key, p]) => {
+    if (scene.textures.exists(key)) return;
+    const cols = 4; // walk frames
+    const fw = FRAME_W * p;
+    const fh = FRAME_H * p;
+    const tex = scene.textures.createCanvas(key, fw * cols, fh * DIRECTIONS.length);
+    const ctx = tex.getContext();
 
-  DIRECTIONS.forEach((dir, row) => {
-    for (let frame = 0; frame < cols; frame++) {
-      drawFrame(ctx, frame * fw, row * fh, buildFrame(dir, frame));
-      tex.add(row * cols + frame, 0, frame * fw, row * fh, fw, fh);
-    }
+    DIRECTIONS.forEach((dir, row) => {
+      for (let frame = 0; frame < cols; frame++) {
+        drawFrame(ctx, frame * fw, row * fh, buildFrame(dir, frame), p);
+        tex.add(row * cols + frame, 0, frame * fw, row * fh, fw, fh);
+      }
+      const base = row * cols;
+      scene.anims.create({
+        key: `${key}-walk-${dir}`,
+        frames: [0, 1, 2, 3].map(f => ({ key, frame: base + f })),
+        frameRate: 8,
+        repeat: -1,
+      });
+      scene.anims.create({
+        key: `${key}-idle-${dir}`,
+        frames: [{ key, frame: base }],
+        frameRate: 1,
+        repeat: -1,
+      });
+    });
+
+    tex.refresh();
+    if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   });
-
-  tex.refresh();
 }
