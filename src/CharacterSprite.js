@@ -4,7 +4,8 @@ import { OUTLINE, grid, outline, blit } from './pixelArt.js';
 
 // Farmer sprite, drawn as pixel art to match the map: dark outline, three-tone
 // shading lit from the top-left, warm palette sampled from the map.
-// Sheet layout: rows = directions (down, left, right, up), cols = 4 walk frames.
+// Sheet layout: rows = directions (down, left, right, up) + a reading row,
+// cols = 4 frames.
 
 const SHADOW = 'rgba(20, 30, 0, 0.28)';
 const PALETTE = {
@@ -14,6 +15,8 @@ const PALETTE = {
   C: '#d04c3a', c: '#982f2a',                              // red shirt
   O: '#4f8cc0', o: '#36628f', k: '#f8d870',                // overalls, buckles
   B: '#7a4a2a', d: '#4a2a14',                              // boots
+  P: '#fbf6ea', p: '#d8ccb8', t: '#a8987e',                // book pages, spine, text
+  K: '#b8402e', q: '#7a2a20',                              // book cover
   x: OUTLINE,
 };
 
@@ -152,6 +155,42 @@ function buildFrame(dir, frame) {
   return dir === 'right' ? done.map(row => row.slice().reverse()) : done;
 }
 
+// Reading: facing down, eyes lowered, holding an open book at waist height
+// (seen from above, like everything else, so the pages face the camera).
+const READ_HEAD = UPPER.down.map((row, i) => (i === 8 ? '....SSSSSSSs....' : i === 9 ? '....sSeSSeSs....' : row));
+const BLINK_HEAD = READ_HEAD.map((row, i) => (i === 9 ? '....sSsSSsSs....' : row));
+const BOOK = [
+  'KPPPPPpPPPPK',
+  'KPttPPpPtttK',
+  'KPPPPPpPPPPK',
+  'KPtttPpPttPK',
+  'qKKKKKKKKKKq',
+];
+// A page turning: standing up from the spine, then falling to the left.
+const PAGE_UP = ['.xx.', 'xPPx', 'xPPx', 'xPpx'];
+const PAGE_LEFT = ['.xxx..', 'xPPPxx', '.xxPPx'];
+const BOOK_X = 2;
+const BOOK_Y = 16;
+
+// frame: 0 = reading, 1 = page up, 2 = page falling, 3 = blink
+function buildReadFrame(frame) {
+  const g = grid(FRAME_W, FRAME_H);
+  leg(g, 5, 0, null);
+  leg(g, 8, 0, null);
+  stamp(g, frame === 3 ? BLINK_HEAD : READ_HEAD, 0, 1);
+  arm(g, ['.C', 'CC', 'Cc'], 2, 13);
+  arm(g, ['c.', 'cc', 'cc'], 12, 13);
+  stamp(g, BOOK, BOOK_X, BOOK_Y);
+  stamp(g, ['x'.repeat(BOOK[0].length)], BOOK_X, BOOK_Y - 1); // dark edge against the shirt
+  put(g, BOOK_X - 1, BOOK_Y + 1, 'S');
+  put(g, BOOK_X - 1, BOOK_Y + 2, 's');
+  put(g, BOOK_X + 12, BOOK_Y + 1, 's');
+  put(g, BOOK_X + 12, BOOK_Y + 2, 's');
+  if (frame === 1) stamp(g, PAGE_UP, BOOK_X + 5, BOOK_Y - 4);
+  if (frame === 2) stamp(g, PAGE_LEFT, BOOK_X + 2, BOOK_Y - 3);
+  return outline(g);
+}
+
 // Soft pixel shadow under the feet (not outlined)
 const SHADOW_ROWS = [[4, 8], [3, 10], [4, 8]];
 
@@ -165,14 +204,15 @@ export const DIRECTIONS = ['down', 'left', 'right', 'up'];
 
 // Two copies of the sheet: 'player' at map resolution (smooth-scaled on the
 // farm, like the map) and 'player-px' at 1 texel per sprite pixel, kept crisp
-// for the zoomed-in interiors. Animations: `${key}-walk-${dir}` / `${key}-idle-${dir}`.
+// for the zoomed-in interiors. Animations: `${key}-walk-${dir}`, `${key}-idle-${dir}`
+// and `${key}-read`.
 export function createCharacter(scene) {
   [['player', ART_PX], ['player-px', 1]].forEach(([key, p]) => {
     if (scene.textures.exists(key)) return;
     const cols = 4; // walk frames
     const fw = FRAME_W * p;
     const fh = FRAME_H * p;
-    const tex = scene.textures.createCanvas(key, fw * cols, fh * DIRECTIONS.length);
+    const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 1));
     const ctx = tex.getContext();
 
     DIRECTIONS.forEach((dir, row) => {
@@ -193,6 +233,20 @@ export function createCharacter(scene) {
         frameRate: 1,
         repeat: -1,
       });
+    });
+
+    // Reading row: read for a while, turn a page, read, blink, ...
+    const readRow = DIRECTIONS.length;
+    for (let frame = 0; frame < cols; frame++) {
+      drawFrame(ctx, frame * fw, readRow * fh, buildReadFrame(frame), p);
+      tex.add(readRow * cols + frame, 0, frame * fw, readRow * fh, fw, fh);
+    }
+    const rf = (f, duration = 0) => ({ key, frame: readRow * cols + f, duration });
+    scene.anims.create({
+      key: `${key}-read`,
+      frames: [rf(0, 2200), rf(1, 60), rf(2, 60), rf(0, 1500), rf(3, 40), rf(0, 1800), rf(1, 60), rf(2, 60), rf(0, 900), rf(3, 40)],
+      frameRate: 10,
+      repeat: -1,
     });
 
     tex.refresh();

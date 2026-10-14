@@ -6,7 +6,8 @@ import { obj, rng } from './pixelArt.js';
 // as the farmer's, so inside he's shown at his true size relative to the room.
 //
 // Each room: w/h, back-wall height `wallH`, `door` gap in the bottom wall,
-// `solid` furniture rects (blocked for walking) and `draw(ctx)`.
+// `solid` furniture rects (blocked for walking), `draw(ctx)`, and optional
+// `hint` and `bookshelf` (tap area + where to stand to read).
 
 export const WALL = 6; // side/bottom wall thickness
 
@@ -196,8 +197,10 @@ function bed(ctx, x, y) {
   });
 }
 
+// Returns the books it drew (room coords) so one can be taken off the shelf.
 function bookshelf(ctx, x, y, seed) {
   const R = rng(seed);
+  const drawn = [];
   const books = [C.red, '#5b86c4', C.leaf, C.straw, C.woodDkr, '#8a5ab0', C.linen];
   drop(ctx, x, y, 24, 34);
   obj(ctx, x, y, 24, 34, r => {
@@ -212,6 +215,7 @@ function bookshelf(ctx, x, y, seed) {
         if (R() < 0.12) { bx += bw; continue; }
         const c = books[Math.floor(R() * books.length)];
         r(bx, sy + 8 - bh, Math.min(bw, 22 - bx), bh, c);
+        drawn.push({ x: x + bx, y: y + sy + 8 - bh, w: Math.min(bw, 22 - bx), h: bh, shelf: s, c });
         r(bx, sy + 8 - bh, 1, bh, 'rgba(255,255,255,0.25)');
         bx += bw;
       }
@@ -219,6 +223,7 @@ function bookshelf(ctx, x, y, seed) {
     }
     r(0, 32, 24, 2, C.woodDeep);
   });
+  return drawn;
 }
 
 function table(ctx, x, y) {
@@ -477,6 +482,11 @@ export const ROOMS = {
   house: {
     w: 144, h: 160, wallH: 44,
     door: { x: 60, w: 24 },
+    hint: 'Tap the bookshelf to read a book',
+    bookshelf: {
+      area: { x: 110, y: 14, w: 28, h: 40 }, // tap here…
+      stand: { x: 124, y: 57 },              // …to walk here and read
+    },
     solid: [
       { x: 10, y: 34, w: 28, h: 44 },  // bed
       { x: 66, y: 40, w: 38, h: 10 },  // fireplace + hearth
@@ -502,7 +512,9 @@ export const ROOMS = {
       frame(ctx, this);
       windowPane(ctx, 44, 10);
       fireplace(ctx, 68, 6);
-      bookshelf(ctx, 112, 16, 3);
+      // The book he reads comes off the top shelf (visible above his hat).
+      const books = bookshelf(ctx, 112, 16, 3).filter(b => b.shelf === 0);
+      this.bookshelf.book = books.find(b => b.c === C.red) || books[0];
       bed(ctx, 10, 34);
       chair(ctx, 72, 94, false);
       chair(ctx, 118, 94, true);
