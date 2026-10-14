@@ -38,9 +38,6 @@ export default class InteriorScene extends Phaser.Scene {
     room.animate?.(this);
     createCharacter(this);
 
-    // Crisp integer zoom: ~4x on a phone, so the farmer is ~3x his farm size.
-    const { width: W, height: H } = this.scale;
-    const zoom = Math.max(2, Math.round(Math.min(W / 100, H / 140)));
     const grid = WalkGrid.fromFn(room.w, room.h, 2, (x, y) => walkable(room, x, y));
     const doorX = room.door.x + room.door.w / 2;
     this.player = new Player(this, {
@@ -50,23 +47,22 @@ export default class InteriorScene extends Phaser.Scene {
       texture: 'player-px',
       speed: INTERIOR_SPEED,
       grid,
-      markerScale: 1 / zoom,
     });
     this.exitY = room.h - 3;
     this.leaving = false;
 
-    // Camera follows the farmer; a room smaller than the screen is centred.
+    // Fixed camera: the whole room fills the screen (~3x on a phone, so the
+    // farmer is ~2.5x his farm size) and stays put while he walks around.
     const cam = this.cameras.main;
-    const vw = W / zoom;
-    const vh = H / zoom;
-    const bx = Math.min(0, (room.w - vw) / 2);
-    const by = Math.min(0, (room.h - vh) / 2);
-    cam.setBackgroundColor('#1a1008')
-      .setZoom(zoom)
-      .setBounds(bx, by, Math.max(room.w, vw), Math.max(room.h, vh))
-      .setRoundPixels(true)
-      .startFollow(this.player.sprite, true)
-      .fadeIn(FADE_MS);
+    cam.setBackgroundColor('#1a1008').fadeIn(FADE_MS);
+    const fit = () => {
+      const zoom = Math.min(this.scale.width / room.w, this.scale.height / room.h);
+      cam.setZoom(zoom).centerOn(room.w / 2, room.h / 2);
+      this.player.markerScale = 1 / zoom;
+    };
+    fit();
+    this.scale.on('resize', fit);
+    this.events.once('shutdown', () => this.scale.off('resize', fit));
 
     // Tap to walk; tapping the doorway or below the room walks out.
     this.input.on('pointerdown', (pointer) => {

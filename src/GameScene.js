@@ -20,10 +20,10 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create(data = {}) {
-    const { width: W, height: H } = this.scale;
-    const zoom = Math.max(W / IMG_W, H / IMG_H);
     const cam = this.cameras.main;
-    cam.setZoom(zoom).centerOn(IMG_W / 2, IMG_H / 2).fadeIn(FADE_MS);
+    cam.fadeIn(FADE_MS);
+    const coverZoom = () => Math.max(this.scale.width / IMG_W, this.scale.height / IMG_H);
+    const zoom = coverZoom();
 
     this.add.image(0, 0, 'map').setOrigin(0).setDepth(0);
     createCharacter(this);
@@ -41,6 +41,17 @@ export default class GameScene extends Phaser.Scene {
       markerScale: 1 / zoom,
     });
     this.leaving = false;
+
+    // Keep the map covering the screen if the window size changes.
+    const fit = () => {
+      const z = coverZoom();
+      cam.setZoom(z).centerOn(IMG_W / 2, IMG_H / 2);
+      this.player.speed = PLAYER_SPEED / z;
+      this.player.markerScale = 1 / z;
+    };
+    fit();
+    this.scale.on('resize', fit);
+    this.events.once('shutdown', () => this.scale.off('resize', fit));
 
     // Tap to walk; tapping a building walks to its door.
     this.input.on('pointerdown', (pointer) => {
