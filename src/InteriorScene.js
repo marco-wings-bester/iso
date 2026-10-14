@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { createCharacter } from './CharacterSprite.js';
 import Player from './Player.js';
 import WalkGrid from './WalkGrid.js';
-import { BUILDINGS } from './buildings.js';
+import { BUILDINGS, inRect } from './buildings.js';
 import { ROOMS, WALL } from './interiors.js';
 import { INTERIOR_SPEED } from './constants.js';
 
@@ -64,15 +64,41 @@ export default class InteriorScene extends Phaser.Scene {
     this.scale.on('resize', fit);
     this.events.once('shutdown', () => this.scale.off('resize', fit));
 
-    // Tap to walk; tapping the doorway or below the room walks out.
+    // Gap left on the shelf while he's reading that book.
+    const shelf = room.bookshelf;
+    if (shelf) {
+      const b = shelf.book;
+      this.bookGap = this.add.rectangle(b.x, b.y, b.w, b.h, 0x4a2a14).setOrigin(0).setDepth(1).setVisible(false);
+    }
+
+    // Tap to walk; tapping the doorway or below the room walks out, tapping
+    // the bookshelf walks over to it and reads.
     this.input.on('pointerdown', (pointer) => {
       if (this.leaving) return;
       const { worldX: x, worldY: y } = pointer;
-      if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
+      if (shelf && inRect(x, y, shelf.area)) this.player.walkTo(shelf.stand.x, shelf.stand.y, () => this.read());
+      else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
       else this.player.walkTo(x, y);
     });
 
-    this.game.events.emit('location', { name: BUILDINGS[building].name, hint: 'Walk out the door to leave' });
+    this.game.events.emit('location', {
+      name: BUILDINGS[building].name,
+      hint: room.hint ?? 'Walk out the door to leave',
+    });
+  }
+
+  // Take a book off the shelf, turn around and read until the next tap or key.
+  read() {
+    const timer = this.time.delayedCall(450, () => {
+      this.bookGap.setVisible(true);
+      this.player.dir = 'down';
+      this.player.sprite.play('player-px-read');
+    });
+    this.player.face('up');
+    this.player.act('player-px-idle-up', () => {
+      timer.remove();
+      this.bookGap.setVisible(false);
+    });
   }
 
   update(_time, delta) {

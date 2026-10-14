@@ -5,10 +5,13 @@ const ARRIVE = 0.5; // world px; waypoints are hit exactly so turns stay walkabl
 
 // The farmer: keyboard + tap-to-walk movement over a WalkGrid, in world pixels.
 // Shared by the farm and the interiors (which differ in texture, speed and grid).
+// He can also hold an action (e.g. reading) until the next tap or key press.
 export default class Player {
   constructor(scene, { x, y, dir = 'up', texture, speed, grid, markerScale = 1 }) {
     Object.assign(this, { scene, x, y, dir, texture, speed, grid, markerScale });
     this.route = [];
+    this.onArrive = null;
+    this.action = null;
 
     this.sprite = scene.add
       .sprite(x, y, texture, 0)
@@ -24,20 +27,38 @@ export default class Player {
     this._play('idle');
   }
 
-  walkTo(tx, ty) {
+  // Walk to (tx, ty); `onArrive` runs if he gets there.
+  walkTo(tx, ty, onArrive = null) {
+    this._endAction();
     this.route = this.grid.findRoute(this.x, this.y, tx, ty);
+    this.onArrive = onArrive;
     const end = this.route[this.route.length - 1];
     this.marker.clear();
-    if (!end) return;
+    if (!end) {
+      this._arrive();
+      return;
+    }
     const m = this.markerScale;
     this.marker.lineStyle(2 * m, 0xffffff, 0.8).strokeCircle(end.x, end.y, 10 * m);
     this.marker.fillStyle(0xffffff, 0.6).fillCircle(end.x, end.y, 3 * m);
   }
 
   stop() {
-    this.route = [];
-    this.marker.clear();
+    this._cancelWalk();
+    this._endAction();
     this._play('idle');
+  }
+
+  face(dir) {
+    this.dir = dir;
+    this._play('idle');
+  }
+
+  // Play `animKey` and stand still until the next tap or key press, then call onEnd.
+  act(animKey, onEnd = null) {
+    this._cancelWalk();
+    this.action = { onEnd };
+    this.sprite.play(animKey);
   }
 
   update(dt) {
@@ -46,9 +67,12 @@ export default class Player {
     let vy = 0;
 
     const kbActive = [k.left, k.right, k.up, k.down, k.a, k.d, k.w, k.s].some(key => key.isDown);
+    if (this.action) {
+      if (!kbActive) return;
+      this._endAction();
+    }
     if (kbActive) {
-      this.route = [];
-      this.marker.clear();
+      this._cancelWalk();
       if (k.left.isDown || k.a.isDown) vx -= this.speed;
       if (k.right.isDown || k.d.isDown) vx += this.speed;
       if (k.up.isDown || k.w.isDown) vy -= this.speed;
@@ -57,11 +81,15 @@ export default class Player {
     }
 
     // Tap-to-walk: advance past reached waypoints; the last one ends the walk.
+    let arrived = false;
     while (!kbActive && this.route.length) {
       const { x, y } = this.route[0];
       if (Math.hypot(x - this.x, y - this.y) > ARRIVE) break;
       this.route.shift();
-      if (!this.route.length) this.marker.clear();
+      if (!this.route.length) {
+        this.marker.clear();
+        arrived = true;
+      }
     }
     if (!kbActive && this.route.length) {
       const dx = this.route[0].x - this.x;
@@ -84,7 +112,7 @@ export default class Player {
       } else {
         if (this.grid.isWalkable(nx, this.y)) { this.x = nx; moved = true; }
         if (this.grid.isWalkable(this.x, ny)) { this.y = ny; moved = true; }
-        if (!moved) { this.route = []; this.marker.clear(); }
+        if (!moved) this._cancelWalk();
       }
     }
 
@@ -97,6 +125,26 @@ export default class Player {
     }
 
     this.sprite.setPosition(this.x, this.y).setDepth(this.y);
+    if (arrived) this._arrive();
+  }
+
+  _arrive() {
+    const cb = this.onArrive;
+    this.onArrive = null;
+    cb?.();
+  }
+
+  _cancelWalk() {
+    this.route = [];
+    this.onArrive = null;
+    this.marker.clear();
+  }
+
+  _endAction() {
+    if (!this.action) return;
+    const { onEnd } = this.action;
+    this.action = null;
+    onEnd?.();
   }
 
   _play(kind) {
