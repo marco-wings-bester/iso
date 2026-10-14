@@ -18,6 +18,26 @@ function walkable(room, x, y) {
   return !solid.some(r => x > r.x - BODY && x < r.x + r.w + BODY && y > r.y - 2 && y < r.y + r.h + 3);
 }
 
+// Pixel-art "z" for sleeping, white with the usual dark outline.
+function makeZ(scene) {
+  if (scene.textures.exists('zzz')) return;
+  const rows = ['#####', '...#.', '..#..', '.#...', '#####'];
+  const tex = scene.textures.createCanvas('zzz', 7, 7);
+  const ctx = tex.getContext();
+  const on = (x, y) => rows[y]?.[x] === '#';
+  for (let y = -1; y <= 5; y++) {
+    for (let x = -1; x <= 5; x++) {
+      const filled = on(x, y);
+      const edge = !filled && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => on(x + dx, y + dy));
+      if (!filled && !edge) continue;
+      ctx.fillStyle = filled ? '#ffffff' : '#2e1d0c';
+      ctx.fillRect(x + 1, y + 1, 1, 1);
+    }
+  }
+  tex.refresh();
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+}
+
 // Inside a building: same farmer and controls, everything drawn ~3x bigger.
 export default class InteriorScene extends Phaser.Scene {
   constructor() {
@@ -64,20 +84,38 @@ export default class InteriorScene extends Phaser.Scene {
     this.scale.on('resize', fit);
     this.events.once('shutdown', () => this.scale.off('resize', fit));
 
-    // Gap left on the shelf while he's reading that book.
-    const shelf = room.bookshelf;
-    if (shelf) {
-      const b = shelf.book;
+    this.room = room;
+    const spots = room.spots ?? {};
+    if (spots.read) {
+      // Gap left on the shelf while he's reading that book.
+      const b = spots.read.book;
       this.bookGap = this.add.rectangle(b.x, b.y, b.w, b.h, 0x4a2a14).setOrigin(0).setDepth(1).setVisible(false);
     }
+    if (spots.sleep) {
+      // Him asleep in bed, and the room dimming to night (the fire stays bright).
+      const o = spots.sleep.overlay;
+      const key = `sleeper-${building}`;
+      if (!this.textures.exists(key)) {
+        const tex = this.textures.createCanvas(key, o.w, o.h);
+        o.draw(tex.getContext());
+        tex.refresh();
+        tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+      }
+      this.sleeper = this.add.image(o.x, o.y, key).setOrigin(0).setDepth(0.4).setVisible(false);
+      this.night = this.add.rectangle(0, 0, room.w, room.h, 0x0b0a24).setOrigin(0).setDepth(0.5).setAlpha(0);
+      makeZ(this);
+    }
 
-    // Tap to walk; tapping the doorway or below the room walks out, tapping
-    // the bookshelf walks over to it and reads.
+    // Tap to walk; tapping the doorway or below the room walks out; tapping
+    // a spot (bookshelf, bed) walks there and uses it.
     this.input.on('pointerdown', (pointer) => {
       if (this.leaving) return;
       const { worldX: x, worldY: y } = pointer;
-      if (shelf && inRect(x, y, shelf.area)) this.player.walkTo(shelf.stand.x, shelf.stand.y, () => this.read());
-      else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
+      const spot = Object.entries(spots).find(([, s]) => inRect(x, y, s.area));
+      if (spot) {
+        const [id, s] = spot;
+        this.player.walkTo(s.stand.x, s.stand.y, () => (id === 'read' ? this.read() : this.sleep()));
+      } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
       else this.player.walkTo(x, y);
     });
 
@@ -98,6 +136,38 @@ export default class InteriorScene extends Phaser.Scene {
     this.player.act('player-px-idle-up', () => {
       timer.remove();
       this.bookGap.setVisible(false);
+    });
+  }
+
+  // Climb into bed: the room darkens and z's float up until the next tap or key.
+  sleep() {
+    const { player } = this;
+    let zzz = null;
+    const timer = this.time.delayedCall(300, () => {
+      player.sprite.setVisible(false);
+      this.sleeper.setVisible(true);
+      this.tweens.killTweensOf(this.night);
+      this.tweens.add({ targets: this.night, alpha: 0.45, duration: 900 });
+      zzz = this.time.addEvent({ delay: 1100, startAt: 900, loop: true, callback: () => this.puffZ() });
+    });
+    player.face('left');
+    player.act('player-px-idle-left', () => {
+      timer.remove();
+      zzz?.remove();
+      player.sprite.setVisible(true);
+      this.sleeper.setVisible(false);
+      this.tweens.killTweensOf(this.night);
+      this.tweens.add({ targets: this.night, alpha: 0, duration: 400 });
+      player.face('down');
+    });
+  }
+
+  puffZ() {
+    const { x, y } = this.room.spots.sleep.zzz;
+    const z = this.add.image(x, y, 'zzz').setDepth(2).setScale(0.6);
+    this.tweens.add({
+      targets: z, x: x + 10, y: y - 20, scale: 1.1, alpha: 0, duration: 2200,
+      onComplete: () => z.destroy(),
     });
   }
 

@@ -7,7 +7,8 @@ import { obj, rng } from './pixelArt.js';
 //
 // Each room: w/h, back-wall height `wallH`, `door` gap in the bottom wall,
 // `solid` furniture rects (blocked for walking), `draw(ctx)`, and optional
-// `hint` and `bookshelf` (tap area + where to stand to read).
+// `hint` and `spots`: things to tap (area) that the farmer walks to (stand)
+// and uses — `read` at the bookshelf, `sleep` in the bed.
 
 export const WALL = 6; // side/bottom wall thickness
 
@@ -198,6 +199,45 @@ function bed(ctx, x, y) {
 }
 
 // Returns the books it drew (room coords) so one can be taken off the shelf.
+// The farmer tucked up in bed, drawn over the bed: head on the pillow, eyes
+// closed, a hand on the sheet, his shape under the quilt and his hat on the
+// bedpost. (bx, by) is the bed's top-left within the overlay canvas.
+function sleeper(ctx, bx, by) {
+  const SK = '#f8c8a0', SKd = '#d89870', HAIR = '#8c5430', HAIRd = '#5e3820';
+  obj(ctx, bx + 10, by + 11, 8, 8, r => {
+    r(0, 0, 8, 8, SK);
+    r(0, 0, 8, 3, HAIR);
+    r(0, 0, 8, 1, HAIRd);
+    r(0, 3, 1, 2, HAIR);
+    r(7, 3, 1, 2, HAIR);
+    r(1, 5, 2, 1, HAIRd);  // closed eyes
+    r(5, 5, 2, 1, HAIRd);
+    r(1, 6, 1, 1, '#f0a0a0');
+    r(6, 6, 1, 1, '#f0a0a0');
+    r(0, 7, 8, 1, SKd);
+  });
+  // sheet folded up to his chin
+  fill(ctx, bx + 2, by + 19, 24, 3, C.linen);
+  fill(ctx, bx + 2, by + 21, 24, 1, C.linenDk);
+  fill(ctx, bx + 2, by + 19, 24, 1, C.white);
+  obj(ctx, bx + 7, by + 19, 3, 2, r => { r(0, 0, 3, 2, SK); r(0, 1, 3, 1, SKd); });
+  // his shape under the quilt
+  const fold = 'rgba(70, 10, 0, 0.35)';
+  const sheen = 'rgba(255, 255, 255, 0.18)';
+  fill(ctx, bx + 7, by + 23, 1, 13, fold);
+  fill(ctx, bx + 21, by + 23, 1, 13, fold);
+  fill(ctx, bx + 8, by + 36, 13, 1, fold);
+  fill(ctx, bx + 8, by + 23, 2, 12, sheen);
+  fill(ctx, bx + 13, by + 30, 2, 5, fold);
+  // straw hat hung on the bedpost
+  obj(ctx, bx + 22, by - 5, 10, 5, r => {
+    r(2, 0, 6, 3, C.strawHi);
+    r(2, 2, 6, 1, '#a83a2c');
+    r(0, 3, 10, 2, C.straw);
+    r(0, 4, 10, 1, C.strawDk);
+  });
+}
+
 function bookshelf(ctx, x, y, seed) {
   const R = rng(seed);
   const drawn = [];
@@ -482,10 +522,18 @@ export const ROOMS = {
   house: {
     w: 144, h: 160, wallH: 44,
     door: { x: 60, w: 24 },
-    hint: 'Tap the bookshelf to read a book',
-    bookshelf: {
-      area: { x: 110, y: 14, w: 28, h: 40 }, // tap here…
-      stand: { x: 124, y: 57 },              // …to walk here and read
+    hint: 'Tap the shelf to read • the bed to sleep',
+    spots: {
+      read: {
+        area: { x: 110, y: 14, w: 28, h: 40 }, // tap the bookshelf…
+        stand: { x: 124, y: 57 },              // …to walk here and read
+      },
+      sleep: {
+        area: { x: 8, y: 30, w: 32, h: 50 },   // tap the bed…
+        stand: { x: 46, y: 70 },               // …to walk beside it and get in
+        overlay: { x: 6, y: 26, w: 38, h: 52, draw: ctx => sleeper(ctx, 4, 8) },
+        zzz: { x: 28, y: 44 },
+      },
     },
     solid: [
       { x: 10, y: 34, w: 28, h: 44 },  // bed
@@ -514,7 +562,7 @@ export const ROOMS = {
       fireplace(ctx, 68, 6);
       // The book he reads comes off the top shelf (visible above his hat).
       const books = bookshelf(ctx, 112, 16, 3).filter(b => b.shelf === 0);
-      this.bookshelf.book = books.find(b => b.c === C.red) || books[0];
+      this.spots.read.book = books.find(b => b.c === C.red) || books[0];
       bed(ctx, 10, 34);
       chair(ctx, 72, 94, false);
       chair(ctx, 118, 94, true);

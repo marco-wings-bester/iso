@@ -3,6 +3,7 @@ import GameScene from './GameScene.js';
 import InteriorScene from './InteriorScene.js';
 import UIScene from './UIScene.js';
 import { setupInstallButton } from './install.js';
+import { watchForUpdates } from './updates.js';
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -22,6 +23,7 @@ game.events.once('ready', () => {
 });
 
 setupInstallButton();
+watchForUpdates();
 
 // Register the service worker so the game can be installed and played offline.
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
