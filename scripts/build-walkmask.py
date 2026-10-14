@@ -28,6 +28,9 @@ START = (387, 1265)         # player spawn (image px); must be on the path
 BRIDGES = [
     (345, 1140, 80, 105),   # open gate (overhead beam + open doors)
     (130, 526, 40, 24),     # path shaded by the well roof
+    (240, 320, 46, 32),     # farmhouse steps up to the door
+    (468, 360, 40, 30),     # barn doorway
+    (606, 786, 38, 24),     # tool shed doorway
 ]
 
 img = Image.open(MAP).convert('RGB')
