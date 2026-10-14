@@ -1,116 +1,203 @@
-import { FRAME_W, FRAME_H } from './constants.js';
+import { FRAME_W, FRAME_H, ART_PX } from './constants.js';
 
-// Walk-cycle per-frame offsets.
-// Directions: 0=down, 1=left, 2=right, 3=up
-// 4 frames each: neutral, left-fwd, neutral, right-fwd
-const WALK = [
-  { ll: 0, rl: 0 },   // frame 0 – neutral
-  { ll: -1, rl: 1 },  // frame 1 – left leg forward
-  { ll: 0, rl: 0 },   // frame 2 – neutral
-  { ll: 1, rl: -1 },  // frame 3 – right leg forward
-];
+// Farmer sprite, drawn as pixel art to match the map: dark outline, three-tone
+// shading lit from the top-left, warm palette sampled from the map.
+// Sheet layout: rows = directions (down, left, right, up), cols = 4 walk frames.
 
-function drawFrame(ctx, ox, oy, dir, frame) {
-  const { ll, rl } = WALK[frame];
-  // bob: slight down-shift on stepping frames for a bounce feel
-  const bob = frame === 1 || frame === 3 ? 1 : 0;
-  // arm swing is opposite to legs
-  const la = rl;
-  const ra = ll;
+const OUTLINE = '#2e1d0c';
+const SHADOW = 'rgba(20, 30, 0, 0.28)';
+const PALETTE = {
+  H: '#f8d870', h: '#e0b050', j: '#b88038', b: '#a83a2c', // straw hat + band
+  S: '#f8c8a0', s: '#d89870', e: OUTLINE,                  // skin, eyes
+  R: '#8c5430', r: '#5e3820',                              // hair
+  C: '#d04c3a', c: '#982f2a',                              // red shirt
+  O: '#4f8cc0', o: '#36628f', k: '#f8d870',                // overalls, buckles
+  B: '#7a4a2a', d: '#4a2a14',                              // boots
+  x: OUTLINE,
+};
 
-  // ── shadow (fixed at ground, no bob) ─────────────────────────────
-  ctx.fillStyle = 'rgba(0,0,0,0.22)';
-  ctx.fillRect(ox + 3, oy + 22, 10, 2);
+// Head + torso, art rows 1–19 (legs and arms are added per frame).
+const UPPER = {
+  down: [
+    '......hHHh......',
+    '.....hHHHHh.....',
+    '.....hHHHhj.....',
+    '.....bbbbbb.....',
+    '..hHHHHHHHHHHh..',
+    '...jhhhhhhhhj...',
+    '....rssssssr....',
+    '....rSSSSSSr....',
+    '....SSeSSeSs....',
+    '....sSSSSSSs....',
+    '.....sSSSSs.....',
+    '......ssss......',
+    '....COCCCCOc....',
+    '....COCCCCOc....',
+    '....cOOOOOOc....',
+    '....cOkOOkOc....',
+    '.....OOOOOo.....',
+    '.....OOOOOo.....',
+    '.....oOOOoo.....',
+  ],
+  up: [
+    '......hHHh......',
+    '.....hHHHHh.....',
+    '.....hHHHhj.....',
+    '.....bbbbbb.....',
+    '..hHHHHHHHHHHh..',
+    '...jhhhhhhhhj...',
+    '....rrrrrrrr....',
+    '....rRRRRRRr....',
+    '....sRRRRRRs....',
+    '....rRRRRRRr....',
+    '.....rrrrrr.....',
+    '......ssss......',
+    '....COCCCCOc....',
+    '....CCOCCOCc....',
+    '....cCCOOCCc....',
+    '....cOOOOOOc....',
+    '.....OOOOOo.....',
+    '.....OOOOOo.....',
+    '.....oOOOoo.....',
+  ],
+  left: [
+    '.......hHHh.....',
+    '......hHHHHh....',
+    '......hHHHhj....',
+    '......bbbbbb....',
+    '..hHHHHHHHHHh...',
+    '...jhhhhhhhhj...',
+    '.....sssssrr....',
+    '....SSSSSSRr....',
+    '....SeSSSsRr....',
+    '....sSSSSsRr....',
+    '.....sSSSsr.....',
+    '.......sss......',
+    '......COCCc.....',
+    '......COCCc.....',
+    '......OOOOo.....',
+    '......OOOOo.....',
+    '......OOOOo.....',
+    '......OOOOo.....',
+    '......oOOoo.....',
+  ],
+};
 
-  // ── left leg + boot ───────────────────────────────────────────────
-  ctx.fillStyle = '#4a3728';
-  ctx.fillRect(ox + 4, oy + 15 + bob + ll, 3, 5);
-  ctx.fillStyle = '#2a1a0a';
-  ctx.fillRect(ox + 4, oy + 19 + bob + ll, 3, 3);
+// Legs: 6 rows (3 denim + 2 boot + sole), drawn below the torso.
+const LEG = ['OOo', 'OOo', 'ooo', 'BBd', 'BBd', 'ddd'];
+const LEG_TOP = 20;
 
-  // ── right leg + boot ──────────────────────────────────────────────
-  ctx.fillStyle = '#4a3728';
-  ctx.fillRect(ox + 9, oy + 15 + bob + rl, 3, 5);
-  ctx.fillStyle = '#2a1a0a';
-  ctx.fillRect(ox + 9, oy + 19 + bob + rl, 3, 3);
-
-  // ── arms (drawn before torso so torso edge covers them slightly) ──
-  ctx.fillStyle = '#7a5c2e';
-  ctx.fillRect(ox + 1, oy + 9 + bob + la, 2, 5);
-  ctx.fillRect(ox + 13, oy + 9 + bob + ra, 2, 5);
-
-  // ── torso / coat ─────────────────────────────────────────────────
-  ctx.fillStyle = '#7a5c2e';
-  ctx.fillRect(ox + 3, oy + 8 + bob, 10, 8);
-  // belt
-  ctx.fillStyle = '#5c4220';
-  ctx.fillRect(ox + 3, oy + 14 + bob, 10, 1);
-
-  // ── neck (hidden for up-facing) ───────────────────────────────────
-  if (dir !== 3) {
-    ctx.fillStyle = '#e0a882';
-    ctx.fillRect(ox + 7, oy + 6 + bob, 2, 3);
-  }
-
-  // ── head (skin) ───────────────────────────────────────────────────
-  ctx.fillStyle = '#e8b89a';
-  ctx.fillRect(ox + 5, oy + 1 + bob, 6, 7);
-
-  // ── hair ─────────────────────────────────────────────────────────
-  ctx.fillStyle = '#6b4226';
-  if (dir === 3) {
-    // facing up – more hair visible
-    ctx.fillRect(ox + 5, oy + 1 + bob, 6, 4);
-  } else {
-    ctx.fillRect(ox + 5, oy + 1 + bob, 6, 2);
-  }
-
-  // ── hat brim + crown ─────────────────────────────────────────────
-  ctx.fillStyle = '#4a2e10';
-  ctx.fillRect(ox + 4, oy + 2 + bob, 8, 1); // brim
-  ctx.fillStyle = '#5c3a18';
-  ctx.fillRect(ox + 5, oy + 0 + bob, 6, 3); // crown (overlaps brim)
-
-  // ── eyes (direction-dependent) ───────────────────────────────────
-  ctx.fillStyle = '#1a1208';
-  if (dir === 0) {
-    ctx.fillRect(ox + 6, oy + 5 + bob, 1, 1);
-    ctx.fillRect(ox + 9, oy + 5 + bob, 1, 1);
-  } else if (dir === 1) {
-    ctx.fillRect(ox + 5, oy + 5 + bob, 1, 1);
-  } else if (dir === 2) {
-    ctx.fillRect(ox + 10, oy + 5 + bob, 1, 1);
-  }
-  // dir===3 (up): no eyes visible
+function blank() {
+  return Array.from({ length: FRAME_H }, () => Array(FRAME_W).fill(null));
 }
+
+function put(grid, x, y, ch) {
+  if (ch === '.' || y < 0 || y >= FRAME_H || x < 0 || x >= FRAME_W) return;
+  grid[y][x] = PALETTE[ch];
+}
+
+function stamp(grid, rows, x0, y0) {
+  rows.forEach((row, r) => [...row].forEach((ch, c) => put(grid, x0 + c, y0 + r, ch)));
+}
+
+// Leg with a per-row horizontal offset (for side-view strides); `back` legs are darker.
+function leg(grid, x, lift, offsets, back = false) {
+  LEG.forEach((row, r) => {
+    const dx = offsets ? offsets[r] : 0;
+    [...row].forEach((ch, c) => {
+      const shaded = back ? { O: 'o', B: 'd' }[ch] || ch : ch;
+      put(grid, x + c + dx, LEG_TOP + r - lift, shaded);
+    });
+  });
+}
+
+// Arms: sleeve + hand. The side-view arm carries its own outline so it reads
+// against the body. Offsets shift each row horizontally to swing the arm.
+const ARM_L = ['.C', 'CC', 'Cc', 'SS'];
+const ARM_R = ['c.', 'cc', 'cc', 'ss'];
+const ARM_SIDE = ['.Cc.', 'xCcx', 'xCcx', 'xSsx', '.xx.'];
+
+function arm(grid, rows, x, y, offsets) {
+  rows.forEach((row, r) => [...row].forEach((ch, c) => put(grid, x + c + (offsets ? offsets[r] : 0), y + r, ch)));
+}
+
+// Dark 1px outline around the silhouette, like every object on the map.
+function outline(grid) {
+  const out = grid.map(row => row.slice());
+  for (let y = 0; y < FRAME_H; y++) {
+    for (let x = 0; x < FRAME_W; x++) {
+      if (grid[y][x]) continue;
+      const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => grid[y + dy]?.[x + dx]);
+      if (n) out[y][x] = OUTLINE;
+    }
+  }
+  return out;
+}
+
+const STRIDE_FWD = [0, -1, -1, -2, -2, -2];
+const STRIDE_BACK = [0, 1, 1, 2, 2, 2];
+
+// frame: 0 = stand, 1 = left foot forward, 2 = stand, 3 = right foot forward
+function buildFrame(dir, frame) {
+  const g = blank();
+  const step = frame % 2 === 1;
+  const bob = step ? 1 : 0;
+
+  if (dir === 'down' || dir === 'up') {
+    // Front/back: lift the stepping leg, swing the opposite arm forward.
+    const liftL = frame === 1 ? 1 : 0;
+    const liftR = frame === 3 ? 1 : 0;
+    leg(g, 5, liftL, null);
+    leg(g, 8, liftR, null);
+    stamp(g, UPPER[dir], 0, 1 + bob);
+    arm(g, ARM_L, 2, 13 + bob + liftR);
+    arm(g, ARM_R, 12, 13 + bob + liftL);
+  } else {
+    // Side view, drawn facing left; 'right' is mirrored afterwards.
+    const swing = frame === 1 ? 1 : frame === 3 ? -1 : 0;
+    const legFwd = swing === 0 ? null : swing > 0 ? STRIDE_FWD : STRIDE_BACK;
+    const legBack = swing === 0 ? null : swing > 0 ? STRIDE_BACK : STRIDE_FWD;
+    leg(g, 7, 0, legBack, true);
+    leg(g, 6, 0, legFwd);
+    stamp(g, UPPER.left, 0, 1 + bob);
+    const a = [0, 0, swing, swing, 2 * swing].map(v => -v);
+    arm(g, ARM_SIDE, 6, 13 + bob, a);
+  }
+
+  const done = outline(g);
+  return dir === 'right' ? done.map(row => row.slice().reverse()) : done;
+}
+
+function drawFrame(ctx, ox, oy, pixels) {
+  const p = ART_PX;
+  // Ground shadow under the feet
+  ctx.fillStyle = SHADOW;
+  ctx.beginPath();
+  ctx.ellipse(ox + 8 * p, oy + 26 * p, 5.5 * p, 1.6 * p, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  pixels.forEach((row, y) => row.forEach((color, x) => {
+    if (!color) return;
+    ctx.fillStyle = color;
+    ctx.fillRect(ox + x * p, oy + y * p, p, p);
+  }));
+}
+
+export const DIRECTIONS = ['down', 'left', 'right', 'up'];
 
 export function createCharacterTexture(scene) {
   const cols = 4; // walk frames
-  const rows = 4; // directions: down, left, right, up
-  const tex = scene.textures.createCanvas('player', FRAME_W * cols, FRAME_H * rows);
+  const fw = FRAME_W * ART_PX;
+  const fh = FRAME_H * ART_PX;
+  const tex = scene.textures.createCanvas('player', fw * cols, fh * DIRECTIONS.length);
   const ctx = tex.getContext();
 
-  ctx.clearRect(0, 0, FRAME_W * cols, FRAME_H * rows);
-
-  for (let dir = 0; dir < rows; dir++) {
+  DIRECTIONS.forEach((dir, row) => {
     for (let frame = 0; frame < cols; frame++) {
-      drawFrame(ctx, frame * FRAME_W, dir * FRAME_H, dir, frame);
+      drawFrame(ctx, frame * fw, row * fh, buildFrame(dir, frame));
+      tex.add(row * cols + frame, 0, frame * fw, row * fh, fw, fh);
     }
-  }
+  });
 
   tex.refresh();
-
-  // Register numbered frames so anims.create can reference them
-  for (let dir = 0; dir < rows; dir++) {
-    for (let frame = 0; frame < cols; frame++) {
-      tex.add(
-        dir * cols + frame,
-        0,
-        frame * FRAME_W,
-        dir * FRAME_H,
-        FRAME_W,
-        FRAME_H
-      );
-    }
-  }
 }
