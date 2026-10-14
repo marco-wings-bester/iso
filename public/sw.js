@@ -1,6 +1,6 @@
 // Offline support: precache the shell + map, then cache everything else
 // (hashed JS bundles) the first time it is fetched.
-const CACHE = 'farm-walk-v1';
+const CACHE = 'farm-walk-v2';
 const PRECACHE = ['./', 'index.html', 'manifest.webmanifest', 'assets/map.png', 'icons/icon-192.png'];
 
 self.addEventListener('install', (event) => {
@@ -21,9 +21,11 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || new URL(request.url).origin !== location.origin) return;
 
   // Pages: network first so updates show up, fall back to cache offline.
+  // 'no-cache' revalidates with the server instead of trusting a page the
+  // browser cached before the latest deploy.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      fetch(request.url, { cache: 'no-cache', credentials: 'same-origin' })
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put('./', copy));

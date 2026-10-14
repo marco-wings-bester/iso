@@ -3,7 +3,7 @@ import GameScene from './GameScene.js';
 import InteriorScene from './InteriorScene.js';
 import UIScene from './UIScene.js';
 
-new Phaser.Game({
+const game = new Phaser.Game({
   type: Phaser.AUTO,
   backgroundColor: '#5a9e4a',
   scale: {
@@ -13,9 +13,16 @@ new Phaser.Game({
   scene: [GameScene, InteriorScene, UIScene],
 });
 
+// Hide the "Loading farm…" message from index.html once the farm is up.
+game.events.once('ready', () => {
+  window.farmWalkStarted = true;
+  document.getElementById('boot')?.remove();
+  try { sessionStorage.removeItem('farm-walk-recovered'); } catch (e) { /* private mode */ }
+});
+
 // Register the service worker so the game can be installed and played offline.
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`);
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { updateViaCache: 'none' });
   });
 }
