@@ -4,7 +4,7 @@ import { isOnPath, isWalkable, findRoute } from './PathSystem.js';
 import { CELL, COLS, ROWS } from './walkMask.js';
 import {
   IMG_W, IMG_H,
-  PLAYER_SPEED, PLAYER_SCALE_BASE,
+  PLAYER_SPEED, FRAME_H, FEET_Y,
   DEBUG_PATH,
 } from './constants.js';
 
@@ -74,8 +74,8 @@ export default class GameScene extends Phaser.Scene {
 
     this.player = this.add
       .sprite(this.playerX, this.playerY, 'player', 0)
-      .setScale(PLAYER_SCALE_BASE * dispScale)
-      .setOrigin(0.5, 1)
+      .setScale(dispScale) // texture is drawn at map resolution
+      .setOrigin(0.5, FEET_Y / FRAME_H)
       .setDepth(this.playerY);
 
     this.player.play('idle-up');
