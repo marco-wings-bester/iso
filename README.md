@@ -17,3 +17,10 @@ npm install
 npm run dev      # http://localhost:3000/iso/
 npm run build    # outputs dist/
 ```
+
+## Walkable area
+
+The character can only walk on the dirt path. It's baked from the map into
+`src/walkMask.js` by `scripts/build-walkmask.py` (needs Pillow + numpy) —
+re-run it if you change `public/assets/map.png`. Set `DEBUG_PATH = true` in
+`src/constants.js` to see the walkable area in-game.
