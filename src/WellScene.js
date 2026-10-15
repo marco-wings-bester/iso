@@ -29,6 +29,9 @@ function shade(rgb, b, x, y, levels = 8) {
 const STONES = [[128, 122, 110], [110, 106, 96], [140, 132, 118], [100, 98, 90]];
 const RIM_STONES = [[184, 178, 164], [168, 162, 148], [196, 190, 174]];
 const MOSS = [74, 100, 50];
+const GRASS = [[140, 192, 76], [120, 176, 64], [104, 156, 56]]; // the farm's greens
+const GRASS_HI = [168, 212, 96];
+const FLOWERS = [[248, 240, 220], [248, 216, 112], [200, 160, 230]];
 const MORTAR = [40, 36, 30];
 const OUTLINE = [46, 29, 12];
 
@@ -80,8 +83,12 @@ export function drawWellView(ctx, w, h) {
         const pxCourse = (R * ROW) / (1 + d) ** 2;
         const pxStone = (2 * Math.PI * r) / N;
         const mortar = (course - row) * pxCourse < 1 || (col - ci) * pxStone < 1;
-        let b = 0.55 * Math.exp(-d * 1.6) * (0.7 + 0.3 * Math.cos(2 * Math.PI * (a - 0.125)));
-        if (d < 0.06) b *= 1.15; // lip catching the light
+        // Sun from the top-left lights a crescent of the far wall near the
+        // top; everything else is in shade that deepens to black.
+        const facing = Math.cos(2 * Math.PI * (a - 0.125));
+        const sunlit = d < 0.75 * Math.max(0, facing);
+        let b = 0.5 * Math.exp(-d * 1.7) + (sunlit ? 0.5 : 0);
+        if (d < 0.06) b = Math.max(b, 0.8); // the lip, in daylight
         let rgb = STONES[Math.floor(hash(row, ci) * STONES.length)];
         if (d < 1 && hash(ci, row + 9) < 0.28) rgb = MOSS;
         if (d > WATER - 0.4) rgb = [rgb[0] * 0.7, rgb[1] * 0.8, rgb[2]]; // damp near the water
@@ -92,16 +99,21 @@ export function drawWellView(ctx, w, h) {
         const ci = Math.floor(col);
         const edge = r - R < 1.2 || RIM - r < 1.2;
         const seam = (col - ci) * ((2 * Math.PI * r) / K) < 1.2;
-        let b = 0.3 + 0.09 * Math.cos(2 * Math.PI * (a - 0.625));
-        if (a > 0.12 && a < 0.38) b *= 0.65; // his shadow on the near side
+        // Capstones in full sun.
+        let b = 0.92 + 0.08 * Math.cos(2 * Math.PI * (a - 0.625));
         if (!edge && !seam && (col - ci) * ((2 * Math.PI * r) / K) < 2.6) b *= 1.15; // stone edge highlight
         c = edge ? OUTLINE : seam ? shade(MORTAR, 1, x, y) : shade(RIM_STONES[Math.floor(hash(ci, 3) * 3)], b, x, y);
       } else {
-        // Grass around the well, fading into the dark edges of his view.
-        const n = hash(Math.floor(x / 2), Math.floor(y / 2));
-        let b = (0.32 + 0.08 * n) * (1 - 0.9 * smooth(RIM, RIM + M * 0.45, r));
-        if (r < RIM + 3) b *= 0.55;
-        c = shade(n < 0.15 ? [96, 140, 56] : [70, 112, 44], b, x, y);
+        // Grass around the well in full sun, like the rest of the farm, with
+        // tufts and little flowers; the rim casts a thin shadow away from the sun.
+        const fx = Math.floor(x / 2);
+        const fy = Math.floor(y / 2);
+        const n = hash(fx, fy);
+        let rgb = GRASS[n < 0.33 ? 0 : n < 0.8 ? 1 : 2];
+        if (hash(Math.floor(x / 3) + 17, Math.floor(y / 4)) > 0.93 && (x + y) % 3 === 0) rgb = GRASS_HI;
+        if (hash(fx + 5, fy + 11) > 0.988) rgb = FLOWERS[Math.floor(hash(fy, fx) * FLOWERS.length)];
+        const b = r < RIM + 5 && Math.cos(2 * Math.PI * (a - 0.125)) > 0.2 ? 0.72 : 1;
+        c = shade(rgb, b, x, y);
       }
 
       const i = (y * w + x) * 4;
@@ -130,7 +142,7 @@ function drawRope(ctx, { cx, cy, R }) {
     const x = Math.round(x0 + (x1 - x0) * t);
     const y = Math.round(y0 + (y1 - y0) * t);
     const depth = Math.max(0, (Math.hypot(x - cx, y - cy) < R ? R / Math.max(1, Math.hypot(x - cx, y - cy)) - 1 : 0));
-    const b = 0.75 * Math.exp(-depth * 1.5);
+    const b = Math.exp(-depth * 1.6);
     if (b < 0.06) break;
     const twist = i % 3 === 0 ? 0.75 : 1;
     const wdt = t < 0.45 ? 2 : 1;
@@ -169,15 +181,15 @@ function limb(ctx, x0, y0, x1, y1, rad, color) {
 
 // His arms reaching in from the bottom corners, hands gripping the near rim.
 function drawHands(ctx, w, h, { cx, cy, R }) {
-  const SK = '#e0b090';
-  const SKd = '#b88068';
+  const SK = '#f8c8a0';
+  const SKd = '#d89870';
   [-1, 1].forEach(side => {
     const hx = cx + side * R * 0.66;
     const hy = cy + R * 1.02;
     const sx = cx + side * R * 1.9;
     const sy = h + R * 0.4;
     // sleeve (in shadow, he's leaning over), then the cuff
-    limb(ctx, sx, sy, hx + side * 2, hy + 12, 13, t => (t * side > 0.4 ? '#5a1c14' : t * side < -0.5 ? '#9a3428' : '#7a261c'));
+    limb(ctx, sx, sy, hx + side * 2, hy + 12, 13, t => (t * side > 0.4 ? '#982f2a' : t * side < -0.5 ? '#d04c3a' : '#b8402e'));
     obj(ctx, Math.round(hx - 8), Math.round(hy - 4), 16, 13, r => {
       r(0, 2, 16, 9, SK);
       r(0, 8, 16, 3, SKd);
@@ -185,7 +197,7 @@ function drawHands(ctx, w, h, { cx, cy, R }) {
       for (let f = 0; f < 4; f++) r(1 + f * 3.5 | 0, 0, 3, 4, SK);
       for (let f = 0; f < 3; f++) r(4 + f * 3.5 | 0, 0, 1, 4, SKd);
       r(side < 0 ? 14 : 0, 4, 2, 5, SKd);
-      r(0, 11, 16, 2, '#6a2018'); // cuff
+      r(0, 11, 16, 2, '#982f2a'); // cuff
     });
   });
 }
@@ -199,10 +211,10 @@ function drawHatBrim(ctx, w, { M }) {
     if (bottom <= 0) continue;
     for (let y = 0; y < bottom; y++) {
       const weave = (x + y * 2) % 5 === 0 || (x - y) % 7 === 0;
-      ctx.fillStyle = weave ? '#3e2812' : y > bottom - 3 ? '#7a5428' : '#563a1a';
+      ctx.fillStyle = weave ? '#6a4820' : y > bottom - 3 ? '#a87838' : '#8a6030';
       ctx.fillRect(x, y, 1, 1);
     }
-    ctx.fillStyle = '#b88038';
+    ctx.fillStyle = '#e0b050';
     ctx.fillRect(x, bottom - 1, 1, 1);
     ctx.fillStyle = '#2e1d0c';
     ctx.fillRect(x, bottom, 1, 1);
