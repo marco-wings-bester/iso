@@ -11,9 +11,9 @@ out over the pond from the end of the jetty, or from the tractor's seat
 
 **Play: https://marco-wings-bester.github.io/iso/**
 
-Tap **⬇ Install app** in the bottom-right corner to install it. On Android this
-needs Chrome; if the link opened inside another app, the button offers
-**Open in Chrome** first.
+Open the **☰ menu** (bottom-left) to **Install app** or **Share game** (sends
+the link through the phone's share sheet). Installing on Android needs Chrome;
+if the link opened inside another app, the menu offers **Open in Chrome** first.
 
 Open the GitHub Pages site (deployed from `main`). It's an installable app (PWA) that works offline once it's loaded:
 
