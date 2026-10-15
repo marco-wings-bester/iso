@@ -31,6 +31,11 @@ BRIDGES = [
     (240, 320, 46, 32),     # farmhouse steps up to the door
     (468, 360, 40, 30),     # barn doorway
     (606, 786, 38, 24),     # tool shed doorway
+    (158, 812, 80, 22),     # jetty deck
+    (236, 822, 30, 24),     # from the path onto the jetty
+    (455, 685, 40, 22),     # off the path towards the tractors…
+    (470, 640, 40, 50),     # …between the fences…
+    (490, 636, 80, 22),     # …up to the front tractor
 ]
 
 img = Image.open(MAP).convert('RGB')

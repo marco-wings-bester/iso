@@ -1,5 +1,5 @@
-import Phaser from 'phaser';
-import { obj } from './pixelArt.js';
+import { obj } from '../pixelArt.js';
+import { hash, smooth, shade, limb, sleeve, GRASS, GRASS_HI, FLOWERS, SKIN, SKIN_DK } from './art.js';
 
 // Farmer Jones's view straight down a well: the underside of his hat brim at
 // the top, his hands on the stone rim, the shaft's stone courses vanishing into
@@ -7,35 +7,13 @@ import { obj } from './pixelArt.js';
 // small bright opening with his own silhouette in it. Drawn as pixel art in
 // perspective: a pixel's distance from the centre maps to depth down the shaft.
 
-const ART = 160; // pixel-art size of the shorter screen side
-const FADE_MS = 300;
-
-const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + 0.5) / 16 - 0.5);
-const hash = (a, b) => {
-  const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
-  return s - Math.floor(s);
-};
-const smooth = (e0, e1, x) => {
-  const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
-  return t * t * (3 - 2 * t);
-};
-
-// Posterised, ordered-dithered brightness: smooth light falloff, pixel-art look.
-function shade(rgb, b, x, y, levels = 8) {
-  const q = Math.min(1, Math.max(0, Math.round((b + BAYER[(y & 3) * 4 + (x & 3)] / levels) * levels) / levels));
-  return [rgb[0] * q, rgb[1] * q, rgb[2] * q];
-}
-
 const STONES = [[128, 122, 110], [110, 106, 96], [140, 132, 118], [100, 98, 90]];
 const RIM_STONES = [[184, 178, 164], [168, 162, 148], [196, 190, 174]];
 const MOSS = [74, 100, 50];
-const GRASS = [[140, 192, 76], [120, 176, 64], [104, 156, 56]]; // the farm's greens
-const GRASS_HI = [168, 212, 96];
-const FLOWERS = [[248, 240, 220], [248, 216, 112], [200, 160, 230]];
 const MORTAR = [40, 36, 30];
-const OUTLINE = [46, 29, 12];
+const RIM_OUTLINE = [46, 29, 12];
 
-export function wellGeometry(w, h) {
+function wellGeometry(w, h) {
   const M = Math.min(w, h);
   const cx = w / 2;
   const cy = h * 0.47;
@@ -45,7 +23,7 @@ export function wellGeometry(w, h) {
   return { M, cx, cy, R, RIM, WATER, rWater: R / (1 + WATER), rSky: R / (1 + 2 * WATER) };
 }
 
-export function drawWellView(ctx, w, h) {
+function draw(ctx, w, h) {
   const g = wellGeometry(w, h);
   const { M, cx, cy, R, RIM, WATER, rWater, rSky } = g;
   const ROW = 0.17;   // depth of one stone course
@@ -102,7 +80,7 @@ export function drawWellView(ctx, w, h) {
         // Capstones in full sun.
         let b = 0.92 + 0.08 * Math.cos(2 * Math.PI * (a - 0.625));
         if (!edge && !seam && (col - ci) * ((2 * Math.PI * r) / K) < 2.6) b *= 1.15; // stone edge highlight
-        c = edge ? OUTLINE : seam ? shade(MORTAR, 1, x, y) : shade(RIM_STONES[Math.floor(hash(ci, 3) * 3)], b, x, y);
+        c = edge ? RIM_OUTLINE : seam ? shade(MORTAR, 1, x, y) : shade(RIM_STONES[Math.floor(hash(ci, 3) * 3)], b, x, y);
       } else {
         // Grass around the well in full sun, like the rest of the farm, with
         // tufts and little flowers; the rim casts a thin shadow away from the sun.
@@ -155,41 +133,17 @@ function drawRope(ctx, { cx, cy, R }) {
   }
 }
 
-// Fill a thick line from (x0,y0) to (x1,y1), pixel by pixel, with a dark
-// outline; `color(side)` picks the shade across its width (-1 … 1).
-function limb(ctx, x0, y0, x1, y1, rad, color) {
-  const vx = x1 - x0;
-  const vy = y1 - y0;
-  const len2 = vx * vx + vy * vy;
-  const minX = Math.floor(Math.min(x0, x1) - rad - 1);
-  const maxX = Math.ceil(Math.max(x0, x1) + rad + 1);
-  const minY = Math.floor(Math.min(y0, y1) - rad - 1);
-  const maxY = Math.ceil(Math.max(y0, y1) + rad + 1);
-  for (let y = minY; y <= maxY; y++) {
-    for (let x = minX; x <= maxX; x++) {
-      const t = Math.max(0, Math.min(1, ((x + 0.5 - x0) * vx + (y + 0.5 - y0) * vy) / len2));
-      const px = x + 0.5 - (x0 + vx * t);
-      const py = y + 0.5 - (y0 + vy * t);
-      const dist = Math.hypot(px, py);
-      if (dist > rad) continue;
-      const side = (px * -vy + py * vx) / Math.sqrt(len2) / rad;
-      ctx.fillStyle = dist > rad - 1 ? '#2e1d0c' : color(side);
-      ctx.fillRect(x, y, 1, 1);
-    }
-  }
-}
-
 // His arms reaching in from the bottom corners, hands gripping the near rim.
 function drawHands(ctx, w, h, { cx, cy, R }) {
-  const SK = '#f8c8a0';
-  const SKd = '#d89870';
+  const SK = SKIN;
+  const SKd = SKIN_DK;
   [-1, 1].forEach(side => {
     const hx = cx + side * R * 0.66;
     const hy = cy + R * 1.02;
     const sx = cx + side * R * 1.9;
     const sy = h + R * 0.4;
     // sleeve (in shadow, he's leaning over), then the cuff
-    limb(ctx, sx, sy, hx + side * 2, hy + 12, 13, t => (t * side > 0.4 ? '#982f2a' : t * side < -0.5 ? '#d04c3a' : '#b8402e'));
+    limb(ctx, sx, sy, hx + side * 2, hy + 12, 13, sleeve(side));
     obj(ctx, Math.round(hx - 8), Math.round(hy - 4), 16, 13, r => {
       r(0, 2, 16, 9, SK);
       r(0, 8, 16, 3, SKd);
@@ -221,64 +175,25 @@ function drawHatBrim(ctx, w, { M }) {
   }
 }
 
-export default class WellScene extends Phaser.Scene {
-  constructor() {
-    super({ key: 'Well' });
-  }
-
-  create() {
-    const { width: W, height: H } = this.scale;
-    const s = Math.min(W, H) / ART;
-    const w = Math.ceil(W / s);
-    const h = Math.ceil(H / s);
-    if (this.textures.exists('well-view')) this.textures.remove('well-view');
-    const tex = this.textures.createCanvas('well-view', w, h);
-    drawWellView(tex.getContext(), w, h);
-    tex.refresh();
-    tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
-    this.add.image(0, 0, 'well-view').setOrigin(0);
-    // Nothing but his view: hide page buttons (e.g. Install app) meanwhile.
-    document.body.classList.add('well-view');
-    this.events.once('shutdown', () => document.body.classList.remove('well-view'));
-
-    // Lean in: start slightly zoomed out and settle.
-    const cam = this.cameras.main;
-    cam.setBackgroundColor('#000000').setZoom(s * 0.92).centerOn(w / 2, h / 2).fadeIn(FADE_MS);
-    this.tweens.add({ targets: cam, zoom: s, duration: 900, ease: 'Sine.easeOut' });
-
-    // Now and then a drip sends a ripple across the water.
-    const g = wellGeometry(w, h);
-    const ripples = this.add.graphics();
-    const drip = () => {
-      const ox = (Math.random() - 0.5) * g.rWater * 0.5;
-      const oy = (Math.random() - 0.5) * g.rWater * 0.5;
-      const ring = { r: 0.5, alpha: 0.5 };
-      this.tweens.add({
-        targets: ring,
-        r: g.rWater * 0.75,
-        alpha: 0,
-        duration: 1600,
-        onUpdate: () => {
-          ripples.clear().lineStyle(1, 0x8fb0c8, ring.alpha).strokeCircle(g.cx + ox, g.cy + oy, ring.r);
-        },
-      });
-    };
-    this.time.addEvent({ delay: 2800, startAt: 1800, loop: true, callback: drip });
-
-    // Tap or press any key to stop looking.
-    const done = () => {
-      if (this.leaving) return;
-      this.leaving = true;
-      cam.fadeOut(FADE_MS);
-      cam.once('camerafadeoutcomplete', () => {
-        this.scene.resume('Game');
-        this.scene.stop();
-      });
-    };
-    this.leaving = false;
-    this.time.delayedCall(400, () => {
-      this.input.once('pointerdown', done);
-      this.input.keyboard.once('keydown', done);
+// Now and then a drip sends a ripple across the water.
+function animate(scene, w, h) {
+  const g = wellGeometry(w, h);
+  const ripples = scene.add.graphics();
+  const drip = () => {
+    const ox = (Math.random() - 0.5) * g.rWater * 0.5;
+    const oy = (Math.random() - 0.5) * g.rWater * 0.5;
+    const ring = { r: 0.5, alpha: 0.5 };
+    scene.tweens.add({
+      targets: ring,
+      r: g.rWater * 0.75,
+      alpha: 0,
+      duration: 1600,
+      onUpdate: () => {
+        ripples.clear().lineStyle(1, 0x8fb0c8, ring.alpha).strokeCircle(g.cx + ox, g.cy + oy, ring.r);
+      },
     });
-  }
+  };
+  scene.time.addEvent({ delay: 2800, startAt: 1800, loop: true, callback: drip });
 }
+
+export default { draw, animate };
