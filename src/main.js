@@ -4,7 +4,7 @@ import InteriorScene from './InteriorScene.js';
 import UIScene from './UIScene.js';
 import ViewScene from './ViewScene.js';
 import TalkScene from './TalkScene.js';
-import { setupInstallButton } from './install.js';
+import { setupMenu } from './menu.js';
 import { watchForUpdates } from './updates.js';
 
 const game = new Phaser.Game({
@@ -24,7 +24,7 @@ game.events.once('ready', () => {
   try { sessionStorage.removeItem('farm-walk-recovered'); } catch (e) { /* private mode */ }
 });
 
-setupInstallButton();
+setupMenu();
 watchForUpdates();
 
 // Register the service worker so the game can be installed and played offline.
