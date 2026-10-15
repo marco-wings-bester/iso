@@ -119,10 +119,7 @@ export default class InteriorScene extends Phaser.Scene {
       else this.player.walkTo(x, y);
     });
 
-    this.game.events.emit('location', {
-      name: BUILDINGS[building].name,
-      hint: room.hint ?? 'Walk out the door to leave',
-    });
+    this.game.events.emit('location', { name: BUILDINGS[building].name });
   }
 
   // Take a book off the shelf, turn around and read until the next tap or key.

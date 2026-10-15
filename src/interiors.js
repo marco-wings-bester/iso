@@ -7,7 +7,7 @@ import { obj, rng } from './pixelArt.js';
 //
 // Each room: w/h, back-wall height `wallH`, `door` gap in the bottom wall,
 // `solid` furniture rects (blocked for walking), `draw(ctx)`, and optional
-// `hint` and `spots`: things to tap (area) that the farmer walks to (stand)
+// `spots`: things to tap (area) that the farmer walks to (stand)
 // and uses — `read` at the bookshelf, `sleep` in the bed.
 
 export const WALL = 6; // side/bottom wall thickness
@@ -522,7 +522,6 @@ export const ROOMS = {
   house: {
     w: 144, h: 160, wallH: 44,
     door: { x: 60, w: 24 },
-    hint: 'Tap the shelf to read • the bed to sleep',
     spots: {
       read: {
         area: { x: 110, y: 14, w: 28, h: 40 }, // tap the bookshelf…

@@ -21,6 +21,12 @@ export const BUILDINGS = {
   },
 };
 
+// Wells you can look down: tap `area`, he walks to `stand` and faces `face`.
+export const WELLS = [
+  { area: { x: 98, y: 540, w: 64, h: 92 }, stand: { x: 168, y: 590 }, face: 'left' },   // red-roofed well
+  { area: { x: 458, y: 1060, w: 52, h: 80 }, stand: { x: 452, y: 1092 }, face: 'right' }, // orchard well
+];
+
 export function inRect(x, y, r) {
   return x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
 }

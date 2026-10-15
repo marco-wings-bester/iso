@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { createCharacter } from './CharacterSprite.js';
 import Player from './Player.js';
 import { farmGrid } from './WalkGrid.js';
-import { BUILDINGS, inRect, rectCenter } from './buildings.js';
+import { BUILDINGS, WELLS, inRect, rectCenter } from './buildings.js';
 import { IMG_W, IMG_H, PLAYER_SPEED, DEBUG_PATH } from './constants.js';
 
 const SPAWN = { x: 387, y: 1265 }; // farm gate, image px
@@ -53,10 +53,16 @@ export default class GameScene extends Phaser.Scene {
     this.scale.on('resize', fit);
     this.events.once('shutdown', () => this.scale.off('resize', fit));
 
-    // Tap to walk; tapping a building walks to its door.
+    // Tap to walk; tapping a building walks to its door, tapping a well walks
+    // to it and looks down.
     this.input.on('pointerdown', (pointer) => {
       if (this.leaving) return;
       const { worldX: x, worldY: y } = pointer;
+      const well = WELLS.find(wl => inRect(x, y, wl.area));
+      if (well) {
+        this.player.walkTo(well.stand.x, well.stand.y, () => this.lookDownWell(well));
+        return;
+      }
       const b = Object.values(BUILDINGS).find(bd => inRect(x, y, bd.area));
       const target = b ? rectCenter(b.door) : { x, y };
       this.player.walkTo(target.x, target.y);
@@ -85,6 +91,22 @@ export default class GameScene extends Phaser.Scene {
     const { x, y } = this.player;
     const id = Object.keys(BUILDINGS).find(k => inRect(x, y, BUILDINGS[k].door));
     if (id) this.enter(id);
+  }
+
+  // Lean over the well; the view switches to his eyes looking down it (WellScene).
+  lookDownWell(well) {
+    this.player.face(well.face);
+    this.leaving = true;
+    const cam = this.cameras.main;
+    cam.fadeOut(300);
+    cam.once('camerafadeoutcomplete', () => {
+      this.events.once('resume', () => {
+        this.leaving = false;
+        cam.fadeIn(300);
+      });
+      this.scene.launch('Well');
+      this.scene.pause();
+    });
   }
 
   enter(id) {
