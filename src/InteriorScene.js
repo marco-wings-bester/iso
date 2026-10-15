@@ -5,6 +5,7 @@ import WalkGrid from './WalkGrid.js';
 import { BUILDINGS, inRect } from './buildings.js';
 import { ROOMS, WALL } from './interiors.js';
 import { INTERIOR_SPEED } from './constants.js';
+import { setFlag } from './state.js';
 
 const FADE_MS = 250;
 const BODY = 5; // half the farmer's width in sprite px: keeps him off walls and furniture
@@ -126,6 +127,7 @@ export default class InteriorScene extends Phaser.Scene {
   read() {
     const timer = this.time.delayedCall(450, () => {
       this.bookGap.setVisible(true);
+      setFlag('read');
       this.player.dir = 'down';
       this.player.sprite.play('player-px-read');
     });
@@ -143,6 +145,7 @@ export default class InteriorScene extends Phaser.Scene {
     const timer = this.time.delayedCall(300, () => {
       player.sprite.setVisible(false);
       this.sleeper.setVisible(true);
+      setFlag('slept');
       this.tweens.killTweensOf(this.night);
       this.tweens.add({ targets: this.night, alpha: 0.45, duration: 900 });
       zzz = this.time.addEvent({ delay: 1100, startAt: 900, loop: true, callback: () => this.puffZ() });

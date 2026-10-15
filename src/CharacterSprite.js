@@ -8,7 +8,7 @@ import { OUTLINE, grid, outline, blit } from './pixelArt.js';
 // cols = 4 frames.
 
 const SHADOW = 'rgba(20, 30, 0, 0.28)';
-const PALETTE = {
+const FARMER_PALETTE = {
   H: '#f8d870', h: '#e0b050', j: '#b88038', b: '#a83a2c', // straw hat + band
   S: '#f8c8a0', s: '#d89870', e: OUTLINE,                  // skin, eyes
   R: '#8c5430', r: '#5e3820',                              // hair
@@ -21,7 +21,7 @@ const PALETTE = {
 };
 
 // Head + torso, art rows 1–19 (legs and arms are added per frame).
-const UPPER = {
+const FARMER_UPPER = {
   down: [
     '......hHHh......',
     '.....hHHHHh.....',
@@ -87,13 +87,93 @@ const UPPER = {
   ],
 };
 
+// Bob, the neighbour: tweed flat cap, ginger beard, green shirt, braces and
+// brown trousers. Same body and animations as Farmer Jones, different look.
+const BOB_PALETTE = {
+  ...FARMER_PALETTE,
+  H: '#a89478', h: '#8a7860', j: '#5e5040',               // tweed cap
+  R: '#c8783a', r: '#9a5628',                              // ginger hair and beard
+  C: '#6aa84f', c: '#447a34',                              // green shirt
+  O: '#7a5a3a', o: '#5a4028', k: '#f8d870',                // trousers, braces, buckle
+  d: '#3a2a1a',
+};
+const BOB_UPPER = {
+  down: [
+    '................',
+    '................',
+    '.....hHHHHh.....',
+    '....hHHHHHHh....',
+    '....hhhhhhhhj...',
+    '....jjjjjjjjj...',
+    '....rssssssr....',
+    '....rSSSSSSr....',
+    '....SSeSSeSs....',
+    '....RSSSSSSR....',
+    '....RRSssSRR....',
+    '.....RRRRRR.....',
+    '....COCCCCOc....',
+    '....COCCCCOc....',
+    '....cOCCCCOc....',
+    '....cddkdddc....',
+    '.....OOOOOo.....',
+    '.....OOOOOo.....',
+    '.....oOOOoo.....',
+  ],
+  up: [
+    '................',
+    '................',
+    '.....hHHHHh.....',
+    '....hHHHHHHh....',
+    '....hhhhhhhhh...',
+    '....jhhhhhhhj...',
+    '....rRRRRRRr....',
+    '....rRRRRRRr....',
+    '....sRRRRRRs....',
+    '....rRRRRRRr....',
+    '.....rrrrrr.....',
+    '......ssss......',
+    '....COCCCCOc....',
+    '....CCOCCOCc....',
+    '....cCCOOCCc....',
+    '....cddddddc....',
+    '.....OOOOOo.....',
+    '.....OOOOOo.....',
+    '.....oOOOoo.....',
+  ],
+  left: [
+    '................',
+    '................',
+    '......hHHHHh....',
+    '.....hHHHHHHh...',
+    '...jjhhhhhhhh...',
+    '...jjjjhhhhhj...',
+    '.....sssssrr....',
+    '....SSSSSSRr....',
+    '....SeSSSsRr....',
+    '...RSSSSSRRr....',
+    '...RRRSSRRr.....',
+    '....RRRRRr......',
+    '......COCCc.....',
+    '......COCCc.....',
+    '......CCCCc.....',
+    '......dkddd.....',
+    '......OOOOo.....',
+    '......OOOOo.....',
+    '......oOOoo.....',
+  ],
+};
+
+const FARMER = { palette: FARMER_PALETTE, upper: FARMER_UPPER };
+const BOB = { palette: BOB_PALETTE, upper: BOB_UPPER };
+let look = FARMER; // the character being drawn
+
 // Legs: 6 rows (3 denim + 2 boot + sole), drawn below the torso.
 const LEG = ['OOo', 'OOo', 'ooo', 'BBd', 'BBd', 'ddd'];
 const LEG_TOP = 20;
 
 function put(grid, x, y, ch) {
   if (ch === '.' || y < 0 || y >= FRAME_H || x < 0 || x >= FRAME_W) return;
-  grid[y][x] = PALETTE[ch];
+  grid[y][x] = look.palette[ch];
 }
 
 function stamp(grid, rows, x0, y0) {
@@ -136,7 +216,7 @@ function buildFrame(dir, frame) {
     const liftR = frame === 3 ? 1 : 0;
     leg(g, 5, liftL, null);
     leg(g, 8, liftR, null);
-    stamp(g, UPPER[dir], 0, 1 + bob);
+    stamp(g, look.upper[dir], 0, 1 + bob);
     arm(g, ARM_L, 2, 13 + bob + liftR);
     arm(g, ARM_R, 12, 13 + bob + liftL);
   } else {
@@ -146,7 +226,7 @@ function buildFrame(dir, frame) {
     const legBack = swing === 0 ? null : swing > 0 ? STRIDE_BACK : STRIDE_FWD;
     leg(g, 7, 0, legBack, true);
     leg(g, 6, 0, legFwd);
-    stamp(g, UPPER.left, 0, 1 + bob);
+    stamp(g, look.upper.left, 0, 1 + bob);
     const a = [0, 0, swing, swing, 2 * swing].map(v => -v);
     arm(g, ARM_SIDE, 6, 13 + bob, a);
   }
@@ -157,7 +237,7 @@ function buildFrame(dir, frame) {
 
 // Reading: facing down, eyes lowered, holding an open book at waist height
 // (seen from above, like everything else, so the pages face the camera).
-const READ_HEAD = UPPER.down.map((row, i) => (i === 8 ? '....SSSSSSSs....' : i === 9 ? '....sSeSSeSs....' : row));
+const READ_HEAD = FARMER_UPPER.down.map((row, i) => (i === 8 ? '....SSSSSSSs....' : i === 9 ? '....sSeSSeSs....' : row));
 const BLINK_HEAD = READ_HEAD.map((row, i) => (i === 9 ? '....sSsSSsSs....' : row));
 const BOOK = [
   'KPPPPPpPPPPK',
@@ -191,6 +271,20 @@ function buildReadFrame(frame) {
   return outline(g);
 }
 
+// Waving (facing down): one arm raised, the hand going side to side.
+function buildWaveFrame(frame) {
+  const g = grid(FRAME_W, FRAME_H);
+  leg(g, 5, 0, null);
+  leg(g, 8, 0, null);
+  stamp(g, look.upper.down, 0, 1);
+  arm(g, ARM_L, 2, 13);
+  const dx = frame ? 1 : 0;
+  stamp(g, ['SS', 'Ss'], 13 + dx, 8);
+  stamp(g, ['cc'], 13 + Math.round(dx / 2), 10);
+  stamp(g, ['cc', 'cc', 'c.'], 12, 11);
+  return outline(g);
+}
+
 // Soft pixel shadow under the feet (not outlined)
 const SHADOW_ROWS = [[4, 8], [3, 10], [4, 8]];
 
@@ -206,7 +300,34 @@ export const DIRECTIONS = ['down', 'left', 'right', 'up'];
 // farm, like the map) and 'player-px' at 1 texel per sprite pixel, kept crisp
 // for the zoomed-in interiors. Animations: `${key}-walk-${dir}`, `${key}-idle-${dir}`
 // and `${key}-read`.
+function directionRows(scene, key, ctx, fw, fh, p, cols) {
+  DIRECTIONS.forEach((dir, row) => {
+    for (let frame = 0; frame < cols; frame++) {
+      drawFrame(ctx, frame * fw, row * fh, buildFrame(dir, frame), p);
+      scene.textures.get(key).add(row * cols + frame, 0, frame * fw, row * fh, fw, fh);
+    }
+    const base = row * cols;
+    scene.anims.create({
+      key: `${key}-walk-${dir}`,
+      frames: [0, 1, 2, 3].map(f => ({ key, frame: base + f })),
+      frameRate: 8,
+      repeat: -1,
+    });
+    scene.anims.create({
+      key: `${key}-idle-${dir}`,
+      frames: [{ key, frame: base }],
+      frameRate: 1,
+      repeat: -1,
+    });
+  });
+}
+
+// Farmer Jones. Two copies of the sheet: 'player' at map resolution
+// (smooth-scaled on the farm, like the map) and 'player-px' at 1 texel per
+// sprite pixel, kept crisp when shown big. Animations: `${key}-walk-${dir}`,
+// `${key}-idle-${dir}` and `${key}-read`.
 export function createCharacter(scene) {
+  look = FARMER;
   [['player', ART_PX], ['player-px', 1]].forEach(([key, p]) => {
     if (scene.textures.exists(key)) return;
     const cols = 4; // walk frames
@@ -214,26 +335,7 @@ export function createCharacter(scene) {
     const fh = FRAME_H * p;
     const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 1));
     const ctx = tex.getContext();
-
-    DIRECTIONS.forEach((dir, row) => {
-      for (let frame = 0; frame < cols; frame++) {
-        drawFrame(ctx, frame * fw, row * fh, buildFrame(dir, frame), p);
-        tex.add(row * cols + frame, 0, frame * fw, row * fh, fw, fh);
-      }
-      const base = row * cols;
-      scene.anims.create({
-        key: `${key}-walk-${dir}`,
-        frames: [0, 1, 2, 3].map(f => ({ key, frame: base + f })),
-        frameRate: 8,
-        repeat: -1,
-      });
-      scene.anims.create({
-        key: `${key}-idle-${dir}`,
-        frames: [{ key, frame: base }],
-        frameRate: 1,
-        repeat: -1,
-      });
-    });
+    directionRows(scene, key, ctx, fw, fh, p, cols);
 
     // Reading row: read for a while, turn a page, read, blink, ...
     const readRow = DIRECTIONS.length;
@@ -252,4 +354,31 @@ export function createCharacter(scene) {
     tex.refresh();
     if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   });
+}
+
+// Bob the neighbour: 'bob' (farm) and 'bob-px' (crisp, for close-ups), with
+// the same direction animations plus `${key}-wave`.
+export function createBob(scene) {
+  look = BOB;
+  [['bob', ART_PX], ['bob-px', 1]].forEach(([key, p]) => {
+    if (scene.textures.exists(key)) return;
+    const cols = 4;
+    const fw = FRAME_W * p;
+    const fh = FRAME_H * p;
+    const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 1));
+    const ctx = tex.getContext();
+    directionRows(scene, key, ctx, fw, fh, p, cols);
+
+    const waveRow = DIRECTIONS.length;
+    for (let frame = 0; frame < 2; frame++) {
+      drawFrame(ctx, frame * fw, waveRow * fh, buildWaveFrame(frame), p);
+      tex.add(waveRow * cols + frame, 0, frame * fw, waveRow * fh, fw, fh);
+    }
+    const wf = f => ({ key, frame: waveRow * cols + f });
+    scene.anims.create({ key: `${key}-wave`, frames: [wf(0), wf(1), wf(0), wf(1), wf(0), wf(1)], frameRate: 6, repeat: 0 });
+
+    tex.refresh();
+    if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  });
+  look = FARMER;
 }

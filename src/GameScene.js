@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
 import { createCharacter } from './CharacterSprite.js';
 import { createAmbient } from './ambient.js';
+import { spawnBob, BOB_AREA, BOB_STAND } from './bob.js';
+import { hasFlag, setFlag } from './state.js';
+import { FIRST_MEETING, AGAIN } from './dialogue.js';
 import Player from './Player.js';
 import { farmGrid } from './WalkGrid.js';
 import { BUILDINGS, SPOTS, inRect, rectCenter } from './buildings.js';
@@ -44,6 +47,13 @@ export default class GameScene extends Phaser.Scene {
     });
     this.leaving = false;
 
+    // After a read and a sleep, Bob is waiting at the gate.
+    this.bob = null;
+    if (hasFlag('read') && hasFlag('slept')) {
+      this.bob = spawnBob(this, { showMark: !hasFlag('metBob') });
+      if (from && !hasFlag('metBob')) this.time.delayedCall(600, () => this.game.events.emit('location', { name: 'Someone is at the gate!' }));
+    }
+
     // Keep the map covering the screen if the window size changes.
     const fit = () => {
       const z = coverZoom();
@@ -60,6 +70,10 @@ export default class GameScene extends Phaser.Scene {
     this.input.on('pointerdown', (pointer) => {
       if (this.leaving) return;
       const { worldX: x, worldY: y } = pointer;
+      if (this.bob && inRect(x, y, BOB_AREA)) {
+        this.player.walkTo(BOB_STAND.x, BOB_STAND.y, () => this.talkToBob());
+        return;
+      }
       const spot = SPOTS.find(s => inRect(x, y, s.area));
       if (spot) {
         this.player.walkTo(spot.stand.x, spot.stand.y, () => this.lookAt(spot));
@@ -83,7 +97,7 @@ export default class GameScene extends Phaser.Scene {
       Object.values(BUILDINGS).forEach(b => g.strokeRect(b.door.x, b.door.y, b.door.w, b.door.h));
     }
 
-    this.game.events.emit('location', { name: from ? 'Farm' : null });
+    if (!(from && this.bob && !hasFlag('metBob'))) this.game.events.emit('location', { name: from ? 'Farm' : null });
   }
 
   update(_time, delta) {
@@ -107,6 +121,26 @@ export default class GameScene extends Phaser.Scene {
         cam.fadeIn(300);
       });
       this.scene.launch('View', { view: spot.view });
+      this.scene.pause();
+    });
+  }
+
+  // Close-up of the two of them talking (TalkScene), then back to the farm.
+  talkToBob() {
+    this.player.face('right');
+    this.bob.faceJones();
+    this.leaving = true;
+    const cam = this.cameras.main;
+    cam.fadeOut(300);
+    cam.once('camerafadeoutcomplete', () => {
+      this.events.once('resume', () => {
+        setFlag('metBob');
+        this.bob.hideMark();
+        this.bob.faceFarm();
+        this.leaving = false;
+        cam.fadeIn(300);
+      });
+      this.scene.launch('Talk', { lines: hasFlag('metBob') ? AGAIN : FIRST_MEETING });
       this.scene.pause();
     });
   }
