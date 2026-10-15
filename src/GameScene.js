@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { createCharacter } from './CharacterSprite.js';
+import { createAmbient } from './ambient.js';
 import Player from './Player.js';
 import { farmGrid } from './WalkGrid.js';
 import { BUILDINGS, SPOTS, inRect, rectCenter } from './buildings.js';
@@ -26,6 +27,7 @@ export default class GameScene extends Phaser.Scene {
     const zoom = coverZoom();
 
     this.add.image(0, 0, 'map').setOrigin(0).setDepth(0);
+    createAmbient(this);
     createCharacter(this);
 
     // Coming back out of a building: stand outside its door, facing out.
