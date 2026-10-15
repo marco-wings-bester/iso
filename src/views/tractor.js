@@ -218,14 +218,17 @@ function animate(scene, w, h) {
   const { k, gauges, stack } = geometry(w, h);
   const needles = scene.add.graphics();
   const base = [-2.2, -1.2]; // revs, temperature (radians)
-  scene.events.on('update', (time) => {
+  const draw = (time) => {
     needles.clear().lineStyle(1, 0xd02020, 1);
     gauges.forEach(({ x, y, r }, i) => {
       const a = base[i] + (i === 0 ? Math.sin(time / 90) * 0.05 + (Math.random() - 0.5) * 0.06 : 0);
       needles.lineBetween(x, y, x + Math.cos(a) * r * 0.75, y + Math.sin(a) * r * 0.75);
     });
     needles.fillStyle(0x202020).fillRect(gauges[0].x - 1, gauges[0].y - 1, 2, 2).fillRect(gauges[1].x - 1, gauges[1].y - 1, 2, 2);
-  });
+  };
+  // (the View scene is reused, so drop the listener when it closes)
+  scene.events.on('update', draw);
+  scene.events.once('shutdown', () => scene.events.off('update', draw));
 
   scene.time.addEvent({
     delay: 420,
