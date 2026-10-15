@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import GameScene from './GameScene.js';
 import InteriorScene from './InteriorScene.js';
 import UIScene from './UIScene.js';
+import WellScene from './WellScene.js';
 import { setupInstallButton } from './install.js';
 import { watchForUpdates } from './updates.js';
 
@@ -12,7 +13,7 @@ const game = new Phaser.Game({
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [GameScene, InteriorScene, UIScene],
+  scene: [GameScene, InteriorScene, WellScene, UIScene],
 });
 
 // Hide the "Loading farm…" message from index.html once the farm is up.
