@@ -4,6 +4,11 @@
 //   in-app browsers such as a link opened from a chat app can't install).
 // - Share game: the phone's share sheet with the game's link, or copy the
 //   link where sharing isn't available.
+// - Update game: load the newest version now, or say it's already the latest.
+// - New game: after a confirm, forget the story so far and start again at the
+//   gate (so Bob isn't there yet); `onNewGame` does the restart (main.js).
+
+import { updateNow } from './updates.js';
 
 const isAndroid = /Android/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -41,7 +46,7 @@ function overlay(id, ...content) {
   return o;
 }
 
-export function setupMenu() {
+export function setupMenu({ onNewGame }) {
   // index.html captures the browser's install prompt as early as possible.
   let prompt = window.farmWalkInstallPrompt || null;
   window.addEventListener('farmwalk-installable', () => { prompt = window.farmWalkInstallPrompt; });
@@ -101,6 +106,34 @@ export function setupMenu() {
     input.select();
   }
 
+  async function update(btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Checking…';
+    const result = await updateNow();
+    if (result === 'updating') {
+      btn.textContent = '⏳ Updating…';
+      return;
+    }
+    closeMenu();
+    toast(result === 'latest' ? '✓ You have the latest version' : "Can't check right now — offline?");
+  }
+
+  function confirmNewGame() {
+    closeMenu();
+    const cancel = el('button', { type: 'button', className: 'btn secondary', textContent: 'Cancel' });
+    const start = el('button', { type: 'button', className: 'btn primary', textContent: 'Start over' });
+    const o = overlay('new-game',
+      el('h2', { textContent: 'Start a new game?' }),
+      el('p', { textContent: "Farmer Jones starts again at the farm gate and Bob goes home. Everything done so far is forgotten." }),
+      el('div', { className: 'actions' }, cancel, start));
+    cancel.onclick = () => o.remove();
+    start.onclick = () => {
+      o.remove();
+      onNewGame();
+      toast('🌅 New game started');
+    };
+  }
+
   function showInstallHelp() {
     const steps = el('p');
     const actions = el('div', { className: 'actions' });
@@ -150,8 +183,12 @@ export function setupMenu() {
     installBtn.onclick = install;
     const shareBtn = el('button', { type: 'button', className: 'btn share', textContent: '📤 Share game' });
     shareBtn.onclick = share;
+    const updateBtn = el('button', { type: 'button', className: 'btn update', textContent: '🔄 Update game' });
+    updateBtn.onclick = () => update(updateBtn);
+    const newBtn = el('button', { type: 'button', className: 'btn new', textContent: '🌅 New game' });
+    newBtn.onclick = confirmNewGame;
     const close = el('button', { type: 'button', className: 'btn secondary', textContent: 'Close' });
     close.onclick = closeMenu;
-    menu = overlay('menu', el('h2', { textContent: 'Farm Walk' }), el('div', { className: 'menu-buttons' }, installBtn, shareBtn, close));
+    menu = overlay('menu', el('h2', { textContent: 'Farm Walk' }), el('div', { className: 'menu-buttons' }, installBtn, shareBtn, updateBtn, newBtn, close));
   };
 }

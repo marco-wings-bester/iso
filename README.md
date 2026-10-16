@@ -11,11 +11,13 @@ out over the pond from the end of the jetty, or from the tractor's seat
 
 **Play: https://marco-wings-bester.github.io/iso/**
 
-Open the **☰ menu** (bottom-left) to **Install app** or **Share game** (sends
-the link through the phone's share sheet). Installing on Android needs Chrome;
+Open the **☰ menu** (bottom-left) to **Install app**, **Share game** (sends
+the link through the phone's share sheet), **Update game** (load the newest
+version now) or start a **New game** (back to the farm gate with the story
+reset, so Bob isn't waiting there yet). Installing on Android needs Chrome;
 if the link opened inside another app, the menu offers **Open in Chrome** first.
 
-Open the GitHub Pages site (deployed from `main`). It's an installable app (PWA) that works offline once it's loaded:
+Open the GitHub Pages site (deployed from the default branch, `claude/phaser-character-walk-game-gej34`). It's an installable app (PWA) that works offline once it's loaded:
 
 - **Android (Chrome):** menu ⋮ → *Install app* / *Add to Home screen*
 - **iPhone/iPad (Safari):** Share → *Add to Home Screen*

@@ -5,6 +5,7 @@ import UIScene from './UIScene.js';
 import ViewScene from './ViewScene.js';
 import TalkScene from './TalkScene.js';
 import { setupMenu } from './menu.js';
+import { resetFlags } from './state.js';
 import { watchForUpdates } from './updates.js';
 
 const game = new Phaser.Game({
@@ -24,7 +25,15 @@ game.events.once('ready', () => {
   try { sessionStorage.removeItem('farm-walk-recovered'); } catch (e) { /* private mode */ }
 });
 
-setupMenu();
+// New game (menu): forget the story and start again at the farm gate, from
+// wherever he is (a building, or out on the farm).
+setupMenu({
+  onNewGame() {
+    resetFlags();
+    ['Interior', 'View', 'Talk'].forEach(key => game.scene.stop(key));
+    game.scene.start('Game');
+  },
+});
 watchForUpdates();
 
 // Register the service worker so the game can be installed and played offline.
