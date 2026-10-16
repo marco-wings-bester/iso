@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { obj } from '../pixelArt.js';
-import { BAYER, hash, mix, smooth, shade, pixels, ellipse, rgb, limb, OUTLINE } from './art.js';
+import { BAYER, hash, mix, smooth, shade, pixels, ellipse, rgb, limb, noise, OUTLINE } from './art.js';
 
 // Farmer Jones crouched at the hearth, looking into the fire: the stone
 // fireplace from his room (mantel beam with its candle and jug), the sooty
@@ -229,18 +229,6 @@ function drawFront(ctx, g) {
     });
     ellipse(ctx, x, back - 5 * k, 2.5 * k, 2.5 * k, (u, v) => (Math.hypot(u, v) > 0.75 ? OUTLINE : u < -0.2 && v < -0.2 ? [140, 140, 150] : [70, 70, 78]));
   });
-}
-
-// Smooth value noise, repeating every `py` cells in y (so the flames loop).
-function noise(x, y, py) {
-  const xi = Math.floor(x);
-  const yi = Math.floor(y);
-  const sx = smooth(0, 1, x - xi);
-  const sy = smooth(0, 1, y - yi);
-  const n = (a, b) => hash(a, ((b % py) + py) % py);
-  const t = n(xi, yi) + (n(xi + 1, yi) - n(xi, yi)) * sx;
-  const b = n(xi, yi + 1) + (n(xi + 1, yi + 1) - n(xi, yi + 1)) * sx;
-  return t + (b - t) * sy;
 }
 
 // NF frames of flames, FW × FH each, side by side: tongues of hot colour

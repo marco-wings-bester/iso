@@ -1,5 +1,6 @@
-// Shared helpers for the first-person views (well, pond, tractor, fire): drawn as
-// pixel art at ~160px on the short side, with dithered, posterised shading.
+// Shared helpers for the first-person views (well, pond, tractor, fire, apple
+// tree): drawn as pixel art at ~160px on the short side, with dithered,
+// posterised shading.
 
 export const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + 0.5) / 16 - 0.5);
 
@@ -88,4 +89,17 @@ export function ellipse(ctx, cx, cy, rx, ry, color) {
       ctx.fillRect(x, y, 1, 1);
     }
   }
+}
+
+// Smooth value noise; with `py`, it repeats every `py` cells in y (so
+// animation frames can loop).
+export function noise(x, y, py = 0) {
+  const xi = Math.floor(x);
+  const yi = Math.floor(y);
+  const sx = smooth(0, 1, x - xi);
+  const sy = smooth(0, 1, y - yi);
+  const n = (a, b) => hash(a, py ? ((b % py) + py) % py : b);
+  const t = n(xi, yi) + (n(xi + 1, yi) - n(xi, yi)) * sx;
+  const b = n(xi, yi + 1) + (n(xi + 1, yi + 1) - n(xi, yi + 1)) * sx;
+  return t + (b - t) * sy;
 }

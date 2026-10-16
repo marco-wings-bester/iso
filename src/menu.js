@@ -5,10 +5,13 @@
 // - Share game: the phone's share sheet with the game's link, or copy the
 //   link where sharing isn't available.
 // - Update game: load the newest version now, or say it's already the latest.
+// - Hints: how much Farmer Jones lets on about what to do next (None /
+//   Subtle / Explicit; src/settings.js, src/hints.js).
 // - New game: after a confirm, forget the story so far and start again at the
 //   gate (so Bob isn't there yet); `onNewGame` does the restart (main.js).
 
 import { updateNow } from './updates.js';
+import { getSetting, setSetting } from './settings.js';
 
 const isAndroid = /Android/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -187,8 +190,19 @@ export function setupMenu({ onNewGame }) {
     updateBtn.onclick = () => update(updateBtn);
     const newBtn = el('button', { type: 'button', className: 'btn new', textContent: '🌅 New game' });
     newBtn.onclick = confirmNewGame;
+    const seg = el('div', { className: 'seg' });
+    [['none', 'None'], ['subtle', 'Subtle'], ['explicit', 'Explicit']].forEach(([value, label]) => {
+      const b = el('button', { type: 'button', textContent: label });
+      b.setAttribute('aria-pressed', String(getSetting('hints') === value));
+      b.onclick = () => {
+        setSetting('hints', value);
+        seg.querySelectorAll('button').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+      };
+      seg.append(b);
+    });
+    const hints = el('div', { className: 'hints' }, el('span', { textContent: '💡 Hints' }), seg);
     const close = el('button', { type: 'button', className: 'btn secondary', textContent: 'Close' });
     close.onclick = closeMenu;
-    menu = overlay('menu', el('h2', { textContent: 'Farm Walk' }), el('div', { className: 'menu-buttons' }, installBtn, shareBtn, updateBtn, newBtn, close));
+    menu = overlay('menu', el('h2', { textContent: 'Farm Walk' }), el('div', { className: 'menu-buttons' }, installBtn, shareBtn, updateBtn, newBtn, hints, close));
   };
 }

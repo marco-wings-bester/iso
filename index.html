@@ -134,6 +134,11 @@
     .btn.update { background: #3a6ea5; color: #fff; border: 2px solid #2c5684; }
     .btn.new { background: #f8d870; color: #2e1d0c; border: 2px solid #c8a440; }
     .btn.secondary { background: transparent; color: #2e1d0c; border: 2px solid #2e1d0c; }
+    .hints { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: bold 15px sans-serif; }
+    .seg { display: flex; border: 2px solid #2e1d0c; border-radius: 9px; overflow: hidden; }
+    .seg button { padding: 8px 9px; border: 0; border-left: 2px solid #2e1d0c; background: transparent; color: #2e1d0c; font: bold 14px sans-serif; }
+    .seg button:first-child { border-left: 0; }
+    .seg button[aria-pressed="true"] { background: #2e1d0c; color: #f8d870; }
     .btn:disabled { background: #d8ccb8; color: #6b5a44; border-color: #b8a88e; }
     .link { width: 100%; box-sizing: border-box; margin: 0 0 14px; padding: 10px; font: 14px monospace; border: 2px solid #2e1d0c; border-radius: 8px; }
   </style>
