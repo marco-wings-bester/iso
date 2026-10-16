@@ -27,12 +27,29 @@ const LINES = {
   },
   bedEarly: {
     none: "I'm not sleepy yet.",
-    subtle: () => (hasFlag('read') ? "I'm not sleepy yet. I fancy baking something." : "I'm not sleepy yet. Maybe I'll read a book."),
+    subtle: () => {
+      if (!hasFlag('read')) return "I'm not sleepy yet. Maybe I'll read a book.";
+      if (!hasFlag('baked')) return "I'm not sleepy yet. I fancy baking something.";
+      return "I'm not sleepy yet. That pie smells good…";
+    },
     explicit: () => {
       if (!hasFlag('read')) return 'Not sleepy yet. First, read the recipe book on the bookshelf.';
       if (!hasFlag('apple')) return 'Not sleepy yet. First I need an apple for the pie.';
-      return 'Not sleepy yet. Bake the pie at the kitchen cupboard first.';
+      if (!hasFlag('baked')) return 'Not sleepy yet. Bake the pie at the kitchen cupboard first.';
+      return 'Not sleepy yet. Have some of the pie first: tap it on the table.';
     },
+  },
+  // just baked: the pie's on the table
+  baked: {
+    none: 'There! It smells delicious.',
+    subtle: 'There! It smells delicious… maybe just a slice.',
+    explicit: "There! Now I'll have some: tap the pie on the table.",
+  },
+  // after eating half the pie
+  full: {
+    none: "Mmm… I'm full. Now I'm sleepy.",
+    subtle: "Mmm… I'm full. Now I'm sleepy.",
+    explicit: "Mmm… I'm full. Now I'm sleepy: time for bed.",
   },
   tooHigh: {
     none: "Too high. I can't reach.",

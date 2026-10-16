@@ -357,7 +357,8 @@ function directionRows(scene, key, ctx, fw, fh, p, cols) {
 // Farmer Jones. Two copies of the sheet: 'player' at map resolution
 // (smooth-scaled on the farm, like the map) and 'player-px' at 1 texel per
 // sprite pixel, kept crisp when shown big. Animations: `${key}-walk-${dir}`,
-// `${key}-idle-${dir}` and `${key}-read`.
+// `${key}-idle-${dir}`, `${key}-read`, and seated at the table `${key}-eat`
+// and `${key}-full`.
 export function createCharacter(scene) {
   look = FARMER;
   [['player', ART_PX], ['player-px', 1]].forEach(([key, p]) => {
@@ -365,7 +366,7 @@ export function createCharacter(scene) {
     const cols = 4; // walk frames
     const fw = FRAME_W * p;
     const fh = FRAME_H * p;
-    const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 1));
+    const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 3));
     const ctx = tex.getContext();
     directionRows(scene, key, ctx, fw, fh, p, cols);
 
@@ -382,16 +383,42 @@ export function createCharacter(scene) {
       frameRate: 10,
       repeat: -1,
     });
+    seatRows(scene, key, tex, ctx, readRow + 1, fw, fh, p, cols);
 
     tex.refresh();
     if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   });
 }
 
-// Bob the neighbour: 'bob' (farm) and 'bob-px' (crisp, for close-ups), with
-// the same direction animations plus `${key}-wave`, and at the table
-// `${key}-eat` (one bite of pie per loop) and `${key}-full`.
+// Seated at the table (two rows of the sheet from `row`): frames
+// `seat-${kind}` and animations `${key}-eat` (one bite of pie per loop) and
+// `${key}-full`. No shadow: the feet are under the table.
 const SEAT_KINDS = ['down', 'up', 'chew', 'full', 'pat'];
+
+function seatRows(scene, key, tex, ctx, row, fw, fh, p, cols) {
+  SEAT_KINDS.forEach((kind, i) => {
+    const x = (i % cols) * fw;
+    const y = (row + Math.floor(i / cols)) * fh;
+    blit(ctx, buildSeatFrame(kind), x, y, p);
+    tex.add(`seat-${kind}`, 0, x, y, fw, fh);
+  });
+  const sf = (kind, duration) => ({ key, frame: `seat-${kind}`, duration }); // ms on screen
+  scene.anims.create({
+    key: `${key}-eat`,
+    frames: [sf('down', 600), sf('up', 500), sf('chew', 160), sf('down', 160), sf('chew', 160), sf('down', 160), sf('chew', 160)],
+    frameRate: 10,
+    repeat: -1,
+  });
+  scene.anims.create({
+    key: `${key}-full`,
+    frames: [sf('full', 2200), sf('pat', 160), sf('full', 160), sf('pat', 160), sf('full', 1400)],
+    frameRate: 10,
+    repeat: -1,
+  });
+}
+
+// Bob the neighbour: 'bob' (farm) and 'bob-px' (crisp, for close-ups), with
+// the same direction animations plus `${key}-wave`, and the seated ones.
 
 export function createBob(scene) {
   look = BOB;
@@ -412,26 +439,7 @@ export function createBob(scene) {
     const wf = f => ({ key, frame: waveRow * cols + f });
     scene.anims.create({ key: `${key}-wave`, frames: [wf(0), wf(1), wf(0), wf(1), wf(0), wf(1)], frameRate: 6, repeat: 0 });
 
-    // Seated frames (no shadow: his feet are under the table), two rows on.
-    SEAT_KINDS.forEach((kind, i) => {
-      const x = (i % cols) * fw;
-      const y = (waveRow + 1 + Math.floor(i / cols)) * fh;
-      blit(ctx, buildSeatFrame(kind), x, y, p);
-      tex.add(`seat-${kind}`, 0, x, y, fw, fh);
-    });
-    const sf = (kind, duration) => ({ key, frame: `seat-${kind}`, duration }); // ms on screen
-    scene.anims.create({
-      key: `${key}-eat`,
-      frames: [sf('down', 600), sf('up', 500), sf('chew', 160), sf('down', 160), sf('chew', 160), sf('down', 160), sf('chew', 160)],
-      frameRate: 10,
-      repeat: -1,
-    });
-    scene.anims.create({
-      key: `${key}-full`,
-      frames: [sf('full', 2200), sf('pat', 160), sf('full', 160), sf('pat', 160), sf('full', 1400)],
-      frameRate: 10,
-      repeat: -1,
-    });
+    seatRows(scene, key, tex, ctx, waveRow + 1, fw, fh, p, cols);
 
     tex.refresh();
     if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);

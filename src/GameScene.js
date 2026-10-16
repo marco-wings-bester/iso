@@ -50,7 +50,7 @@ export default class GameScene extends Phaser.Scene {
     // After a read and a sleep, Bob is waiting at the gate (until he's been
     // given the pie: then he's in the farmhouse eating it).
     this.bob = null;
-    if (hasFlag('baked') && hasFlag('slept') && !hasFlag('gavePie')) {
+    if (hasFlag('ate') && hasFlag('slept') && !hasFlag('gavePie')) {
       this.bob = spawnBob(this, { showMark: !hasFlag('metBob') });
       if (from && !hasFlag('metBob')) this.time.delayedCall(600, () => this.game.events.emit('location', { name: 'Someone is at the gate!' }));
     }

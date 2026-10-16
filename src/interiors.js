@@ -9,7 +9,7 @@ import { obj, rng } from './pixelArt.js';
 // `solid` furniture rects (blocked for walking), `draw(ctx)`, and optional
 // `spots`: things to tap (area) that the farmer walks to (stand)
 // and uses — `read` the recipe book at the bookshelf, `cook` at the kitchen
-// cupboard (bakes the pie), `sleep` in the bed, `fire`: look into the
+// cupboard (bakes the pie), `eat` half the pie, `sleep` in the bed, `fire`: look into the
 // fireplace (a first-person view), `picker`: take the apple picker (tool
 // shed; its `prop` is drawn apart from the room so it can go). The farmhouse's `kitchen` has the places
 // and overlays the baking uses (src/baking.js).
@@ -638,6 +638,10 @@ export const ROOMS = {
         area: { x: 110, y: 14, w: 28, h: 40 }, // tap the bookshelf…
         stand: { x: 124, y: 57 },              // …to walk here and read the recipe book
       },
+      eat: {
+        area: { x: 90, y: 90, w: 20, h: 16 },  // tap the pie on the table, once baked…
+        stand: { x: 86, y: 88 },               // …to sit behind the table and have half
+      },
       cook: {
         area: { x: 6, y: 6, w: 20, h: 48 },    // tap the kitchen cupboard…
         stand: { x: 29, y: 57 },               // …to walk beside it (and bake, once he's read the recipe)
@@ -657,7 +661,9 @@ export const ROOMS = {
       // he stands beside the cupboard and the stove, facing them, so they show
       cupboard: { stand: { x: 29, y: 57 }, open: { x: 4, y: 32, w: 24, h: 16, draw: ctx => dresserOpen(ctx, 4, -24) } },
       stove: { stand: { x: 47, y: 57 }, open: { x: 26, y: 34, w: 14, h: 16, draw: ctx => ovenOpen(ctx, 0, -12) }, vent: { x: 29, y: 31, w: 8, h: 1 } },
-      table: { stand: { x: 86, y: 88 }, bowl: { x: 84, y: 94 }, pie: { x: 94, y: 95 } }, // behind the table, facing out
+      // he works behind the table (stand), facing out; the chair behind it (seat:
+      // middle of the table's back edge) is where the pie gets eaten
+      table: { stand: { x: 86, y: 88 }, bowl: { x: 84, y: 94 }, pie: { x: 94, y: 95 }, seat: { x: 100, y: 91 } },
     },
     solid: [
       { x: 8, y: 20, w: 16, h: 30 },   // kitchen dresser
