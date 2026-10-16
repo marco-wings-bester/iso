@@ -8,7 +8,8 @@ import { obj, rng } from './pixelArt.js';
 // Each room: w/h, back-wall height `wallH`, `door` gap in the bottom wall,
 // `solid` furniture rects (blocked for walking), `draw(ctx)`, and optional
 // `spots`: things to tap (area) that the farmer walks to (stand)
-// and uses — `read` at the bookshelf, `sleep` in the bed.
+// and uses — `read` at the bookshelf, `sleep` in the bed, `fire`: look into
+// the fireplace (a first-person view).
 
 export const WALL = 6; // side/bottom wall thickness
 
@@ -555,6 +556,10 @@ export const ROOMS = {
         stand: { x: 46, y: 70 },               // …to walk beside it and get in
         overlay: { x: 6, y: 26, w: 38, h: 52, draw: ctx => sleeper(ctx, 4, 8) },
         zzz: { x: 28, y: 44 },
+      },
+      fire: {
+        area: { x: 64, y: 4, w: 40, h: 48 }, // tap the fireplace…
+        stand: { x: 84, y: 55 },             // …to crouch at the hearth and look in
       },
     },
     solid: [

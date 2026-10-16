@@ -1,4 +1,4 @@
-// Shared helpers for the first-person views (well, pond, tractor): drawn as
+// Shared helpers for the first-person views (well, pond, tractor, fire): drawn as
 // pixel art at ~160px on the short side, with dithered, posterised shading.
 
 export const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + 0.5) / 16 - 0.5);
@@ -51,7 +51,8 @@ export const FLOWERS = [[248, 240, 220], [248, 216, 112], [200, 160, 230]];
 export const OUTLINE = '#2e1d0c';
 
 // Fill a thick line from (x0,y0) to (x1,y1), pixel by pixel, with a dark
-// outline; `color(side)` picks the shade across its width (-1 … 1).
+// outline; `color(side, t, x, y)` picks the shade across its width (side,
+// -1 … 1), along it (t, 0 … 1) or by pixel.
 export function limb(ctx, x0, y0, x1, y1, rad, color) {
   const vx = x1 - x0;
   const vy = y1 - y0;
@@ -68,7 +69,7 @@ export function limb(ctx, x0, y0, x1, y1, rad, color) {
       const dist = Math.hypot(px, py);
       if (dist > rad) continue;
       const side = (px * -vy + py * vx) / Math.sqrt(len2) / rad;
-      ctx.fillStyle = dist > rad - 1 ? OUTLINE : color(side);
+      ctx.fillStyle = dist > rad - 1 ? OUTLINE : color(side, t, x, y);
       ctx.fillRect(x, y, 1, 1);
     }
   }

@@ -4,8 +4,8 @@ A small Phaser 3 game: walk around a farm with the arrow keys / WASD, or tap whe
 Walk into the farmhouse, barn or tool shed (or tap one) to go inside, where
 everything is shown about 3x bigger; walk out the door to leave. Tap a well, the
 pond or a tractor and he walks over and you see what he sees: down the well,
-out over the pond from the end of the jetty, or from the tractor's seat
-(`src/views/`).
+out over the pond from the end of the jetty, or from the tractor's seat. In
+the farmhouse, tap the fireplace to look into the fire (`src/views/`).
 
 ## Play / install
 

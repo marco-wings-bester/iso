@@ -109,14 +109,15 @@ export default class InteriorScene extends Phaser.Scene {
     }
 
     // Tap to walk; tapping the doorway or below the room walks out; tapping
-    // a spot (bookshelf, bed) walks there and uses it.
+    // a spot (bookshelf, bed, fireplace) walks there and uses it.
     this.input.on('pointerdown', (pointer) => {
       if (this.leaving) return;
       const { worldX: x, worldY: y } = pointer;
       const spot = Object.entries(spots).find(([, s]) => inRect(x, y, s.area));
       if (spot) {
         const [id, s] = spot;
-        this.player.walkTo(s.stand.x, s.stand.y, () => (id === 'read' ? this.read() : this.sleep()));
+        const use = { read: () => this.read(), sleep: () => this.sleep(), fire: () => this.lookAtFire() }[id];
+        this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
       else this.player.walkTo(x, y);
     });
@@ -147,6 +148,22 @@ export default class InteriorScene extends Phaser.Scene {
     this.player.act('player-px-idle-up', () => {
       timer.remove();
       this.bookGap.setVisible(false);
+    });
+  }
+
+  // Look into the fire: his view of it (ViewScene), then back in the room.
+  lookAtFire() {
+    this.player.face('up');
+    this.leaving = true;
+    const cam = this.cameras.main;
+    cam.fadeOut(300);
+    cam.once('camerafadeoutcomplete', () => {
+      this.events.once('resume', () => {
+        this.leaving = false;
+        cam.fadeIn(300);
+      });
+      this.scene.launch('View', { view: 'fire', from: 'Interior' });
+      this.scene.pause();
     });
   }
 
