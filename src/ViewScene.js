@@ -2,12 +2,14 @@ import Phaser from 'phaser';
 import well from './views/well.js';
 import pond from './views/pond.js';
 import tractor from './views/tractor.js';
+import fire from './views/fire.js';
 
 // First-person views: what Farmer Jones sees down a well, out over the pond
-// from the jetty, or from the tractor's seat. Each view draws a pixel-art
+// from the jetty, from the tractor's seat, or into the fire at home. Each view draws a pixel-art
 // picture (160px on the short side, scaled up crisp) and may animate it.
-// Tap or any key returns to the farm.
-const VIEWS = { well, pond, tractor };
+// Tap or any key returns to the scene it came from (`from`: the farm, or the
+// farmhouse for the fire).
+const VIEWS = { well, pond, tractor, fire };
 const ART = 160;
 const FADE_MS = 300;
 
@@ -16,7 +18,7 @@ export default class ViewScene extends Phaser.Scene {
     super({ key: 'View' });
   }
 
-  create({ view }) {
+  create({ view, from = 'Game' }) {
     const v = VIEWS[view];
     const { width: W, height: H } = this.scale;
     const s = Math.min(W, H) / ART;
@@ -46,7 +48,7 @@ export default class ViewScene extends Phaser.Scene {
       this.leaving = true;
       cam.fadeOut(FADE_MS);
       cam.once('camerafadeoutcomplete', () => {
-        this.scene.resume('Game');
+        this.scene.resume(from);
         this.scene.stop();
       });
     };
