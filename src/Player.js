@@ -12,6 +12,7 @@ export default class Player {
     this.route = [];
     this.onArrive = null;
     this.action = null;
+    this.locked = false; // ignore the keyboard (while a scene walks him about)
 
     this.sprite = scene.add
       .sprite(x, y, texture, 0)
@@ -66,7 +67,7 @@ export default class Player {
     let vx = 0;
     let vy = 0;
 
-    const kbActive = [k.left, k.right, k.up, k.down, k.a, k.d, k.w, k.s].some(key => key.isDown);
+    const kbActive = !this.locked && [k.left, k.right, k.up, k.down, k.a, k.d, k.w, k.s].some(key => key.isDown);
     if (this.action) {
       if (!kbActive) return;
       this._endAction();

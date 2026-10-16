@@ -7,6 +7,10 @@ pond or a tractor and he walks over and you see what he sees: down the well,
 out over the pond from the end of the jetty, or from the tractor's seat. In
 the farmhouse, tap the fireplace to look into the fire (`src/views/`).
 
+The story, in the farmhouse: read the recipe book (bookshelf), bake a pie
+(kitchen cupboard; `src/baking.js`), then go to sleep, and Bob turns up at
+the farm gate. Doing things out of order gets a hint from Farmer Jones.
+
 ## Play / install
 
 **Play: https://marco-wings-bester.github.io/iso/**

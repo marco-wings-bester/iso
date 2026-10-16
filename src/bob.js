@@ -1,12 +1,12 @@
-import Phaser from 'phaser';
 import { FRAME_H, FEET_Y } from './constants.js';
 import { createBob, SEAT_ROW } from './CharacterSprite.js';
 import { grid, rect, outline, blit } from './pixelArt.js';
-import { piePlate } from './interiors.js';
+import { pieTexture } from './interiors.js';
 import { hasFlag, setFlag } from './state.js';
 import { ART_PX } from './constants.js';
 
-// Bob, waiting at the farm gate once Farmer Jones has read and slept. He waves
+// Bob, waiting at the farm gate once Farmer Jones has read the recipe book,
+// baked the pie and slept. He waves
 // now and then; a "!" bobs over his head until they've talked. Once he's
 // offered the pie he walks off to the farmhouse (walkInto) and eats it at the
 // table (seatBob).
@@ -102,17 +102,10 @@ const BITES_PER_STAGE = 3;
 
 export function seatBob(scene) {
   createBob(scene);
-  PIE_LEFT.forEach((left, i) => {
-    if (scene.textures.exists(`pie-${i}`)) return;
-    const tex = scene.textures.createCanvas(`pie-${i}`, 12, 8);
-    piePlate(tex.getContext(), 1, 1, left);
-    tex.refresh();
-    tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
-  });
 
   const last = PIE_LEFT.length - 1;
   let stage = hasFlag('pieEaten') ? last : 0;
-  const pie = scene.add.image(PIE.x, PIE.y, `pie-${stage}`).setOrigin(0).setDepth(0.45);
+  const pie = scene.add.image(PIE.x, PIE.y, pieTexture(scene, PIE_LEFT[stage])).setOrigin(0).setDepth(0.45);
   const bob = scene.add.sprite(SEAT.x, SEAT.y, 'bob-px').setDepth(SEAT.y);
   const sit = (anim) => bob.setOrigin(0.5, SEAT_ROW / FRAME_H).setPosition(SEAT.x, SEAT.y).play(anim);
 
@@ -121,7 +114,7 @@ export function seatBob(scene) {
   bob.on('animationupdate', (anim, frame) => {
     if (anim.key !== 'bob-px-eat' || frame.textureFrame !== 'seat-up') return;
     bites++;
-    if (bites % BITES_PER_STAGE === 0 && stage < last) pie.setTexture(`pie-${++stage}`);
+    if (bites % BITES_PER_STAGE === 0 && stage < last) pie.setTexture(pieTexture(scene, PIE_LEFT[++stage]));
   });
   bob.on('animationrepeat', (anim) => {
     if (anim.key !== 'bob-px-eat' || stage < last) return;

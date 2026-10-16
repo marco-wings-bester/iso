@@ -22,7 +22,7 @@ export const FIRST_MEETING = [
     ] },
   ] },
   { choose: [
-    { say: "There's one on the kitchen table. It's yours!", flag: 'gavePie', then: [
+    { say: "I baked one last night. It's on the kitchen table!", flag: 'gavePie', then: [
       ['bob', 'Yummy!'],
     ] },
     { say: 'A whole pie? For waving your cap about?', then: [
