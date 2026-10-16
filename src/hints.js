@@ -6,6 +6,18 @@ import { hasFlag } from './state.js';
 // reaction, 'subtle' a nudge, 'explicit' says what to do next. A line can
 // depend on how far the story has got; null means he thinks nothing.
 const LINES = {
+  // the farmhouse door, before he has his key back from the tractor
+  doorLocked: {
+    none: 'Locked.',
+    subtle: 'Locked! Where did I leave my key…? I was out on the tractor all day.',
+    explicit: 'Locked! I left my key in the tractor: tap the tractor and take it.',
+  },
+  // sitting in the tractor while the key's still in the ignition
+  tractorKey: {
+    none: null,
+    subtle: "Hmm… what's that dangling by the wheel?",
+    explicit: "There's my house key! Tap it to take it.",
+  },
   idea: {
     none: 'Apple pie… I could bake that!',
     subtle: "Apple pie… I could bake that! I'll need an apple.",

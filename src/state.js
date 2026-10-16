@@ -1,6 +1,7 @@
 // Story progress, kept in localStorage so it survives reloads and app
 // updates; falls back to memory if storage is blocked. A new game (menu)
-// forgets it all. The story so far: read the recipe book ('read'); fetch the
+// forgets it all. The story so far: find the house key in the tractor ('key',
+// the farmhouse is locked without it); read the recipe book ('read'); fetch the
 // apple picker from the tool shed ('picker') and pick an apple ('apple'); bake
 // the pie ('baked') → eat half of it ('ate') → sleep ('slept') → Bob at the
 // gate ('metBob', 'gavePie', …), who eats the other half.
@@ -10,6 +11,7 @@ let flags = {};
 try {
   localStorage.removeItem('farm-walk-story');
   flags = JSON.parse(localStorage.getItem(KEY)) || {};
+  if (flags.read) flags.key = true; // saved before the key was part of the story: he's been inside
 } catch {
   flags = {};
 }

@@ -7,7 +7,9 @@ pond or a tractor and he walks over and you see what he sees: down the well,
 out over the pond from the end of the jetty, or from the tractor's seat. In
 the farmhouse, tap the fireplace to look into the fire (`src/views/`).
 
-The story: read the recipe book (farmhouse bookshelf); fetch the apple picker
+The story: the farmhouse is locked, so first find the house key (Farmer Jones
+left it in the tractor: tap the tractor, then the key); read the recipe book
+(farmhouse bookshelf); fetch the apple picker
 from the tool shed and pick an apple (tap an apple tree, then an apple); bake
 the pie (kitchen cupboard; `src/baking.js`) and eat half of it (tap it on the
 table), which makes Farmer Jones sleepy; go to sleep, and Bob turns up at the
