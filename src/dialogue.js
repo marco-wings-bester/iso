@@ -1,6 +1,7 @@
 // What Farmer Jones and Bob say when they meet at the gate. A line is
-// [who, text]; at a { choose } you pick which of two replies Jones says, and
-// `then` is how Bob answers that reply before the talk goes on.
+// [who, text]; at a { choose } you pick which of two replies Jones says (the
+// pick is his answer, it isn't shown again), and `then` is how Bob answers
+// that reply before the talk goes on.
 export const FIRST_MEETING = [
   ['bob', 'Morning, Jones! Finally up, are we?'],
   { choose: [

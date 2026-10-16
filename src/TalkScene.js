@@ -8,7 +8,8 @@ import { band, hash, pixels, ellipse } from './views/art.js';
 // a screen-resolution layer on top so the words stay sharp. Lines type out;
 // tap to finish a line or go to the next; after the last, back to the farm.
 // Where Jones has something to say you pick one of two replies (tap, or keys
-// 1/2, or arrows + Enter). The ✕ (or Esc) leaves the talk at any time.
+// 1/2, or arrows + Enter) and Bob answers it straight away; the reply isn't
+// shown again in a bubble. The ✕ (or Esc) leaves the talk at any time.
 
 const FADE_MS = 300;
 const SPEAKERS = {
@@ -173,12 +174,13 @@ export default class TalkScene extends Phaser.Scene {
     else this.say(...step);
   }
 
-  // Jones says the reply you picked, then Bob answers it.
+  // Bob answers the reply you picked.
   pick(i) {
     const choice = this.choices[i];
     this.choices = null;
     this.queue.unshift(...(choice.then ?? []));
-    this.say('jones', choice.say);
+    if (this.queue.length) this.next();
+    else this.finish();
   }
 
   say(who, text) {
