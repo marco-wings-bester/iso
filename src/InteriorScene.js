@@ -3,10 +3,12 @@ import { createCharacter } from './CharacterSprite.js';
 import Player from './Player.js';
 import WalkGrid from './WalkGrid.js';
 import { BUILDINGS, inRect } from './buildings.js';
-import { ROOMS, WALL } from './interiors.js';
+import { ROOMS, WALL, pieTexture } from './interiors.js';
 import { INTERIOR_SPEED } from './constants.js';
 import { hasFlag, setFlag } from './state.js';
 import { seatBob } from './bob.js';
+import { bakePie } from './baking.js';
+import { think } from './bubble.js';
 
 const FADE_MS = 250;
 const BODY = 5; // half the farmer's width in sprite px: keeps him off walls and furniture
@@ -72,6 +74,8 @@ export default class InteriorScene extends Phaser.Scene {
     });
     this.exitY = room.h - 3;
     this.leaving = false;
+    this.busy = false;  // baking: taps and keys are ignored
+    this.carry = null;  // what he's carrying (follows him)
 
     // Fixed camera: the whole room fills the screen (~3x on a phone, so the
     // farmer is ~2.5x his farm size) and stays put while he walks around.
@@ -109,22 +113,28 @@ export default class InteriorScene extends Phaser.Scene {
     }
 
     // Tap to walk; tapping the doorway or below the room walks out; tapping
-    // a spot (bookshelf, bed, fireplace) walks there and uses it.
+    // a spot (bookshelf, cupboard, bed, fireplace) walks there and uses it.
     this.input.on('pointerdown', (pointer) => {
-      if (this.leaving) return;
+      if (this.leaving || this.busy) return;
       const { worldX: x, worldY: y } = pointer;
       const spot = Object.entries(spots).find(([, s]) => inRect(x, y, s.area));
       if (spot) {
         const [id, s] = spot;
-        const use = { read: () => this.read(), sleep: () => this.sleep(), fire: () => this.lookAtFire() }[id];
+        const use = {
+          read: () => this.read(), cook: () => this.useCupboard(), sleep: () => this.tryToSleep(), fire: () => this.lookAtFire(),
+        }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
       else this.player.walkTo(x, y);
     });
 
-    // Given the pie, Bob is at the farmhouse table eating it. The night
-    // overlay is under him, so he's dimmed by hand while Jones sleeps.
-    this.bob = building === 'house' && hasFlag('gavePie') ? seatBob(this) : null;
+    // Once baked, the pie is on the table; given it, Bob is there eating it.
+    // The night overlay is under Bob, so he's dimmed by hand while Jones sleeps.
+    const house = building === 'house';
+    if (house && hasFlag('baked') && !hasFlag('gavePie')) {
+      this.add.image(room.kitchen.table.pie.x, room.kitchen.table.pie.y, pieTexture(this)).setOrigin(0).setDepth(0.45);
+    }
+    this.bob = house && hasFlag('gavePie') ? seatBob(this) : null;
 
     this.game.events.emit('location', { name: BUILDINGS[building].name });
   }
@@ -136,8 +146,28 @@ export default class InteriorScene extends Phaser.Scene {
     this.bob.setTint(Phaser.Display.Color.GetColor(255 * (1 - a), 255 * (1 - a), 255 * (1 - a * 0.8)));
   }
 
-  // Take a book off the shelf, turn around and read until the next tap or key.
+  think(text) {
+    return think(this, this.player.sprite, text);
+  }
+
+  // The kitchen cupboard: bake the pie, once he's read the recipe.
+  useCupboard() {
+    this.player.face('left');
+    if (!hasFlag('read')) this.think("I don't know any recipes… maybe a book would help.");
+    else if (hasFlag('baked')) this.think(hasFlag('gavePie') ? 'Bob has the pie now.' : "I've already baked a pie.");
+    else bakePie(this);
+  }
+
+  // Bed: only once the pie is made.
+  tryToSleep() {
+    if (hasFlag('baked')) this.sleep();
+    else this.think(hasFlag('read') ? "I'm not sleepy yet. I fancy baking something." : "I'm not sleepy yet. Maybe I'll read a book.");
+  }
+
+  // Take the recipe book off the shelf, turn around and read until the next
+  // tap or key. The first time, it gives him an idea.
   read() {
+    const firstTime = !hasFlag('read');
     const timer = this.time.delayedCall(450, () => {
       this.bookGap.setVisible(true);
       setFlag('read');
@@ -148,6 +178,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.player.act('player-px-idle-up', () => {
       timer.remove();
       this.bookGap.setVisible(false);
+      if (firstTime && hasFlag('read')) this.think('Apple pie… I could bake that!');
     });
   }
 
@@ -203,7 +234,11 @@ export default class InteriorScene extends Phaser.Scene {
   update(_time, delta) {
     if (this.leaving) return;
     this.player.update(delta / 1000);
-    if (this.player.y >= this.exitY) this.leave();
+    const { x, y, dir } = this.player;
+    // what he carries is in his hands: in front of him, or hidden behind him facing away
+    const side = { left: -4, right: 4 }[dir] ?? 0;
+    this.carry?.setPosition(x + side, y - 7).setDepth(y + (dir === 'up' ? -0.5 : 0.5));
+    if (y >= this.exitY) this.leave();
   }
 
   leave() {

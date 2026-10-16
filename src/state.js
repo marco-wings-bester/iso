@@ -1,9 +1,12 @@
-// Story progress (has he read? slept? met Bob?), kept in localStorage so it
-// survives reloads and app updates. Falls back to memory if storage is blocked.
-// A new game (menu) forgets it all.
-const KEY = 'farm-walk-story';
+// Story progress, kept in localStorage so it survives reloads and app
+// updates; falls back to memory if storage is blocked. A new game (menu)
+// forgets it all. The story so far: read the recipe book ('read') → bake the
+// pie ('baked') → sleep ('slept') → Bob at the gate ('metBob', 'gavePie', …).
+// (v2: progress saved under the old order — read, sleep, Bob — is dropped.)
+const KEY = 'farm-walk-story-v2';
 let flags = {};
 try {
+  localStorage.removeItem('farm-walk-story');
   flags = JSON.parse(localStorage.getItem(KEY)) || {};
 } catch {
   flags = {};

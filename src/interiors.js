@@ -8,8 +8,10 @@ import { obj, rng } from './pixelArt.js';
 // Each room: w/h, back-wall height `wallH`, `door` gap in the bottom wall,
 // `solid` furniture rects (blocked for walking), `draw(ctx)`, and optional
 // `spots`: things to tap (area) that the farmer walks to (stand)
-// and uses — `read` at the bookshelf, `sleep` in the bed, `fire`: look into
-// the fireplace (a first-person view).
+// and uses — `read` the recipe book at the bookshelf, `cook` at the kitchen
+// cupboard (bakes the pie), `sleep` in the bed, `fire`: look into the
+// fireplace (a first-person view). The farmhouse's `kitchen` has the places
+// and overlays the baking uses (src/baking.js).
 
 export const WALL = 6; // side/bottom wall thickness
 
@@ -281,23 +283,96 @@ function table(ctx, x, y) {
     r(1, 17, 3, 3, C.woodDkr);
     r(28, 17, 3, 3, C.woodDkr);
   });
-  // a pie and a mug
-  piePlate(ctx, x + 11, y + 4);
+  // a mug (the pie goes on the cloth once it's baked)
   obj(ctx, x + 26, y + 3, 3, 4, r => { r(0, 0, 3, 4, '#5b86c4'); r(2, 0, 1, 4, '#3f5f96'); });
 }
 
 // The pie on its plate, `left` of its 8 columns not yet eaten (crumbs where
-// it's gone). Body 10×6 at (x, y), outline one pixel around.
-export function piePlate(ctx, x, y, left = 8) {
+// it's gone); `raw` is pale, before baking. Body 10×6 at (x, y), outline one
+// pixel around.
+function piePlate(ctx, x, y, left = 8, raw = false) {
+  const [crust, lattice, top] = raw ? ['#f0d8a8', '#d8b880', '#fff0c8'] : ['#e09848', C.strawDk, C.straw];
   obj(ctx, x, y, 10, 6, r => {
     r(0, 0, 10, 6, C.linenDk);
     if (left < 8) { r(7, 2, 1, 1, C.strawDk); r(4, 3, 1, 1, C.straw); }
     if (!left) return;
-    r(1, 0, left, 5, '#e09848');
-    [2, 5].forEach(lx => { if (lx < 1 + left) r(lx, 1, 1, 3, C.strawDk); });
-    r(1, 2, left, 1, C.strawDk);
-    r(1, 0, left, 1, C.straw);
+    r(1, 0, left, 5, crust);
+    [2, 5].forEach(lx => { if (lx < 1 + left) r(lx, 1, 1, 3, lattice); });
+    r(1, 2, left, 1, lattice);
+    r(1, 0, left, 1, top);
   });
+}
+
+// The pie as a texture (12×8, outline included); returns its key.
+export function pieTexture(scene, left = 8, raw = false) {
+  const key = `pie-${left}${raw ? '-raw' : ''}`;
+  if (!scene.textures.exists(key)) {
+    const tex = scene.textures.createCanvas(key, 12, 8);
+    piePlate(tex.getContext(), 1, 1, left, raw);
+    tex.refresh();
+    tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }
+  return key;
+}
+
+// The kitchen dresser: plates and jars on open shelves, a worktop, and the
+// cupboard underneath where the baking things are kept. 16×42.
+function dresser(ctx, x, y) {
+  drop(ctx, x, y, 16, 42);
+  obj(ctx, x, y, 16, 42, r => {
+    r(0, 0, 16, 42, C.woodDk);
+    r(0, 0, 16, 2, C.wood);
+    r(2, 3, 12, 19, C.seam);
+    r(2, 12, 12, 1, C.woodDk);
+    [2, 6, 10].forEach(px => { r(px, 5, 4, 6, C.linen); r(px + 1, 7, 2, 2, '#5b86c4'); });
+    r(3, 15, 3, 7, C.glass); r(3, 15, 3, 1, C.redDk);
+    r(7, 16, 3, 6, C.straw); r(7, 16, 3, 1, C.woodDkr);
+    r(11, 17, 2, 5, C.glassDk);
+    r(0, 22, 16, 3, C.woodLt);
+    r(0, 22, 16, 1, C.woodHi);
+    r(1, 26, 6, 13, C.wood); r(9, 26, 6, 13, C.wood);
+    r(1, 26, 6, 1, C.woodLt); r(9, 26, 6, 1, C.woodLt);
+    r(6, 31, 1, 2, C.strawHi); r(9, 31, 1, 2, C.strawHi);
+    r(0, 40, 16, 2, C.woodDeep);
+  });
+}
+
+// The dresser's cupboard opened: flour and a bowl of apples inside, the
+// doors swung out. (x, y) is the dresser's top-left in the overlay canvas.
+function dresserOpen(ctx, x, y) {
+  fill(ctx, x + 1, y + 26, 14, 13, C.seam);
+  obj(ctx, x + 2, y + 30, 5, 8, r => { r(0, 0, 5, 8, C.linen); r(0, 0, 5, 2, C.linenDk); r(1, 4, 3, 2, C.linenDk); });
+  obj(ctx, x + 8, y + 33, 6, 5, r => { r(0, 2, 6, 3, '#5b86c4'); r(0, 0, 2, 2, C.red); r(3, 0, 2, 2, C.red); r(2, 1, 1, 1, C.leaf); });
+  [x - 2, x + 16].forEach(dx => obj(ctx, dx, y + 26, 2, 13, r => { r(0, 0, 2, 13, C.wood); r(0, 0, 1, 13, C.woodLt); }));
+}
+
+// A little cast-iron cooking stove with an oven, its pipe going up the wall.
+// 14×28.
+function stove(ctx, x, y) {
+  obj(ctx, x + 8, 3, 3, y - 2, r => { r(0, 0, 3, y, '#3a3a40'); r(0, 0, 1, y, '#5a5a64'); });
+  drop(ctx, x, y + 6, 14, 22);
+  obj(ctx, x, y, 14, 28, r => {
+    r(0, 0, 14, 6, '#4a4a52');
+    r(0, 0, 14, 1, '#6a6a74');
+    r(2, 1, 4, 3, '#2a2a30'); r(8, 1, 4, 3, '#2a2a30');
+    r(0, 6, 14, 22, '#34343a');
+    r(0, 6, 14, 1, '#5a5a64');
+    r(2, 8, 10, 4, '#24242a');
+    r(3, 9, 8, 1, '#a04020');
+    r(2, 14, 10, 10, '#2a2a30');
+    r(2, 14, 10, 1, '#5a5a64');
+    r(4, 15, 6, 1, C.metal);
+    r(1, 26, 2, 2, '#24242a'); r(11, 26, 2, 2, '#24242a');
+  });
+}
+
+// The oven door let down: the hot inside glowing. (x, y) is the stove's
+// top-left in the overlay canvas.
+function ovenOpen(ctx, x, y) {
+  fill(ctx, x + 2, y + 14, 10, 10, '#1a1210');
+  fill(ctx, x + 3, y + 20, 8, 3, '#c05020');
+  fill(ctx, x + 3, y + 22, 8, 1, '#f08a30');
+  obj(ctx, x + 2, y + 24, 10, 3, r => { r(0, 0, 10, 3, '#4a4a52'); r(0, 0, 10, 1, '#6a6a74'); });
 }
 
 // A chair facing the room, standing behind the table (its seat and legs
@@ -544,31 +619,43 @@ const PINE = { base: '#8c6038', hi: '#a07048', seam: '#4a2a14', grain: '#7a5030'
 
 export const ROOMS = {
   house: {
-    w: 144, h: 160, wallH: 44,
+    w: 144, h: 204, wallH: 44,
     door: { x: 60, w: 24 },
     spots: {
       read: {
         area: { x: 110, y: 14, w: 28, h: 40 }, // tap the bookshelf…
-        stand: { x: 124, y: 57 },              // …to walk here and read
+        stand: { x: 124, y: 57 },              // …to walk here and read the recipe book
+      },
+      cook: {
+        area: { x: 6, y: 6, w: 20, h: 48 },    // tap the kitchen cupboard…
+        stand: { x: 29, y: 57 },               // …to walk beside it (and bake, once he's read the recipe)
       },
       sleep: {
-        area: { x: 8, y: 30, w: 32, h: 50 },   // tap the bed…
-        stand: { x: 46, y: 70 },               // …to walk beside it and get in
-        overlay: { x: 6, y: 26, w: 38, h: 52, draw: ctx => sleeper(ctx, 4, 8) },
-        zzz: { x: 28, y: 44 },
+        area: { x: 8, y: 146, w: 32, h: 50 },  // tap the bed…
+        stand: { x: 46, y: 186 },              // …to walk beside it and get in
+        overlay: { x: 6, y: 142, w: 38, h: 52, draw: ctx => sleeper(ctx, 4, 8) },
+        zzz: { x: 28, y: 160 },
       },
       fire: {
         area: { x: 64, y: 4, w: 40, h: 48 }, // tap the fireplace…
         stand: { x: 84, y: 55 },             // …to crouch at the hearth and look in
       },
     },
+    kitchen: {
+      // he stands beside the cupboard and the stove, facing them, so they show
+      cupboard: { stand: { x: 29, y: 57 }, open: { x: 4, y: 32, w: 24, h: 16, draw: ctx => dresserOpen(ctx, 4, -24) } },
+      stove: { stand: { x: 47, y: 57 }, open: { x: 26, y: 34, w: 14, h: 16, draw: ctx => ovenOpen(ctx, 0, -12) }, vent: { x: 29, y: 31, w: 8, h: 1 } },
+      table: { stand: { x: 86, y: 88 }, bowl: { x: 84, y: 94 }, pie: { x: 94, y: 95 } }, // behind the table, facing out
+    },
     solid: [
-      { x: 10, y: 34, w: 28, h: 44 },  // bed
+      { x: 8, y: 20, w: 16, h: 30 },   // kitchen dresser
+      { x: 26, y: 30, w: 14, h: 20 },  // stove
+      { x: 10, y: 150, w: 28, h: 44 }, // bed
       { x: 66, y: 40, w: 38, h: 10 },  // fireplace + hearth
       { x: 112, y: 16, w: 24, h: 34 }, // bookshelf
       { x: 72, y: 92, w: 56, h: 20 },  // table + chairs
       { x: 93, y: 80, w: 14, h: 12 },  // chair behind the table (Bob's)
-      { x: 10, y: 128, w: 14, h: 22 }, // plant
+      { x: 120, y: 176, w: 14, h: 22 }, // plant
       { x: 112, y: 130, w: 22, h: 16 }, // chest
     ],
     draw(ctx) {
@@ -588,15 +675,17 @@ export const ROOMS = {
       frame(ctx, this);
       windowPane(ctx, 44, 10);
       fireplace(ctx, 68, 6);
-      // The book he reads comes off the top shelf (visible above his hat).
+      // The recipe book he reads comes off the top shelf (visible above his hat).
       const books = bookshelf(ctx, 112, 16, 3).filter(b => b.shelf === 0);
       this.spots.read.book = books.find(b => b.c === C.red) || books[0];
-      bed(ctx, 10, 34);
+      dresser(ctx, 8, 8);
+      stove(ctx, 26, 22);
+      bed(ctx, 10, 150);
       chair(ctx, 72, 94, false);
       chair(ctx, 118, 94, true);
       seatChair(ctx, 93, 78);
       table(ctx, 84, 92);
-      plant(ctx, 10, 128);
+      plant(ctx, 120, 176);
       chest(ctx, 112, 130);
     },
     animate(scene) {
