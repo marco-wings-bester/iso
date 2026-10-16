@@ -10,6 +10,7 @@
 //    the update happens automatically next time the game comes back.
 // A reload that doesn't actually bring the new build (e.g. the server is still
 // updating) isn't retried in a loop; the button is shown instead.
+// The menu's "Update game" checks on demand (updateNow).
 
 const KEY = 'farm-walk-update-target';
 
@@ -59,6 +60,24 @@ export function watchForUpdates() {
   check(true);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) check(true); });
   setInterval(() => check(false), 5 * 60 * 1000);
+}
+
+// Menu "Update game": check now and, if there's a newer version, drop the
+// offline copies (so nothing old, like the map, is served from the cache) and
+// reload. Returns 'updating', 'latest', or 'offline' if the server can't be
+// reached.
+export async function updateNow() {
+  const build = await serverBuild();
+  if (!build) return 'offline';
+  if (build === __BUILD_ID__) return 'latest';
+  remember(build);
+  try {
+    if (window.caches) await Promise.all((await caches.keys()).map(k => caches.delete(k)));
+  } catch {
+    // reload anyway
+  }
+  location.reload();
+  return 'updating';
 }
 
 function showButton() {

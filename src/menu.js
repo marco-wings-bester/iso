@@ -4,8 +4,11 @@
 //   in-app browsers such as a link opened from a chat app can't install).
 // - Share game: the phone's share sheet with the game's link, or copy the
 //   link where sharing isn't available.
+// - Update game: load the newest version now, or say it's already the latest.
 // - New game: after a confirm, forget the story so far and start again at the
 //   gate (so Bob isn't there yet); `onNewGame` does the restart (main.js).
+
+import { updateNow } from './updates.js';
 
 const isAndroid = /Android/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -103,6 +106,18 @@ export function setupMenu({ onNewGame }) {
     input.select();
   }
 
+  async function update(btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Checking…';
+    const result = await updateNow();
+    if (result === 'updating') {
+      btn.textContent = '⏳ Updating…';
+      return;
+    }
+    closeMenu();
+    toast(result === 'latest' ? '✓ You have the latest version' : "Can't check right now — offline?");
+  }
+
   function confirmNewGame() {
     closeMenu();
     const cancel = el('button', { type: 'button', className: 'btn secondary', textContent: 'Cancel' });
@@ -168,10 +183,12 @@ export function setupMenu({ onNewGame }) {
     installBtn.onclick = install;
     const shareBtn = el('button', { type: 'button', className: 'btn share', textContent: '📤 Share game' });
     shareBtn.onclick = share;
+    const updateBtn = el('button', { type: 'button', className: 'btn update', textContent: '🔄 Update game' });
+    updateBtn.onclick = () => update(updateBtn);
     const newBtn = el('button', { type: 'button', className: 'btn new', textContent: '🌅 New game' });
     newBtn.onclick = confirmNewGame;
     const close = el('button', { type: 'button', className: 'btn secondary', textContent: 'Close' });
     close.onclick = closeMenu;
-    menu = overlay('menu', el('h2', { textContent: 'Farm Walk' }), el('div', { className: 'menu-buttons' }, installBtn, shareBtn, newBtn, close));
+    menu = overlay('menu', el('h2', { textContent: 'Farm Walk' }), el('div', { className: 'menu-buttons' }, installBtn, shareBtn, updateBtn, newBtn, close));
   };
 }
