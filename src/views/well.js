@@ -1,8 +1,7 @@
-import { obj } from '../pixelArt.js';
-import { hash, smooth, shade, limb, sleeve, GRASS, GRASS_HI, FLOWERS, SKIN, SKIN_DK } from './art.js';
+import { hash, smooth, shade, GRASS, GRASS_HI, FLOWERS } from './art.js';
 
 // Farmer Jones's view straight down a well: the underside of his hat brim at
-// the top, his hands on the stone rim, the shaft's stone courses vanishing into
+// the top, the stone rim, the shaft's stone courses vanishing into
 // darkness, the rope hanging down, and far below black water reflecting the
 // small bright opening with his own silhouette in it. Drawn as pixel art in
 // perspective: a pixel's distance from the centre maps to depth down the shaft.
@@ -104,7 +103,6 @@ function draw(ctx, w, h) {
   ctx.putImageData(img, 0, 0);
 
   drawRope(ctx, g);
-  drawHands(ctx, w, h, g);
   drawHatBrim(ctx, w, g);
 }
 
@@ -131,29 +129,6 @@ function drawRope(ctx, { cx, cy, R }) {
       ctx.fillRect(x + wdt, y, 1, 1);
     }
   }
-}
-
-// His arms reaching in from the bottom corners, hands gripping the near rim.
-function drawHands(ctx, w, h, { cx, cy, R }) {
-  const SK = SKIN;
-  const SKd = SKIN_DK;
-  [-1, 1].forEach(side => {
-    const hx = cx + side * R * 0.66;
-    const hy = cy + R * 1.02;
-    const sx = cx + side * R * 1.9;
-    const sy = h + R * 0.4;
-    // sleeve (in shadow, he's leaning over), then the cuff
-    limb(ctx, sx, sy, hx + side * 2, hy + 12, 13, sleeve(side));
-    obj(ctx, Math.round(hx - 8), Math.round(hy - 4), 16, 13, r => {
-      r(0, 2, 16, 9, SK);
-      r(0, 8, 16, 3, SKd);
-      // fingers curling over the inner edge of the rim
-      for (let f = 0; f < 4; f++) r(1 + f * 3.5 | 0, 0, 3, 4, SK);
-      for (let f = 0; f < 3; f++) r(4 + f * 3.5 | 0, 0, 1, 4, SKd);
-      r(side < 0 ? 14 : 0, 4, 2, 5, SKd);
-      r(0, 11, 16, 2, '#982f2a'); // cuff
-    });
-  });
 }
 
 // Underside of his straw hat brim across the top of his view.
