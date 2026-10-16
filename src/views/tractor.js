@@ -1,10 +1,14 @@
+import Phaser from 'phaser';
 import { obj } from '../pixelArt.js';
 import { hash, mix, band, pixels, ellipse, rgb, limb, OUTLINE } from './art.js';
+import { hasFlag, setFlag } from '../state.js';
+import { line } from '../hints.js';
 
 // Farmer Jones in the tractor's seat: through the windshield the green hood
 // with its exhaust stack, ploughed furrows running to the horizon, hills and
 // sky; in front of him the dashboard gauges, the steering wheel and the gear
-// lever.
+// lever. His house key is still in the ignition at the start (the farmhouse
+// is locked without it): tap it to take it.
 
 const SKY = [[110, 172, 226], [128, 186, 234], [152, 202, 238], [178, 218, 242], [204, 230, 246]];
 const FURROWS = [[132, 86, 48], [108, 68, 38]];
@@ -20,7 +24,8 @@ function geometry(w, h) {
   const wheel = { cx: vx, cy: Math.round(h * (portrait ? 0.8 : 0.86)), rx: Math.min(w * 0.38, 70 * k), ry: Math.round(h * 0.1) };
   const gauges = [-1, 1].map(s => ({ x: Math.round(vx + s * 34 * k), y: Math.round(dashTop + (dashBot - dashTop) * 0.45), r: Math.round(10 * k) }));
   const stack = { x: Math.round(vx + 30 * k), top: Math.round(hz - 22 * k), bottom: Math.round(dashTop - 6 * k) };
-  return { k, hz, dashTop, dashBot, vx, wheel, gauges, stack };
+  const ignition = { x: Math.round(vx + 15 * k), y: dashBot - Math.round(7 * k) };
+  return { k, hz, dashTop, dashBot, vx, wheel, gauges, stack, ignition };
 }
 
 function draw(ctx, w, h) {
@@ -133,7 +138,7 @@ function cab(ctx, w, h, { k, dashTop }) {
   }
 }
 
-function dashboard(ctx, w, { k, dashTop, dashBot, gauges }) {
+function dashboard(ctx, w, { k, dashTop, dashBot, gauges, ignition }) {
   ctx.fillStyle = '#3c403e';
   ctx.fillRect(0, dashTop, w, dashBot - dashTop);
   ctx.fillStyle = '#5c625e';
@@ -157,7 +162,7 @@ function dashboard(ctx, w, { k, dashTop, dashBot, gauges }) {
       return v < -0.2 && u < 0 ? [250, 248, 238] : [232, 228, 216];
     });
   });
-  // warning lights and the ignition key
+  // warning lights and the ignition
   const cx = w / 2;
   [['#58c050', -6], ['#f0a030', 0], ['#e04030', 6]].forEach(([c, dx]) => {
     ctx.fillStyle = OUTLINE;
@@ -165,10 +170,23 @@ function dashboard(ctx, w, { k, dashTop, dashBot, gauges }) {
     ctx.fillStyle = c;
     ctx.fillRect(Math.round(cx + dx * k - 1), dashTop + Math.round(5 * k), 2, 2);
   });
-  obj(ctx, Math.round(cx + 14 * k), dashBot - Math.round(8 * k), Math.round(3 * k), Math.round(5 * k), r => {
-    r(0, 0, 3 * k, 5 * k, '#e8c050');
-    r(0, 0, 1, 5 * k, '#f8e090');
-  });
+  ellipse(ctx, ignition.x, ignition.y + 2 * k, 3 * k, 3 * k, (u, v) => (Math.hypot(u, v) > 0.75 ? OUTLINE : u < -0.2 && v < -0.2 ? [170, 176, 184] : [120, 126, 136]));
+  ctx.fillStyle = '#1a1a1c';
+  ctx.fillRect(ignition.x, Math.round(ignition.y + k), 1, Math.round(2 * k)); // the keyhole
+}
+
+// The house key in the ignition: a brass bow with a ring and a red tag on it.
+function keyTexture(scene) {
+  if (scene.textures.exists('pov-key')) return 'pov-key';
+  const tex = scene.textures.createCanvas('pov-key', 9, 17);
+  const ctx = tex.getContext();
+  obj(ctx, 2, 1, 5, 5, r => { r(0, 0, 5, 5, '#e8c050'); r(0, 0, 1, 5, '#f8e090'); r(4, 1, 1, 4, '#b89030'); r(2, 2, 1, 1, '#2e1d0c'); });
+  ctx.fillStyle = '#a0a8b4';
+  [[3, 7, 3, 1], [2, 8, 1, 3], [6, 8, 1, 3], [3, 11, 3, 1]].forEach(([x, y, w, h]) => ctx.fillRect(x, y, w, h));
+  obj(ctx, 3, 12, 3, 4, r => { r(0, 0, 3, 4, '#d04c3a'); r(0, 0, 1, 4, '#f07a5a'); });
+  tex.refresh();
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  return 'pov-key';
 }
 
 function steeringWheel(ctx, { cx, cy, rx, ry }, k) {
@@ -198,7 +216,16 @@ function gearLever(ctx, w, h, { k, dashBot }) {
 
 // Gauge needles flickering with the engine, and puffs from the exhaust.
 function animate(scene, w, h) {
-  const { k, gauges, stack } = geometry(w, h);
+  const { k, gauges, stack, ignition } = geometry(w, h);
+
+  // his house key, still in the ignition, the tag swinging with the engine
+  scene.key = null;
+  if (!hasFlag('key')) {
+    scene.key = scene.add.image(ignition.x, ignition.y, keyTexture(scene)).setOrigin(0.5, 0.1).setDepth(4);
+    scene.tweens.add({ targets: scene.key, angle: { from: -5, to: 5 }, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    const text = line('tractorKey');
+    if (text) scene.time.delayedCall(1000, () => scene.say(text));
+  }
   const needles = scene.add.graphics();
   const base = [-2.2, -1.2]; // revs, temperature (radians)
   const draw = (time) => {
@@ -231,4 +258,16 @@ function animate(scene, w, h) {
   });
 }
 
-export default { draw, animate };
+// Tapping the key takes it (into his pocket); anything else isn't ours.
+function tap(scene, x, y) {
+  const key = scene.key;
+  if (!key || Math.hypot(key.x - x, key.y + 6 - y) > 9) return false;
+  scene.key = null;
+  scene.tweens.killTweensOf(key);
+  scene.tweens.add({ targets: key, y: key.y + 30, scale: 0.6, alpha: 0, duration: 450, ease: 'Sine.easeIn', onComplete: () => key.destroy() });
+  setFlag('key');
+  scene.say('My house key! Now I can get in.');
+  return true;
+}
+
+export default { draw, animate, tap };

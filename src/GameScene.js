@@ -4,6 +4,8 @@ import { createAmbient } from './ambient.js';
 import { spawnBob, BOB_AREA, BOB_STAND } from './bob.js';
 import { hasFlag, setFlag } from './state.js';
 import { FIRST_MEETING, AGAIN } from './dialogue.js';
+import { think } from './bubble.js';
+import { line } from './hints.js';
 import Player from './Player.js';
 import { farmGrid } from './WalkGrid.js';
 import { BUILDINGS, SPOTS, inRect, rectCenter } from './buildings.js';
@@ -107,7 +109,19 @@ export default class GameScene extends Phaser.Scene {
 
     const { x, y } = this.player;
     const id = Object.keys(BUILDINGS).find(k => inRect(x, y, BUILDINGS[k].door));
-    if (id) this.enter(id);
+    if (id === 'house' && !hasFlag('key')) this.locked();
+    else if (id) this.enter(id);
+  }
+
+  // The farmhouse before he's found his key (left in the tractor): locked.
+  // He steps back out of the doorway and wonders where it is.
+  locked() {
+    const { exit } = BUILDINGS.house;
+    this.player.stop();
+    Object.assign(this.player, { x: exit.x, y: exit.y });
+    this.player.sprite.setPosition(exit.x, exit.y);
+    this.player.face('down');
+    think(this, this.player.sprite, line('doorLocked'));
   }
 
   // Switch to his eyes: down the well, over the pond, or from the tractor seat.
