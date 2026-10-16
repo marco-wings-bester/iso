@@ -22,7 +22,7 @@ export const FIRST_MEETING = [
     ] },
   ] },
   { choose: [
-    { say: "I baked one last night. It's on the kitchen table!", flag: 'gavePie', then: [
+    { say: "I baked one last night. Half of it's on the kitchen table!", flag: 'gavePie', then: [
       ['bob', 'Yummy!'],
     ] },
     { say: 'A whole pie? For waving your cap about?', then: [
@@ -35,7 +35,7 @@ export const FIRST_MEETING = [
 export const AGAIN = [
   ['bob', 'Still here, Jones? Changed your mind about that pie?'],
   { choose: [
-    { say: "Go on then, it's on the kitchen table.", flag: 'gavePie', then: [
+    { say: "Go on then, the rest is on the kitchen table.", flag: 'gavePie', then: [
       ['bob', 'Yummy!'],
     ] },
     { say: 'Not a chance, Bob!', then: [

@@ -3,13 +3,16 @@ import { obj } from './pixelArt.js';
 import { pieTexture } from './interiors.js';
 import { setFlag } from './state.js';
 import { think } from './bubble.js';
+import { line } from './hints.js';
+import { eatAtTable } from './eating.js';
 
 // Farmer Jones bakes the pie, once he's read the recipe book and picked an
 // apple: "I think I'll make a pie", a bowl from the kitchen cupboard, mixing
 // and rolling pastry at the table (the apple beside it goes in the filling),
 // the pie into the oven and back out onto the table, steaming.
 // You just watch (taps and keys are ignored meanwhile); then the 'baked'
-// flag is set and he's free again. Returns the pie on the table.
+// flag is set and he's free again, the pie on the table (scene.pie). Tapping
+// it then, he sits down and has half (eatHalf): full, he's sleepy.
 
 // Little props, drawn once: bowl of flour, wooden spoon, pastry, rolling pin,
 // and the apple he picked.
@@ -132,12 +135,32 @@ export async function bakePie(scene) {
   oven.destroy();
   await walk(table.stand);
   player.face('down');
-  const pie = putDown(table.pie, 0.45);
+  scene.pie = putDown(table.pie, 0.45);
   scene.time.addEvent({ delay: 240, repeat: 24, callback: () => puff(scene, table.pie.x + 2 + Math.random() * 8, table.pie.y, 0xe8e8e8, 9) });
 
   setFlag('baked');
   scene.busy = false;
   player.locked = false;
-  think(scene, player.sprite, "There! Now I'm sleepy.");
-  return pie;
+  think(scene, player.sprite, line('baked'));
+}
+
+// Farmer Jones sits down behind the table and eats half the pie, a column a
+// bite; then, full and patting his belly, he's sleepy ('ate') and gets up.
+export async function eatHalf(scene) {
+  const { player } = scene;
+  scene.busy = true;
+  player.locked = true;
+  player.sprite.setVisible(false);
+  let jones;
+  await new Promise((resolve) => {
+    jones = eatAtTable(scene, 'player-px', scene.pie, { from: 8, to: 4, bitesPerColumn: 1, sitDown: true, onFull: resolve });
+  });
+  setFlag('ate');
+  await new Promise(r => scene.time.delayedCall(1200, r));
+  await think(scene, jones, line('full'), 2400);
+  jones.destroy();
+  player.sprite.setVisible(true);
+  player.face('down');
+  scene.busy = false;
+  player.locked = false;
 }

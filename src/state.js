@@ -2,7 +2,8 @@
 // updates; falls back to memory if storage is blocked. A new game (menu)
 // forgets it all. The story so far: read the recipe book ('read'); fetch the
 // apple picker from the tool shed ('picker') and pick an apple ('apple'); bake
-// the pie ('baked') → sleep ('slept') → Bob at the gate ('metBob', 'gavePie', …).
+// the pie ('baked') → eat half of it ('ate') → sleep ('slept') → Bob at the
+// gate ('metBob', 'gavePie', …), who eats the other half.
 // (v2: progress saved under the old order — read, sleep, Bob — is dropped.)
 const KEY = 'farm-walk-story-v2';
 let flags = {};

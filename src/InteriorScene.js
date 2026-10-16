@@ -7,7 +7,7 @@ import { ROOMS, WALL, pieTexture } from './interiors.js';
 import { INTERIOR_SPEED } from './constants.js';
 import { hasFlag, setFlag } from './state.js';
 import { seatBob } from './bob.js';
-import { bakePie } from './baking.js';
+import { bakePie, eatHalf } from './baking.js';
 import { think } from './bubble.js';
 import { line } from './hints.js';
 
@@ -115,7 +115,7 @@ export default class InteriorScene extends Phaser.Scene {
       if (spot) {
         const [id, s] = spot;
         const use = {
-          read: () => this.read(), cook: () => this.useCupboard(), sleep: () => this.tryToSleep(),
+          read: () => this.read(), cook: () => this.useCupboard(), eat: () => this.eatPie(), sleep: () => this.tryToSleep(),
           fire: () => this.lookAtFire(), picker: () => this.takePicker(),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
@@ -123,11 +123,13 @@ export default class InteriorScene extends Phaser.Scene {
       else this.player.walkTo(x, y);
     });
 
-    // Once baked, the pie is on the table; given it, Bob is there eating it.
-    // The night overlay is under Bob, so he's dimmed by hand while Jones sleeps.
+    // Once baked, the pie is on the table (half of it once Jones has had his);
+    // given the rest, Bob is there eating it. The night overlay is under Bob,
+    // so he's dimmed by hand while Jones sleeps.
     const house = building === 'house';
     if (house && hasFlag('baked') && !hasFlag('gavePie')) {
-      this.add.image(room.kitchen.table.pie.x, room.kitchen.table.pie.y, pieTexture(this)).setOrigin(0).setDepth(0.45);
+      const { pie } = room.kitchen.table;
+      this.pie = this.add.image(pie.x, pie.y, pieTexture(this, hasFlag('ate') ? 4 : 8)).setOrigin(0).setDepth(0.45);
     }
     this.bob = house && hasFlag('gavePie') ? seatBob(this) : null;
 
@@ -166,9 +168,16 @@ export default class InteriorScene extends Phaser.Scene {
     else bakePie(this);
   }
 
-  // Bed: only once the pie is made.
+  // The pie on the table: he has half of it, and that makes him sleepy.
+  eatPie() {
+    if (!hasFlag('baked') || hasFlag('gavePie')) return;
+    if (hasFlag('ate')) this.think("I'm full. I'll save the rest for later.");
+    else eatHalf(this);
+  }
+
+  // Bed: only once he's had his pie.
   tryToSleep() {
-    if (hasFlag('baked')) this.sleep();
+    if (hasFlag('ate')) this.sleep();
     else this.think(line('bedEarly'));
   }
 

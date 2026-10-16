@@ -9,8 +9,9 @@ the farmhouse, tap the fireplace to look into the fire (`src/views/`).
 
 The story: read the recipe book (farmhouse bookshelf); fetch the apple picker
 from the tool shed and pick an apple (tap an apple tree, then an apple); bake
-the pie (kitchen cupboard; `src/baking.js`); go to sleep, and Bob turns up at
-the farm gate. Doing things out of order gets a hint from Farmer Jones; how
+the pie (kitchen cupboard; `src/baking.js`) and eat half of it (tap it on the
+table), which makes Farmer Jones sleepy; go to sleep, and Bob turns up at the
+farm gate (and gets the other half). Doing things out of order gets a hint from Farmer Jones; how
 much he gives away is set under **Hints** in the ☰ menu (None / Subtle /
 Explicit).
 
