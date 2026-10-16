@@ -1,10 +1,10 @@
 import { obj } from '../pixelArt.js';
-import { hash, mix, band, pixels, ellipse, rgb, limb, sleeve, SKIN, SKIN_DK, OUTLINE } from './art.js';
+import { hash, mix, band, pixels, ellipse, rgb, limb, OUTLINE } from './art.js';
 
 // Farmer Jones in the tractor's seat: through the windshield the green hood
 // with its exhaust stack, ploughed furrows running to the horizon, hills and
-// sky; in front of him the dashboard gauges and the steering wheel, his hands
-// on it, and the gear lever by his right hand.
+// sky; in front of him the dashboard gauges, the steering wheel and the gear
+// lever.
 
 const SKY = [[110, 172, 226], [128, 186, 234], [152, 202, 238], [178, 218, 242], [204, 230, 246]];
 const FURROWS = [[132, 86, 48], [108, 68, 38]];
@@ -54,14 +54,13 @@ function draw(ctx, w, h) {
   cab(ctx, w, h, g);
   dashboard(ctx, w, g);
 
-  // steering column, wheel, gear lever, then his arms and hands
+  // steering column, wheel and gear lever
   obj(ctx, Math.round(vx - 6 * k), dashBot, Math.round(12 * k), h - dashBot, r => {
     r(0, 0, 12 * k, h, '#3a3e3c');
     r(0, 0, 3 * k, h, '#5a605c');
   });
   gearLever(ctx, w, h, g);
   steeringWheel(ctx, wheel, k);
-  hands(ctx, w, h, wheel, k);
 }
 
 function hood(ctx, { k, hz, dashTop, vx }) {
@@ -195,22 +194,6 @@ function gearLever(ctx, w, h, { k, dashBot }) {
   const y1 = dashBot + 12 * k;
   limb(ctx, x0, y0, x1, y1, 2 * k, () => '#2a2c2e');
   ellipse(ctx, x1, y1, 5 * k, 5 * k, (u, v) => (Math.hypot(u, v) > 0.8 ? OUTLINE : u < -0.2 && v < -0.2 ? [252, 228, 120] : [232, 192, 64]));
-}
-
-// His arms coming in from the bottom corners, hands on the wheel at ten to two.
-function hands(ctx, w, h, { cx, cy, rx, ry }, k) {
-  [-1, 1].forEach(side => {
-    const a = side < 0 ? Math.PI * 1.12 : Math.PI * 1.88;
-    const hx = cx + Math.cos(a) * rx;
-    const hy = cy + Math.sin(a) * ry;
-    limb(ctx, cx + side * w * 0.62, h + 30 * k, hx + side * 4 * k, hy + 6 * k, 12 * k, sleeve(side));
-    obj(ctx, Math.round(hx - 7 * k), Math.round(hy - 6 * k), Math.round(14 * k), Math.round(12 * k), r => {
-      r(0, 0, 14 * k, 12 * k, SKIN);
-      r(0, 8 * k, 14 * k, 4 * k, SKIN_DK);
-      for (let f = 1; f < 4; f++) r(Math.round(f * 3.5 * k), 1, 1, 7 * k, SKIN_DK); // fingers round the rim
-      r(0, 10 * k, 14 * k, 2, '#982f2a'); // cuff
-    });
-  });
 }
 
 // Gauge needles flickering with the engine, and puffs from the exhaust.

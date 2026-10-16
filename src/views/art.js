@@ -48,9 +48,6 @@ export const rgb = c => `rgb(${c[0] | 0}, ${c[1] | 0}, ${c[2] | 0})`;
 export const GRASS = [[140, 192, 76], [120, 176, 64], [104, 156, 56]]; // the farm's greens
 export const GRASS_HI = [168, 212, 96];
 export const FLOWERS = [[248, 240, 220], [248, 216, 112], [200, 160, 230]];
-export const SKIN = '#f8c8a0';
-export const SKIN_DK = '#d89870';
-export const SLEEVE = ['#d04c3a', '#b8402e', '#982f2a'];
 export const OUTLINE = '#2e1d0c';
 
 // Fill a thick line from (x0,y0) to (x1,y1), pixel by pixel, with a dark
@@ -76,9 +73,6 @@ export function limb(ctx, x0, y0, x1, y1, rad, color) {
     }
   }
 }
-
-// A red shirt sleeve, lit from the left.
-export const sleeve = side => t => (t * side > 0.4 ? SLEEVE[2] : t * side < -0.5 ? SLEEVE[0] : SLEEVE[1]);
 
 // Filled ellipse, pixel by pixel; `color(u, v)` gets coordinates in -1 … 1.
 export function ellipse(ctx, cx, cy, rx, ry, color) {
