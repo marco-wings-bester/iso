@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { FRAME_H, FEET_Y } from './constants.js';
 import { createCharacter, createBob } from './CharacterSprite.js';
 import { band, hash, pixels, ellipse } from './views/art.js';
+import { setFlag } from './state.js';
 
 // A close-up of Farmer Jones and Bob at the gate, talking. The scene and the
 // two of them are pixel art at a big, crisp zoom; speech bubbles are drawn on
@@ -178,6 +179,7 @@ export default class TalkScene extends Phaser.Scene {
   pick(i) {
     const choice = this.choices[i];
     this.choices = null;
+    if (choice.flag) setFlag(choice.flag);
     this.queue.unshift(...(choice.then ?? []));
     if (this.queue.length) this.next();
     else this.finish();

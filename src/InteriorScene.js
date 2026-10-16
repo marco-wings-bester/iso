@@ -5,7 +5,8 @@ import WalkGrid from './WalkGrid.js';
 import { BUILDINGS, inRect } from './buildings.js';
 import { ROOMS, WALL } from './interiors.js';
 import { INTERIOR_SPEED } from './constants.js';
-import { setFlag } from './state.js';
+import { hasFlag, setFlag } from './state.js';
+import { seatBob } from './bob.js';
 
 const FADE_MS = 250;
 const BODY = 5; // half the farmer's width in sprite px: keeps him off walls and furniture
@@ -120,7 +121,18 @@ export default class InteriorScene extends Phaser.Scene {
       else this.player.walkTo(x, y);
     });
 
+    // Given the pie, Bob is at the farmhouse table eating it. The night
+    // overlay is under him, so he's dimmed by hand while Jones sleeps.
+    this.bob = building === 'house' && hasFlag('gavePie') ? seatBob(this) : null;
+
     this.game.events.emit('location', { name: BUILDINGS[building].name });
+  }
+
+  // Tint Bob to match the room dimming to night.
+  dimBob() {
+    if (!this.bob) return;
+    const a = this.night.alpha;
+    this.bob.setTint(Phaser.Display.Color.GetColor(255 * (1 - a), 255 * (1 - a), 255 * (1 - a * 0.8)));
   }
 
   // Take a book off the shelf, turn around and read until the next tap or key.
@@ -147,7 +159,7 @@ export default class InteriorScene extends Phaser.Scene {
       this.sleeper.setVisible(true);
       setFlag('slept');
       this.tweens.killTweensOf(this.night);
-      this.tweens.add({ targets: this.night, alpha: 0.45, duration: 900 });
+      this.tweens.add({ targets: this.night, alpha: 0.45, duration: 900, onUpdate: () => this.dimBob() });
       zzz = this.time.addEvent({ delay: 1100, startAt: 900, loop: true, callback: () => this.puffZ() });
     });
     player.face('left');
@@ -157,7 +169,7 @@ export default class InteriorScene extends Phaser.Scene {
       player.sprite.setVisible(true);
       this.sleeper.setVisible(false);
       this.tweens.killTweensOf(this.night);
-      this.tweens.add({ targets: this.night, alpha: 0, duration: 400 });
+      this.tweens.add({ targets: this.night, alpha: 0, duration: 400, onUpdate: () => this.dimBob() });
       player.face('down');
     });
   }

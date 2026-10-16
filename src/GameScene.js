@@ -47,9 +47,10 @@ export default class GameScene extends Phaser.Scene {
     });
     this.leaving = false;
 
-    // After a read and a sleep, Bob is waiting at the gate.
+    // After a read and a sleep, Bob is waiting at the gate (until he's been
+    // given the pie: then he's in the farmhouse eating it).
     this.bob = null;
-    if (hasFlag('read') && hasFlag('slept')) {
+    if (hasFlag('read') && hasFlag('slept') && !hasFlag('gavePie')) {
       this.bob = spawnBob(this, { showMark: !hasFlag('metBob') });
       if (from && !hasFlag('metBob')) this.time.delayedCall(600, () => this.game.events.emit('location', { name: 'Someone is at the gate!' }));
     }
@@ -139,13 +140,23 @@ export default class GameScene extends Phaser.Scene {
           setFlag('metBob');
           this.bob.hideMark();
         }
-        this.bob.faceFarm();
+        if (hasFlag('gavePie')) this.sendBobForPie();
+        else this.bob.faceFarm();
         this.leaving = false;
         cam.fadeIn(300);
       });
       this.scene.launch('Talk', { lines: hasFlag('metBob') ? AGAIN : FIRST_MEETING });
       this.scene.pause();
     });
+  }
+
+  // Offered the pie, Bob walks up the path to the farmhouse and goes in.
+  sendBobForPie() {
+    const bob = this.bob;
+    this.bob = null; // nobody to talk to at the gate now
+    const door = rectCenter(BUILDINGS.house.door);
+    bob.walkInto(farmGrid.findRoute(bob.sprite.x, bob.sprite.y, door.x, door.y), this.player.speed * 0.8);
+    this.game.events.emit('location', { name: "Bob's off for his pie!" });
   }
 
   enter(id) {
