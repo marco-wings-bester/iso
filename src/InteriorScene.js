@@ -9,6 +9,7 @@ import { hasFlag, setFlag } from './state.js';
 import { seatBob } from './bob.js';
 import { bakePie } from './baking.js';
 import { think } from './bubble.js';
+import { line } from './hints.js';
 
 const FADE_MS = 250;
 const BODY = 5; // half the farmer's width in sprite px: keeps him off walls and furniture
@@ -97,17 +98,10 @@ export default class InteriorScene extends Phaser.Scene {
       const b = spots.read.book;
       this.bookGap = this.add.rectangle(b.x, b.y, b.w, b.h, 0x4a2a14).setOrigin(0).setDepth(1).setVisible(false);
     }
+    if (spots.picker && !hasFlag('picker')) this.pickerProp = this.roomImage(`picker-${building}`, spots.picker.prop);
     if (spots.sleep) {
       // Him asleep in bed, and the room dimming to night (the fire stays bright).
-      const o = spots.sleep.overlay;
-      const key = `sleeper-${building}`;
-      if (!this.textures.exists(key)) {
-        const tex = this.textures.createCanvas(key, o.w, o.h);
-        o.draw(tex.getContext());
-        tex.refresh();
-        tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
-      }
-      this.sleeper = this.add.image(o.x, o.y, key).setOrigin(0).setDepth(0.4).setVisible(false);
+      this.sleeper = this.roomImage(`sleeper-${building}`, spots.sleep.overlay).setDepth(0.4).setVisible(false);
       this.night = this.add.rectangle(0, 0, room.w, room.h, 0x0b0a24).setOrigin(0).setDepth(0.5).setAlpha(0);
       makeZ(this);
     }
@@ -121,7 +115,8 @@ export default class InteriorScene extends Phaser.Scene {
       if (spot) {
         const [id, s] = spot;
         const use = {
-          read: () => this.read(), cook: () => this.useCupboard(), sleep: () => this.tryToSleep(), fire: () => this.lookAtFire(),
+          read: () => this.read(), cook: () => this.useCupboard(), sleep: () => this.tryToSleep(),
+          fire: () => this.lookAtFire(), picker: () => this.takePicker(),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
@@ -146,22 +141,44 @@ export default class InteriorScene extends Phaser.Scene {
     this.bob.setTint(Phaser.Display.Color.GetColor(255 * (1 - a), 255 * (1 - a), 255 * (1 - a * 0.8)));
   }
 
+  // An image from a room's {x, y, w, h, draw} (drawn once into a texture).
+  roomImage(key, o) {
+    if (!this.textures.exists(key)) {
+      const tex = this.textures.createCanvas(key, o.w, o.h);
+      o.draw(tex.getContext());
+      tex.refresh();
+      tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
+    return this.add.image(o.x, o.y, key).setOrigin(0);
+  }
+
   think(text) {
     return think(this, this.player.sprite, text);
   }
 
-  // The kitchen cupboard: bake the pie, once he's read the recipe.
+  // The kitchen cupboard: bake the pie, once he's read the recipe and has an
+  // apple. Otherwise a hint, at the level set in the menu.
   useCupboard() {
     this.player.face('left');
-    if (!hasFlag('read')) this.think("I don't know any recipes… maybe a book would help.");
+    if (!hasFlag('read')) this.think(line('cupboardNoRecipe'));
     else if (hasFlag('baked')) this.think(hasFlag('gavePie') ? 'Bob has the pie now.' : "I've already baked a pie.");
+    else if (!hasFlag('apple')) this.think(line('cupboardNoApple'));
     else bakePie(this);
   }
 
   // Bed: only once the pie is made.
   tryToSleep() {
     if (hasFlag('baked')) this.sleep();
-    else this.think(hasFlag('read') ? "I'm not sleepy yet. I fancy baking something." : "I'm not sleepy yet. Maybe I'll read a book.");
+    else this.think(line('bedEarly'));
+  }
+
+  // The apple picker in the tool shed: take it, for the apples out of reach.
+  takePicker() {
+    this.player.face('up');
+    if (hasFlag('picker')) return;
+    this.pickerProp.destroy();
+    setFlag('picker');
+    this.think(line('pickerFound'));
   }
 
   // Take the recipe book off the shelf, turn around and read until the next
@@ -178,7 +195,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.player.act('player-px-idle-up', () => {
       timer.remove();
       this.bookGap.setVisible(false);
-      if (firstTime && hasFlag('read')) this.think('Apple pie… I could bake that!');
+      if (firstTime && hasFlag('read')) this.think(line('idea'));
     });
   }
 

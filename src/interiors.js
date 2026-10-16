@@ -10,7 +10,8 @@ import { obj, rng } from './pixelArt.js';
 // `spots`: things to tap (area) that the farmer walks to (stand)
 // and uses — `read` the recipe book at the bookshelf, `cook` at the kitchen
 // cupboard (bakes the pie), `sleep` in the bed, `fire`: look into the
-// fireplace (a first-person view). The farmhouse's `kitchen` has the places
+// fireplace (a first-person view), `picker`: take the apple picker (tool
+// shed; its `prop` is drawn apart from the room so it can go). The farmhouse's `kitchen` has the places
 // and overlays the baking uses (src/baking.js).
 
 export const WALL = 6; // side/bottom wall thickness
@@ -337,13 +338,24 @@ function dresser(ctx, x, y) {
   });
 }
 
-// The dresser's cupboard opened: flour and a bowl of apples inside, the
-// doors swung out. (x, y) is the dresser's top-left in the overlay canvas.
+// The dresser's cupboard opened: a sack of flour and a sugar jar inside (no
+// apples: those are on the trees), the doors swung out. (x, y) is the
+// dresser's top-left in the overlay canvas.
 function dresserOpen(ctx, x, y) {
   fill(ctx, x + 1, y + 26, 14, 13, C.seam);
   obj(ctx, x + 2, y + 30, 5, 8, r => { r(0, 0, 5, 8, C.linen); r(0, 0, 5, 2, C.linenDk); r(1, 4, 3, 2, C.linenDk); });
-  obj(ctx, x + 8, y + 33, 6, 5, r => { r(0, 2, 6, 3, '#5b86c4'); r(0, 0, 2, 2, C.red); r(3, 0, 2, 2, C.red); r(2, 1, 1, 1, C.leaf); });
+  obj(ctx, x + 9, y + 32, 4, 6, r => { r(0, 1, 4, 5, C.white); r(3, 1, 1, 5, C.linenDk); r(0, 0, 4, 1, C.redDk); });
   [x - 2, x + 16].forEach(dx => obj(ctx, dx, y + 26, 2, 13, r => { r(0, 0, 2, 13, C.wood); r(0, 0, 1, 13, C.woodLt); }));
+}
+
+// The apple picker: a long pole with a little wire basket on top for the
+// apples out of reach, leaning in a corner of the tool shed. 6×48.
+function applePicker(ctx, x, y) {
+  obj(ctx, x + 2, y + 7, 2, 41, r => { r(0, 0, 2, 41, C.wood); r(0, 0, 1, 41, C.woodLt); });
+  obj(ctx, x, y, 6, 7, r => {
+    r(0, 0, 1, 3, C.metal); r(2, 0, 1, 2, C.metal); r(5, 0, 1, 3, C.metal);
+    r(0, 3, 6, 4, C.metalDk); r(1, 3, 4, 3, C.seam);
+  });
 }
 
 // A little cast-iron cooking stove with an oven, its pipe going up the wall.
@@ -730,6 +742,13 @@ export const ROOMS = {
   shed: {
     w: 112, h: 128, wallH: 40,
     door: { x: 44, w: 24 },
+    spots: {
+      picker: {
+        area: { x: 96, y: 0, w: 12, h: 56 },  // tap the apple picker in the corner…
+        stand: { x: 100, y: 58 },             // …to walk over and take it
+        prop: { x: 99, y: 0, w: 8, h: 50, draw: ctx => applePicker(ctx, 1, 1) },
+      },
+    },
     solid: [
       { x: 52, y: 26, w: 48, h: 24 }, // workbench
       { x: 8, y: 46, w: 26, h: 26 },  // sacks

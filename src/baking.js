@@ -4,18 +4,21 @@ import { pieTexture } from './interiors.js';
 import { setFlag } from './state.js';
 import { think } from './bubble.js';
 
-// Farmer Jones bakes the pie, once he's read the recipe book: "I think I'll
-// make a pie", a bowl from the kitchen cupboard, mixing and rolling pastry at
-// the table, the pie into the oven and back out onto the table, steaming.
+// Farmer Jones bakes the pie, once he's read the recipe book and picked an
+// apple: "I think I'll make a pie", a bowl from the kitchen cupboard, mixing
+// and rolling pastry at the table (the apple beside it goes in the filling),
+// the pie into the oven and back out onto the table, steaming.
 // You just watch (taps and keys are ignored meanwhile); then the 'baked'
 // flag is set and he's free again. Returns the pie on the table.
 
-// Little props, drawn once: bowl of flour, wooden spoon, pastry, rolling pin.
+// Little props, drawn once: bowl of flour, wooden spoon, pastry, rolling pin,
+// and the apple he picked.
 const PROPS = {
   'bake-bowl': [11, 7, r => { r(0, 0, 9, 5, '#5b86c4'); r(0, 0, 9, 2, '#f8f0e0'); r(1, 0, 7, 1, '#ffffff'); r(0, 4, 9, 1, '#3f5f96'); }],
   'bake-spoon': [3, 6, r => r(0, 0, 1, 4, '#c88a52')],
   'bake-dough': [12, 7, r => { r(0, 0, 10, 5, '#f0d8a8'); r(0, 0, 10, 1, '#fff0c8'); r(0, 4, 10, 1, '#d8b880'); }],
   'bake-pin': [16, 4, r => { r(0, 0, 14, 2, '#c88a52'); r(2, 0, 10, 1, '#e0a868'); r(0, 0, 2, 2, '#8c5838'); r(12, 0, 2, 2, '#8c5838'); }],
+  'bake-apple': [7, 7, r => { r(0, 1, 5, 3, '#d04c3a'); r(1, 0, 3, 5, '#d04c3a'); r(1, 1, 1, 1, '#f07a5a'); r(3, 3, 2, 1, '#982f2a'); }],
 };
 
 function prop(scene, key) {
@@ -84,6 +87,7 @@ export async function bakePie(scene) {
   await walk(table.stand);
   player.face('down');
   const bowl = putDown(table.bowl);
+  const apple = scene.add.image(table.pie.x + 3, table.pie.y, prop(scene, 'bake-apple')).setOrigin(0).setDepth(0.46);
   const spoon = scene.add.image(table.bowl.x + 5, table.bowl.y - 3, prop(scene, 'bake-spoon')).setOrigin(0.5, 0).setDepth(0.47);
   scene.tweens.add({ targets: spoon, x: spoon.x + 2, duration: 160, yoyo: true, repeat: -1 });
   const flour = scene.time.addEvent({ delay: 220, loop: true, callback: () => puff(scene, table.bowl.x + 2 + Math.random() * 7, table.bowl.y, 0xffffff, 6) });
@@ -97,6 +101,7 @@ export async function bakePie(scene) {
   await wait(1800);
   dough.destroy();
   pin.destroy();
+  apple.destroy(); // into the filling
   const raw = scene.add.image(table.pie.x, table.pie.y, pieTexture(scene, 8, true)).setOrigin(0).setDepth(0.46);
   await wait(700);
 
