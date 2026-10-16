@@ -7,6 +7,8 @@ import { band, hash, pixels, ellipse } from './views/art.js';
 // two of them are pixel art at a big, crisp zoom; speech bubbles are drawn on
 // a screen-resolution layer on top so the words stay sharp. Lines type out;
 // tap to finish a line or go to the next; after the last, back to the farm.
+// Where Jones has something to say you pick one of two replies (tap, or keys
+// 1/2, or arrows + Enter). The ✕ (or Esc) leaves the talk at any time.
 
 const FADE_MS = 300;
 const SPEAKERS = {
@@ -70,7 +72,7 @@ export default class TalkScene extends Phaser.Scene {
     const z = Math.max(3, Math.floor(Math.min((H * 0.36) / FRAME_H, W / 44)));
     const w = Math.ceil(W / z) + 2; // a little spare so no edge shows
     const h = Math.ceil(H / z) + 2;
-    const ground = Math.round(h * 0.82);
+    const ground = Math.round(h * 0.7); // leaves room below for the replies
 
     if (this.textures.exists('talk-bg')) this.textures.remove('talk-bg');
     const tex = this.textures.createCanvas('talk-bg', w, h);
@@ -99,33 +101,65 @@ export default class TalkScene extends Phaser.Scene {
     document.body.classList.add('pov-view');
     this.events.once('shutdown', () => document.body.classList.remove('pov-view'));
 
-    this.lines = lines;
-    this.index = -1;
+    this.queue = [...lines];
+    this.started = false;
+    this.choices = null;
     this.leaving = false;
-    this.input.on('pointerdown', () => this.advance());
-    this.input.keyboard.on('keydown', () => this.advance());
+    this.closeArea = this.drawClose();
+    this.input.on('pointerdown', (p) => this.tap(p.x, p.y));
+    this.input.keyboard.on('keydown', (e) => this.key(e.key));
     this.time.delayedCall(FADE_MS + 150, () => this.next());
 
+    // Back to the farm; `finished` if the talk was heard to the end.
     this.finish = () => {
       if (this.leaving) return;
       this.leaving = true;
+      const finished = this.started && !this.choices && this.queue.length === 0;
       cam.fadeOut(FADE_MS);
       uiCam.fadeOut(FADE_MS);
       cam.once('camerafadeoutcomplete', () => {
-        this.scene.resume('Game');
+        this.scene.resume('Game', { finished });
         this.scene.stop();
       });
     };
   }
 
+  tap(x, y) {
+    if (this.leaving) return;
+    const inside = (r) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+    if (inside(this.closeArea)) {
+      this.finish();
+    } else if (this.choices) {
+      const i = this.choices.findIndex(c => inside(c.area));
+      if (i >= 0) this.pick(i);
+    } else {
+      this.advance();
+    }
+  }
+
+  key(k) {
+    if (this.leaving) return;
+    if (k === 'Escape') {
+      this.finish();
+    } else if (!this.choices) {
+      this.advance();
+    } else if (k === '1' || k === '2') {
+      this.pick(Number(k) - 1);
+    } else if (k === 'ArrowUp' || k === 'ArrowDown') {
+      this.highlight(this.selected === 0 ? 1 : 0);
+    } else if ((k === 'Enter' || k === ' ') && this.selected >= 0) {
+      this.pick(this.selected);
+    }
+  }
+
   advance() {
-    if (this.leaving || this.index < 0) return;
+    if (!this.started) return;
     if (this.typing) {
       this.typing.remove();
       this.typing = null;
       this.message.setText(this.full);
       this.doneTyping();
-    } else if (this.index >= this.lines.length - 1) {
+    } else if (this.queue.length === 0) {
       this.finish();
     } else {
       this.next();
@@ -133,8 +167,21 @@ export default class TalkScene extends Phaser.Scene {
   }
 
   next() {
-    this.index++;
-    const [who, text] = this.lines[this.index];
+    this.started = true;
+    const step = this.queue.shift();
+    if (step.choose) this.ask(step.choose);
+    else this.say(...step);
+  }
+
+  // Jones says the reply you picked, then Bob answers it.
+  pick(i) {
+    const choice = this.choices[i];
+    this.choices = null;
+    this.queue.unshift(...(choice.then ?? []));
+    this.say('jones', choice.say);
+  }
+
+  say(who, text) {
     this.uiObjects.forEach(o => o.destroy());
     this.uiObjects = [];
     this.tweens.killTweensOf(Object.values(this.people));
@@ -197,22 +244,83 @@ export default class TalkScene extends Phaser.Scene {
   doneTyping() {
     this.tweens.killTweensOf(Object.values(this.people));
     Object.values(this.people).forEach(p => p.setY(this.ground));
-    this.tweens.add({ targets: this.more, alpha: 1, duration: 300, yoyo: true, repeat: -1 });
+    // a reply to pick next? offer it straight away, under the line it answers
+    if (this.queue[0]?.choose) this.ask(this.queue.shift().choose);
+    else this.tweens.add({ targets: this.more, alpha: 1, duration: 300, yoyo: true, repeat: -1 });
+  }
+
+  // Two reply buttons along the bottom, under a "Your reply" label.
+  ask(options) {
+    const { width: W, height: H } = this.scale;
+    const font = Math.round(Math.max(14, Math.min(18, W / 24)));
+    const pad = Math.round(font * 0.7);
+    const bw = Math.min(W - 24, 360);
+    const bx = Math.round((W - bw) / 2);
+    const gap = Math.round(font * 0.6);
+    const dpr = window.devicePixelRatio || 1;
+    const style = { fontFamily: 'monospace', fontStyle: 'bold', fontSize: `${font}px`, color: INK, resolution: dpr };
+
+    let y = H - 16;
+    this.choices = options.map(o => ({ ...o })).reverse().map((c) => {
+      const arrow = this.add.text(0, 0, '▶', { ...style, color: SPEAKERS.jones.color });
+      const text = this.add.text(0, 0, c.say, {
+        ...style, wordWrap: { width: bw - pad * 3 - arrow.width, useAdvancedWrap: true }, lineSpacing: Math.round(font * 0.2),
+      });
+      const bh = Math.round(text.height + pad * 1.6);
+      y -= bh;
+      const g = this.add.graphics();
+      arrow.setPosition(bx + pad, y + pad * 0.8);
+      text.setPosition(bx + pad * 2 + arrow.width, y + pad * 0.8);
+      const parts = [g, arrow, text];
+      this.ui.add(parts);
+      this.uiObjects.push(...parts);
+      this.tweens.add({ targets: parts, alpha: { from: 0, to: 1 }, duration: 200 });
+      const choice = { ...c, g, area: { x: bx - 6, y: y - gap / 2, w: bw + 12, h: bh + gap }, box: [bx, y, bw, bh] };
+      y -= gap + 4;
+      return choice;
+    }).reverse();
+
+    const label = this.add.text(bx + 2, y, 'Your reply', {
+      fontFamily: 'monospace', fontStyle: 'bold', fontSize: `${Math.round(font * 0.85)}px`, color: '#fffcf2',
+      stroke: INK, strokeThickness: 4, resolution: dpr,
+    }).setOrigin(0, 1);
+    this.ui.add(label);
+    this.uiObjects.push(label);
+    this.highlight(-1);
+  }
+
+  highlight(i) {
+    this.selected = i;
+    this.choices.forEach((c, j) => {
+      c.g.clear();
+      this.drawBox(c.g, ...c.box, j === i ? 0xf8d870 : 0xfff3c4, j === i ? 0xe0bc50 : 0xecdc9c);
+    });
+  }
+
+  // ✕ in the top-right corner to leave the talk; returns its tap area.
+  drawClose() {
+    const { width: W } = this.scale;
+    const s = 40;
+    const x = W - s - 12;
+    const y = 12;
+    const g = this.add.graphics();
+    this.drawBox(g, x, y, s, s, 0xfffcf2, 0xe8e0cc);
+    const c = 4; // a 5×5-cell pixel X
+    const ox = x + (s - 5 * c) / 2;
+    const oy = y + (s - 5 * c) / 2;
+    g.fillStyle(0x2e1d0c);
+    for (let i = 0; i < 5; i++) {
+      g.fillRect(ox + i * c, oy + i * c, c, c);
+      g.fillRect(ox + (4 - i) * c, oy + i * c, c, c);
+    }
+    this.ui.add(g);
+    return { x: x - 10, y: 0, w: s + 22, h: s + 22 };
   }
 
   // A chunky pixel-art bubble: white, dark outline, notched corners and a
   // stepped tail pointing down at the speaker's head (tx, ty).
   drawBubble(g, x, y, w, h, tx, ty) {
-    const q = Math.max(2, Math.round(this.z / 3));
-    g.fillStyle(0x2e1d0c);
-    g.fillRect(x + q, y - q, w - 2 * q, h + 2 * q);
-    g.fillRect(x - q, y + q, w + 2 * q, h - 2 * q);
-    g.fillRect(x, y, w, h);
-    g.fillStyle(0xfffcf2);
-    g.fillRect(x + q, y, w - 2 * q, h);
-    g.fillRect(x, y + q, w, h - 2 * q);
-    g.fillStyle(0xe8e0cc);
-    g.fillRect(x + q, y + h - q, w - 2 * q, q); // a little shading along the bottom
+    const q = this.drawBox(g, x, y, w, h, 0xfffcf2, 0xe8e0cc);
 
     const cx = Phaser.Math.Clamp(Math.round(tx), x + 4 * q, x + w - 4 * q);
     const steps = Math.max(2, Math.round((ty - (y + h)) / q));
@@ -223,5 +331,21 @@ export default class TalkScene extends Phaser.Scene {
       g.fillStyle(0xfffcf2).fillRect(cx - half, yy - (i === 0 ? q : 0), half * 2, q + (i === 0 ? q : 0));
     }
     g.fillStyle(0x2e1d0c).fillRect(cx - q, y + h + steps * q, 2 * q, q);
+  }
+
+  // The bubble's box: dark outline, notched corners, shading along the
+  // bottom. Returns the pixel size used.
+  drawBox(g, x, y, w, h, fill, shade) {
+    const q = Math.max(2, Math.round(this.z / 3));
+    g.fillStyle(0x2e1d0c);
+    g.fillRect(x + q, y - q, w - 2 * q, h + 2 * q);
+    g.fillRect(x - q, y + q, w + 2 * q, h - 2 * q);
+    g.fillRect(x, y, w, h);
+    g.fillStyle(fill);
+    g.fillRect(x + q, y, w - 2 * q, h);
+    g.fillRect(x, y + q, w, h - 2 * q);
+    g.fillStyle(shade);
+    g.fillRect(x + q, y + h - q, w - 2 * q, q);
+    return q;
   }
 }

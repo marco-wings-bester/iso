@@ -126,6 +126,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   // Close-up of the two of them talking (TalkScene), then back to the farm.
+  // Bob's "!" stays until a talk is heard to the end (not closed early).
   talkToBob() {
     this.player.face('right');
     this.bob.faceJones();
@@ -133,9 +134,11 @@ export default class GameScene extends Phaser.Scene {
     const cam = this.cameras.main;
     cam.fadeOut(300);
     cam.once('camerafadeoutcomplete', () => {
-      this.events.once('resume', () => {
-        setFlag('metBob');
-        this.bob.hideMark();
+      this.events.once('resume', (_sys, { finished } = {}) => {
+        if (finished) {
+          setFlag('metBob');
+          this.bob.hideMark();
+        }
         this.bob.faceFarm();
         this.leaving = false;
         cam.fadeIn(300);
