@@ -285,6 +285,38 @@ function buildWaveFrame(frame) {
   return outline(g);
 }
 
+// Sitting at a table, facing down: only what shows above the tabletop (head,
+// shoulders, arms), with the table's back edge on row SEAT_ROW, just under
+// his belt. kind: 'down' fork in the pie, 'up' fork at his mouth, 'chew'
+// mouth open, 'full' hands on his belly and eyes shut, 'pat' patting it.
+export const SEAT_ROW = 17;
+const FORK = '#d0d8e0';
+
+function buildSeatFrame(kind) {
+  const g = grid(FRAME_W, FRAME_H);
+  const content = kind === 'full' || kind === 'pat';
+  const head = look.upper.down.slice(0, 16).map((row, i) => {
+    if (i === 8 && content) return row.replace(/e/g, 's');
+    if (i === 10 && kind === 'chew') return `${row.slice(0, 7)}xx${row.slice(9)}`;
+    return row;
+  });
+  stamp(g, head, 0, 1);
+  if (content) {
+    arm(g, ['.C', 'CC', 'Cc'], 2, 13);
+    arm(g, ['c.', 'cc', 'cc'], 12, 13);
+    stamp(g, ['SS'], 4, 15);
+    stamp(g, ['ss'], 10, kind === 'pat' ? 14 : 15);
+    return outline(g);
+  }
+  arm(g, ['.C', 'CC', 'Cc', 'Cc', 'cc', 'SS'], 2, 13); // resting on the table
+  if (kind === 'up') arm(g, ['ss', 'Ss', 'cc', 'cc'], 12, 10); // hand by his face
+  else arm(g, ['c.', 'cc', 'cc', 'cc', 'cc', 'ss'], 12, 13);   // hand at the plate
+  const out = outline(g);
+  const fork = kind === 'up' ? [[9, 11], [10, 11], [11, 11]] : [[11, 19], [10, 20]];
+  fork.forEach(([x, y]) => { out[y][x] = FORK; });
+  return out;
+}
+
 // Soft pixel shadow under the feet (not outlined)
 const SHADOW_ROWS = [[4, 8], [3, 10], [4, 8]];
 
@@ -357,7 +389,10 @@ export function createCharacter(scene) {
 }
 
 // Bob the neighbour: 'bob' (farm) and 'bob-px' (crisp, for close-ups), with
-// the same direction animations plus `${key}-wave`.
+// the same direction animations plus `${key}-wave`, and at the table
+// `${key}-eat` (one bite of pie per loop) and `${key}-full`.
+const SEAT_KINDS = ['down', 'up', 'chew', 'full', 'pat'];
+
 export function createBob(scene) {
   look = BOB;
   [['bob', ART_PX], ['bob-px', 1]].forEach(([key, p]) => {
@@ -365,7 +400,7 @@ export function createBob(scene) {
     const cols = 4;
     const fw = FRAME_W * p;
     const fh = FRAME_H * p;
-    const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 1));
+    const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 3));
     const ctx = tex.getContext();
     directionRows(scene, key, ctx, fw, fh, p, cols);
 
@@ -376,6 +411,27 @@ export function createBob(scene) {
     }
     const wf = f => ({ key, frame: waveRow * cols + f });
     scene.anims.create({ key: `${key}-wave`, frames: [wf(0), wf(1), wf(0), wf(1), wf(0), wf(1)], frameRate: 6, repeat: 0 });
+
+    // Seated frames (no shadow: his feet are under the table), two rows on.
+    SEAT_KINDS.forEach((kind, i) => {
+      const x = (i % cols) * fw;
+      const y = (waveRow + 1 + Math.floor(i / cols)) * fh;
+      blit(ctx, buildSeatFrame(kind), x, y, p);
+      tex.add(`seat-${kind}`, 0, x, y, fw, fh);
+    });
+    const sf = (kind, duration) => ({ key, frame: `seat-${kind}`, duration }); // ms on screen
+    scene.anims.create({
+      key: `${key}-eat`,
+      frames: [sf('down', 600), sf('up', 500), sf('chew', 160), sf('down', 160), sf('chew', 160), sf('down', 160), sf('chew', 160)],
+      frameRate: 10,
+      repeat: -1,
+    });
+    scene.anims.create({
+      key: `${key}-full`,
+      frames: [sf('full', 2200), sf('pat', 160), sf('full', 160), sf('pat', 160), sf('full', 1400)],
+      frameRate: 10,
+      repeat: -1,
+    });
 
     tex.refresh();
     if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);

@@ -1,7 +1,8 @@
 // What Farmer Jones and Bob say when they meet at the gate. A line is
 // [who, text]; at a { choose } you pick which of two replies Jones says (the
 // pick is his answer, it isn't shown again), and `then` is how Bob answers
-// that reply before the talk goes on.
+// that reply before the talk goes on. A reply with `flag` sets that story
+// flag: 'gavePie' sends Bob off to the farmhouse to eat the pie.
 export const FIRST_MEETING = [
   ['bob', 'Morning, Jones! Finally up, are we?'],
   { choose: [
@@ -21,23 +22,24 @@ export const FIRST_MEETING = [
     ] },
   ] },
   { choose: [
-    { say: "There's one on the kitchen table. It's yours!", then: [
-      ['bob', "Now you're talking! See you at the market, neighbour."],
+    { say: "There's one on the kitchen table. It's yours!", flag: 'gavePie', then: [
+      ['bob', 'Yummy!'],
     ] },
     { say: 'A whole pie? For waving your cap about?', then: [
-      ['bob', 'Hmph! A cup of tea, then. See you at the market, neighbour.'],
+      ['bob', 'Hmph! Keep your pie, then.'],
     ] },
   ] },
 ];
 
+// Talking again: Bob is only still at the gate if he didn't get the pie.
 export const AGAIN = [
-  ['bob', 'Still here, Jones? Lovely morning for it.'],
+  ['bob', 'Still here, Jones? Changed your mind about that pie?'],
   { choose: [
-    { say: "It is! I'm off for a walk round the farm.", then: [
-      ['bob', 'Mind that fox!'],
+    { say: "Go on then, it's on the kitchen table.", flag: 'gavePie', then: [
+      ['bob', 'Yummy!'],
     ] },
-    { say: 'Keep an eye on my hens for me, Bob?', then: [
-      ['bob', "Only if there's pie in it!"],
+    { say: 'Not a chance, Bob!', then: [
+      ['bob', 'Hmph! Worth a try.'],
     ] },
   ] },
 ];

@@ -281,13 +281,36 @@ function table(ctx, x, y) {
     r(28, 17, 3, 3, C.woodDkr);
   });
   // a pie and a mug
-  obj(ctx, x + 11, y + 4, 10, 6, r => {
-    r(0, 0, 10, 6, C.linenDk);
-    r(1, 0, 8, 5, '#e09848');
-    r(2, 1, 1, 3, C.strawDk); r(5, 1, 1, 3, C.strawDk); r(1, 2, 8, 1, C.strawDk);
-    r(1, 0, 8, 1, C.straw);
-  });
+  piePlate(ctx, x + 11, y + 4);
   obj(ctx, x + 26, y + 3, 3, 4, r => { r(0, 0, 3, 4, '#5b86c4'); r(2, 0, 1, 4, '#3f5f96'); });
+}
+
+// The pie on its plate, `left` of its 8 columns not yet eaten (crumbs where
+// it's gone). Body 10×6 at (x, y), outline one pixel around.
+export function piePlate(ctx, x, y, left = 8) {
+  obj(ctx, x, y, 10, 6, r => {
+    r(0, 0, 10, 6, C.linenDk);
+    if (left < 8) { r(7, 2, 1, 1, C.strawDk); r(4, 3, 1, 1, C.straw); }
+    if (!left) return;
+    r(1, 0, left, 5, '#e09848');
+    [2, 5].forEach(lx => { if (lx < 1 + left) r(lx, 1, 1, 3, C.strawDk); });
+    r(1, 2, left, 1, C.strawDk);
+    r(1, 0, left, 1, C.straw);
+  });
+}
+
+// A chair facing the room, standing behind the table (its seat and legs
+// are hidden by the tabletop).
+function seatChair(ctx, x, y) {
+  obj(ctx, x, y, 14, 13, r => {
+    r(1, 0, 12, 2, C.woodDk);
+    r(1, 0, 12, 1, C.wood);
+    r(1, 2, 2, 7, C.woodDk);
+    r(11, 2, 2, 7, C.woodDk);
+    r(3, 5, 8, 1, C.woodDkr);
+    r(0, 8, 14, 5, C.wood);
+    r(0, 8, 14, 1, C.woodLt);
+  });
 }
 
 function chair(ctx, x, y, flip) {
@@ -539,6 +562,7 @@ export const ROOMS = {
       { x: 66, y: 40, w: 38, h: 10 },  // fireplace + hearth
       { x: 112, y: 16, w: 24, h: 34 }, // bookshelf
       { x: 72, y: 92, w: 56, h: 20 },  // table + chairs
+      { x: 93, y: 80, w: 14, h: 12 },  // chair behind the table (Bob's)
       { x: 10, y: 128, w: 14, h: 22 }, // plant
       { x: 112, y: 130, w: 22, h: 16 }, // chest
     ],
@@ -565,6 +589,7 @@ export const ROOMS = {
       bed(ctx, 10, 34);
       chair(ctx, 72, 94, false);
       chair(ctx, 118, 94, true);
+      seatChair(ctx, 93, 78);
       table(ctx, 84, 92);
       plant(ctx, 10, 128);
       chest(ctx, 112, 130);
