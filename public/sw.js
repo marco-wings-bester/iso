@@ -1,7 +1,7 @@
-// Offline support: precache the shell + map, then cache everything else
+// Offline support: precache the shell + maps, then cache everything else
 // (hashed JS bundles) the first time it is fetched.
-const CACHE = 'farm-walk-v3';
-const PRECACHE = ['./', 'index.html', 'manifest.webmanifest', 'assets/map.png', 'icons/icon-192.png'];
+const CACHE = 'farm-walk-v4';
+const PRECACHE = ['./', 'index.html', 'manifest.webmanifest', 'assets/map.png', 'assets/crossroads.jpg', 'icons/icon-192.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));
