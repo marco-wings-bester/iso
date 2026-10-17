@@ -31,10 +31,10 @@ export const BEACH_VILLAGERS = [
   {
     id: 'lientjie', name: { af: 'Lientjie', en: 'Lily' }, small: true,
     look: { hair: 'bob', shorts: true, palette: { ...S, ...SHOES, R: '#8a5a3a', r: '#5e3a22', C: '#f4c0d0', c: '#d090a8', O: '#5a8ac8', o: '#3e6698' } },
-    does: 'stand', hops: true, at: { x: 350, y: 2508 }, face: 'down', // watching Oom Gert fish
+    does: 'stand', hops: true, at: { x: 350, y: 2508 }, face: 'down', // watching Derik fish
   },
   {
-    id: 'gert', name: { af: 'Oom Gert', en: 'Old Gus' },
+    id: 'derik', name: { af: 'Derik', en: 'Derek' }, // lends Johan R15 for his coffee (src/derik.js)
     look: { hair: 'hat', palette: { ...TAN, ...SHOES, H: '#c89058', h: '#a87040', j: '#7a5030', b: '#6a4a2a', R: '#6a4630', r: '#4a2e1e', C: '#f0e8d0', c: '#c8bca0', O: '#5a5a60', o: '#3e3e44' } },
     does: 'fish', at: { x: 294, y: 2500 }, face: 'left',
   },

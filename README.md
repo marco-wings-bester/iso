@@ -29,7 +29,7 @@ crossroads, **Level 2** (`src/RoadScene.js`; the map is
 right at the top); left goes to **the beach**, a little seaside village with
 its cafe, the sand and a jetty (`src/BeachScene.js`). Its people are real
 characters like Farmer Jones and Bob, drawn the same way, each with a name
-(`src/villagers.js`): Anika and Kobus stroll the village road, Oom Gert fishes
+(`src/villagers.js`): Anika and Kobus stroll the village road, Derik fishes
 off the jetty with Lientjie watching, three guests sit at the cafe and two
 sunbathers on the sand; tap one and Farmer Jones walks over. Boats rock gently
 at anchor, a fish jumps now and then, coffee steams at the cafe, and the
@@ -40,7 +40,10 @@ people taken out, by `scripts/cut-seaside.py`). Tap the **Cozy Seaside Cafe**
 `src/interiors.js`): he'd love a coffee, so he orders one from Sannie (Sally in
 English) at the counter, checks his wallet (his view of it,
 `src/views/wallet.js`) and finds he hasn't a cent in cash; she says to come
-back when he has some. Down to town and right to Bob's house are still to come. Both picture maps are
+back when he has some. Derik, fishing off the jetty, lends him R15 (tap him;
+`src/derik.js`): "Bring dit sommer oormore aand as jy by ons kom braai." Back
+at the counter Johan pays, Sannie makes his coffee, and he carries it about,
+steaming. Down to town and right to Bob's house are still to come. Both picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it

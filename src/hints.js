@@ -120,6 +120,12 @@ const LINES = {
       ? { af: '’n Koevoet! Daarmee kry ek die kis oop wat vassit.', en: 'A crowbar! That will open the stuck chest.' }
       : { af: '’n Koevoet. Handig om goed mee oop te wrik.', en: 'A crowbar. Handy for prising things open.' }),
   },
+  // the cafe's coffee, and no cash to pay for it (src/cafe.js)
+  noCash: {
+    none: null,
+    subtle: { af: 'Miskien sal iemand by die strand vir my ’n paar rand leen…', en: 'Maybe someone at the beach would lend me a few rand…' },
+    explicit: { af: 'Derik visvang op die pier: dalk sal hy vir my R15 leen.', en: "Derek's fishing on the jetty: maybe he'll lend me R15." },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },
