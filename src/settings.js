@@ -5,13 +5,14 @@
 //   default), 'subtle' or 'explicit' (src/hints.js).
 // (index.html reads lang too, for its loading messages.)
 const KEY = 'farm-walk-settings';
-const VERSION = 2;
+const VERSION = 3;
 const settings = { lang: 'af', hints: 'none' };
 try {
   const saved = JSON.parse(localStorage.getItem(KEY)) ?? {};
-  // Saved before version 2, hints 'subtle' was most likely just the old
-  // default (stored along with any other change), so it goes.
-  if (!saved.v && saved.hints === 'subtle') delete saved.hints;
+  // Hints saved before version 3 go back to the default, None, once (Subtle
+  // used to be the default, and was saved along with any other change); a
+  // level chosen in the menu since then is kept.
+  if (!(saved.v >= 3)) delete saved.hints;
   Object.assign(settings, saved, { v: VERSION });
 } catch {
   // private mode: defaults for this visit
