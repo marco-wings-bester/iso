@@ -23,6 +23,12 @@ try {
   flags = {};
 }
 
+// Level 2 (the crossroads) begins with the story up to Bob going home.
+export const LEVEL2_STORY = [
+  'key', 'read', 'picker', 'apple', 'baked', 'ate', 'slept', 'metBob', 'gavePie', 'bobSat',
+  'pieEaten', 'sarahKnocked', 'bobHidden', 'sarahVisited', 'chestStuck', 'crowbar', 'bobHome',
+];
+
 export function hasFlag(name) {
   return !!flags[name];
 }

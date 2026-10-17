@@ -12,6 +12,8 @@
 // All of it in the chosen language: each text is { af, en }.
 // - New game: after a confirm, forget the story so far and start again at the
 //   gate (so Bob isn't there yet); `onNewGame` does the restart (main.js).
+// And, not in the menu: the level select (`showLevels`, opened by a secret
+// under the big pine), jumping to Level 1 or 2; `onLevel` does it (main.js).
 
 import { updateNow } from './updates.js';
 import { getSetting, setSetting } from './settings.js';
@@ -47,7 +49,7 @@ function overlay(id, ...content) {
   return o;
 }
 
-export function setupMenu({ onNewGame }) {
+export function setupMenu({ onNewGame, onLevel }) {
   // index.html captures the browser's install prompt as early as possible.
   let prompt = window.farmWalkInstallPrompt || null;
   window.addEventListener('farmwalk-installable', () => { prompt = window.farmWalkInstallPrompt; });
@@ -241,4 +243,31 @@ export function setupMenu({ onNewGame }) {
     if (menu?.isConnected) closeMenu(); // (it may have been closed by a tap outside it)
     else openMenu();
   };
+
+  // The secret level select: a card with a button per level.
+  function showLevels() {
+    closeMenu();
+    document.getElementById('levels')?.remove();
+    const levels = [
+      [1, t({ af: '🌾 Vlak 1 · Die plaas', en: '🌾 Level 1 · The farm' }), t({ af: 'Die storie van voor af', en: 'The story from the start' })],
+      [2, t({ af: '🧭 Vlak 2 · Die kruispad', en: '🧭 Level 2 · The crossroads' }), t({ af: 'Ná Pieter huis toe is', en: 'After Bob has gone home' })],
+    ];
+    const cancel = el('button', { type: 'button', className: 'btn secondary', textContent: t({ af: 'Kanselleer', en: 'Cancel' }) });
+    const buttons = levels.map(([n, name, about]) => {
+      const b = el('button', { type: 'button', className: `btn level${n === 1 ? ' new' : ' update'}` }, el('span', { textContent: name }), el('small', { textContent: about }));
+      b.onclick = () => {
+        o.remove();
+        onLevel(n);
+        toast(name);
+      };
+      return b;
+    });
+    const o = overlay('levels',
+      el('h2', { textContent: t({ af: '🌲 Kies ’n vlak', en: '🌲 Choose a level' }) }),
+      el('p', { textContent: t({ af: 'Jy het die geheim van die dennebolle gevind!', en: 'You found the secret of the pine cones!' }) }),
+      el('div', { className: 'menu-buttons' }, ...buttons, cancel));
+    cancel.onclick = () => o.remove();
+  }
+
+  return { showLevels };
 }
