@@ -80,7 +80,7 @@ const LINES = {
     subtle: 'Where could Bob hide…? Somewhere big enough for him…',
     explicit: 'Quick! Tap the big chest in the corner so Bob can hide in it.',
   },
-  // trying to go out before Bob is hidden
+  // trying to go out (or to bed) before Bob is hidden
   notNow: {
     none: 'Not now!',
     subtle: "Not now: Sarah's at the door, and Bob needs hiding!",

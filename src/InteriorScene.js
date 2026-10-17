@@ -10,7 +10,7 @@ import { seatBob } from './bob.js';
 import { bakePie, eatHalf } from './baking.js';
 import { think } from './bubble.js';
 import { line } from './hints.js';
-import { knock, hideBob, bobWaiting, bobInChest } from './sarah.js';
+import { knock, hideBob, bobWaiting, bobInChest, sarahVisits } from './sarah.js';
 
 const FADE_MS = 250;
 const BODY = 5; // half the farmer's width in sprite px: keeps him off walls and furniture
@@ -76,9 +76,11 @@ export default class InteriorScene extends Phaser.Scene {
     });
     this.exitY = room.h - 3;
     this.leaving = false;
-    this.busy = false;  // baking, eating, talking: taps and keys are ignored…
-    this.skippable = false; // …or, while people talk, a tap cuts a line short
+    this.busy = false;  // baking, eating, talking: taps and keys only move speech along
     this.carry = null;  // what he's carrying (follows him)
+    this.choice = null; // replies to pick from, while someone's waiting for one (src/dialog.js)
+    document.body.classList.remove('choosing');
+    this.sarah = null;
 
     // Fixed camera: the whole room fills the screen (~3x on a phone, so the
     // farmer is ~2.5x his farm size) and stays put while he walks around.
@@ -111,10 +113,21 @@ export default class InteriorScene extends Phaser.Scene {
     // Tap to walk; tapping the doorway or below the room walks out; tapping
     // a spot (bookshelf, cupboard, table, chest, bed, fireplace) walks there
     // and uses it.
+    this.input.keyboard.on('keydown', (e) => {
+      if ((e.key === ' ' || e.key === 'Enter') && this.thought?.speech && !this.choice) this.thought.destroy();
+    });
     this.input.on('pointerdown', (pointer) => {
-      if (this.busy && this.skippable) this.thought?.destroy();
-      if (this.leaving || this.busy) return;
       const { worldX: x, worldY: y } = pointer;
+      if (this.choice) {
+        this.choice.tap(x, y);
+        return;
+      }
+      // speech stays up until a tap moves it along
+      if (this.thought?.speech) {
+        this.thought.destroy();
+        if (this.busy) return;
+      }
+      if (this.leaving || this.busy) return;
       const spot = Object.entries(spots).find(([, s]) => inRect(x, y, s.area));
       if (spot) {
         const [id, s] = spot;
@@ -142,7 +155,10 @@ export default class InteriorScene extends Phaser.Scene {
       const knockSoon = () => this.time.delayedCall(2500, () => knock(this));
       if (hasFlag('sarahKnocked')) {
         this.add.image(pie.x, pie.y, pieTexture(this, 0)).setOrigin(0).setDepth(0.45); // his empty plate
-        if (hasFlag('bobHidden')) bobInChest(this);
+        if (hasFlag('bobHidden')) {
+          bobInChest(this);
+          if (!hasFlag('sarahVisited')) this.time.delayedCall(1200, () => sarahVisits(this));
+        }
         else this.bob = bobWaiting(this);
       } else {
         this.bob = seatBob(this, knockSoon);
@@ -206,7 +222,8 @@ export default class InteriorScene extends Phaser.Scene {
 
   // Bed: only once he's had his pie.
   tryToSleep() {
-    if (hasFlag('ate')) this.sleep();
+    if (this.mustHideBob()) this.think(line('notNow'));
+    else if (hasFlag('ate')) this.sleep();
     else this.think(line('bedEarly'));
   }
 
