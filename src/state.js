@@ -6,7 +6,7 @@
 // the pie ('baked') → eat half of it ('ate') → sleep ('slept') → Bob at the
 // gate ('metBob', 'gavePie', …), who eats the other half ('pieEaten') → a
 // knock at the door: Sarah, Bob's wife ('sarahKnocked') → hide Bob in the
-// chest ('bobHidden').
+// chest ('bobHidden') → Sarah comes in for a chat ('sarahVisited').
 // (v2: progress saved under the old order — read, sleep, Bob — is dropped.)
 const KEY = 'farm-walk-story-v2';
 let flags = {};

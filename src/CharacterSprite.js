@@ -163,8 +163,92 @@ const BOB_UPPER = {
   ],
 };
 
+// Sarah, Bob's wife: a pink headscarf over chestnut hair, a lavender dress
+// with a white apron, and a skirt down to her boots (`skirt`: the rows below
+// the waist, instead of legs).
+const SARAH_PALETTE = {
+  ...FARMER_PALETTE,
+  H: '#e07aa8', h: '#c05a88', j: '#9a3a68',               // headscarf
+  R: '#a0522d', r: '#7a3a1e',                              // hair
+  C: '#8a78cc', c: '#5e4e9e',                              // dress
+  O: '#f8f0e0', o: '#d8ccb8',                              // apron
+  p: '#e07a8a',                                            // lips
+  B: '#6a4a3a', d: '#3a2a1a',                              // boots
+};
+const SARAH_UPPER = {
+  down: [
+    '......hHHh......',
+    '.....hHHHHh.....',
+    '....hHHHHHHh....',
+    '....hhhhhhhhj...',
+    '....rRRRRRRr....',
+    '....rSSSSSSr....',
+    '....RSSSSSSR....',
+    '....RSeSSeSR....',
+    '....RSSSSSSR....',
+    '....rsSppSsr....',
+    '.....sSSSSs.....',
+    '......ssss......',
+    '....CCOOOOCc....',
+    '....CCOOOOCc....',
+    '....cCOOOOCc....',
+    '....cCOOOOCc....',
+    '...cCCOOOOCcc...',
+    '...cCOOOOOOCc...',
+    '..cCCOOOOOOCcc..',
+  ],
+  up: [
+    '......hHHh......',
+    '.....hHHHHh.....',
+    '....hHHHHHHh....',
+    '....hhhhhhhhj...',
+    '....rRRRRRRr....',
+    '....rRRRRRRr....',
+    '....RRRRRRRR....',
+    '....rRRhhRRr....',
+    '....rRhHHhRr....',
+    '.....rRRRRr.....',
+    '.....sSSSSs.....',
+    '......ssss......',
+    '....CCCCCCCc....',
+    '....CCCCCCCc....',
+    '....cCCCCCCc....',
+    '....cCoooCCc....',
+    '...cCCCCCCCcc...',
+    '...cCCCCCCCCc...',
+    '..cCCCCCCCCCcc..',
+  ],
+  left: [
+    '.......hHHh.....',
+    '......hHHHHh....',
+    '.....hHHHHHHh...',
+    '.....hhhhhhhhj..',
+    '.....rRRRRRRr...',
+    '....SSSSSSRRr...',
+    '....SeSSSsRRr...',
+    '....SSSSSsRRr...',
+    '....spSSSsRr....',
+    '.....sSSSsr.....',
+    '.......sss......',
+    '.......ss.......',
+    '......COOCc.....',
+    '......COOCc.....',
+    '......COOCc.....',
+    '......COOCc.....',
+    '.....cCOOCCc....',
+    '.....cCOOCCc....',
+    '....cCCOOCCCc...',
+  ],
+};
+const SARAH_SKIRT = {
+  down: ['..cCCOOOOOOCcc..', '..cCCOOOOOOCCc..', '.cCCCOOOOOOCCcc.', '.cCCCooooooCCcc.'],
+  up: ['..cCCCCCCCCCcc..', '..cCCCCCCCCCCc..', '.cCCCCCCCCCCCcc.', '.ccCCCCCCCCCCcc.'],
+  left: ['....cCCOOCCCc...', '....cCCOOCCCCc..', '...cCCCOOCCCCc..', '...ccCCooCCCcc..'],
+};
+
 const FARMER = { palette: FARMER_PALETTE, upper: FARMER_UPPER };
 const BOB = { palette: BOB_PALETTE, upper: BOB_UPPER };
+const SARAH = { palette: SARAH_PALETTE, upper: SARAH_UPPER, skirt: SARAH_SKIRT };
 let look = FARMER; // the character being drawn
 
 // Legs: 6 rows (3 denim + 2 boot + sole), drawn below the torso.
@@ -210,13 +294,22 @@ function buildFrame(dir, frame) {
   const step = frame % 2 === 1;
   const bob = step ? 1 : 0;
 
+  // in a skirt only the boots show below it, stepping
+  const boot = (x, lift) => stamp(g, ['BB', 'dd'], x, 24 - lift);
+
   if (dir === 'down' || dir === 'up') {
     // Front/back: lift the stepping leg, swing the opposite arm forward.
     const liftL = frame === 1 ? 1 : 0;
     const liftR = frame === 3 ? 1 : 0;
-    leg(g, 5, liftL, null);
-    leg(g, 8, liftR, null);
+    if (look.skirt) {
+      boot(5, liftL);
+      boot(9, liftR);
+    } else {
+      leg(g, 5, liftL, null);
+      leg(g, 8, liftR, null);
+    }
     stamp(g, look.upper[dir], 0, 1 + bob);
+    if (look.skirt) stamp(g, look.skirt[dir], 0, 20 + bob);
     arm(g, ARM_L, 2, 13 + bob + liftR);
     arm(g, ARM_R, 12, 13 + bob + liftL);
   } else {
@@ -224,9 +317,15 @@ function buildFrame(dir, frame) {
     const swing = frame === 1 ? 1 : frame === 3 ? -1 : 0;
     const legFwd = swing === 0 ? null : swing > 0 ? STRIDE_FWD : STRIDE_BACK;
     const legBack = swing === 0 ? null : swing > 0 ? STRIDE_BACK : STRIDE_FWD;
-    leg(g, 7, 0, legBack, true);
-    leg(g, 6, 0, legFwd);
+    if (look.skirt) {
+      boot(8 + swing, 0);
+      boot(6 - swing, 0);
+    } else {
+      leg(g, 7, 0, legBack, true);
+      leg(g, 6, 0, legFwd);
+    }
     stamp(g, look.upper.left, 0, 1 + bob);
+    if (look.skirt) stamp(g, look.skirt.left, 0, 20 + bob);
     const a = [0, 0, swing, swing, 2 * swing].map(v => -v);
     arm(g, ARM_SIDE, 6, 13 + bob, a);
   }
@@ -415,6 +514,20 @@ function seatRows(scene, key, tex, ctx, row, fw, fh, p, cols) {
     frameRate: 10,
     repeat: -1,
   });
+}
+
+// Sarah, Bob's wife: 'sarah-px' (crisp, for the farmhouse), with the
+// direction animations `sarah-px-walk-${dir}` and `sarah-px-idle-${dir}`.
+export function createSarah(scene) {
+  const key = 'sarah-px';
+  if (scene.textures.exists(key)) return;
+  look = SARAH;
+  const cols = 4;
+  const tex = scene.textures.createCanvas(key, FRAME_W * cols, FRAME_H * DIRECTIONS.length);
+  directionRows(scene, key, tex.getContext(), FRAME_W, FRAME_H, 1, cols);
+  tex.refresh();
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  look = FARMER;
 }
 
 // Bob the neighbour: 'bob' (farm) and 'bob-px' (crisp, for close-ups), with
