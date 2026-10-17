@@ -24,8 +24,8 @@ leaves). Either way the
 chest is stuck: the crowbar in the tool shed prises it open, and Bob goes
 home, with Louise or alone. Then Farmer Jones wants to go to town: tap right
 at the bottom of the farm and he walks down the road past the gate to the
-crossroads, **Level 2** (`src/RoadScene.js`; the countryside there is drawn in
-code in the farm map's style, `src/road.js`). Up goes back to the farm (tap the
+crossroads, **Level 2** (`src/RoadScene.js`; the map is
+`public/assets/crossroads.jpg`, its roads baked by `scripts/build-roadmask.py`). Up goes back to the farm (tap the
 sign, or right at the top); down to town, right to Bob's house and left to the
 beach (those three are still to come). In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
@@ -69,7 +69,9 @@ npm run build    # outputs dist/
 The character can only walk on the dirt path. It's baked from the map into
 `src/walkMask.js` by `scripts/build-walkmask.py` (needs Pillow + numpy) —
 re-run it if you change `public/assets/map.png`. Set `DEBUG_PATH = true` in
-`src/constants.js` to see the walkable area in-game.
+`src/constants.js` to see the walkable area in-game. The crossroads' four roads
+are baked the same way into `src/roadMask.js` by `scripts/build-roadmask.py`
+from `public/assets/crossroads.jpg`.
 
 ## Buildings
 

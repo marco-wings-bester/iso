@@ -1,4 +1,5 @@
-import { CELL, COLS, ROWS, DATA } from './walkMask.js';
+import * as farmMask from './walkMask.js';
+import * as roadMask from './roadMask.js';
 
 // A grid of walkable cells over a scene, in world pixels. Movement only checks
 // the player's feet against it; tap-to-walk routes along it.
@@ -18,6 +19,34 @@ export default class WalkGrid {
       }
     }
     return new WalkGrid(cols, rows, cell, cells);
+  }
+
+  // Build from a baked mask: { CELL, COLS, ROWS, DATA } with DATA the
+  // walkable cells as a row-major, MSB-first bitset in base64.
+  static fromMask({ CELL, COLS, ROWS, DATA }) {
+    const bits = Uint8Array.from(atob(DATA), ch => ch.charCodeAt(0));
+    const cells = new Uint8Array(COLS * ROWS);
+    for (let i = 0; i < cells.length; i++) cells[i] = (bits[i >> 3] >> (7 - (i & 7))) & 1;
+    return new WalkGrid(COLS, ROWS, CELL, cells);
+  }
+
+  // Where a road crosses the line x = `at` (axis 'x') or y = `at` (axis 'y'):
+  // the middle of the run of walkable cells nearest `near`, or null.
+  crossing(axis, at, near) {
+    const { cols, rows, cell } = this;
+    const fixed = Math.floor(at / cell);
+    const n = axis === 'x' ? rows : cols;
+    const ok = i => (axis === 'x' ? this.cellWalkable(fixed, i) : this.cellWalkable(i, fixed));
+    let best = null;
+    for (let i = 0; i < n; i++) {
+      if (!ok(i) || (i > 0 && ok(i - 1))) continue;
+      let j = i;
+      while (j + 1 < n && ok(j + 1)) j++;
+      const mid = ((i + j + 1) / 2) * cell;
+      if (best === null || Math.abs(mid - near) < Math.abs(best - near)) best = mid;
+    }
+    if (best === null) return null;
+    return axis === 'x' ? { x: (fixed + 0.5) * cell, y: best } : { x: best, y: (fixed + 0.5) * cell };
   }
 
   cellWalkable(c, r) {
@@ -103,7 +132,6 @@ export default class WalkGrid {
 }
 
 // The farm: walkable = the dirt path, baked from the map by scripts/build-walkmask.py.
-const bits = Uint8Array.from(atob(DATA), ch => ch.charCodeAt(0));
-const farmCells = new Uint8Array(COLS * ROWS);
-for (let i = 0; i < farmCells.length; i++) farmCells[i] = (bits[i >> 3] >> (7 - (i & 7))) & 1;
-export const farmGrid = new WalkGrid(COLS, ROWS, CELL, farmCells);
+export const farmGrid = WalkGrid.fromMask(farmMask);
+// The crossroads (Level 2): its four roads, baked by scripts/build-roadmask.py.
+export const roadGrid = WalkGrid.fromMask(roadMask);
