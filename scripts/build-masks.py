@@ -2,7 +2,7 @@
 """Build the walkable areas of the picture maps (Level 2):
 
   public/assets/crossroads.jpg → src/roadMask.js   the four roads at the crossroads
-  public/assets/beach.jpg      → src/beachMask.js  the village road, the sand and the jetty
+  public/assets/seaside.jpg    → src/beachMask.js  the village road, the sand and the jetty
 
 Pixels are picked by colour (the pictures are shaded, and JPEGs), with extra
 boxes (the jetty's boards, a way down onto the sand), small holes (pebbles,
@@ -54,7 +54,7 @@ MAPS = [
         'exclude': [(0, 1120, 270, 384)],  # the path off to the bottom left
     },
     {
-        'image': 'public/assets/beach.jpg',
+        'image': 'public/assets/seaside.jpg',
         'out': 'src/beachMask.js',
         'what': 'the village road, the sand and the jetty at the beach',
         'cell': 8,
