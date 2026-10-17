@@ -1,7 +1,11 @@
 // Offline support: precache the shell + maps, then cache everything else
-// (hashed JS bundles) the first time it is fetched.
-const CACHE = 'farm-walk-v6';
-const PRECACHE = ['./', 'index.html', 'manifest.webmanifest', 'assets/map.png', 'assets/crossroads.jpg', 'assets/seaside.jpg', 'assets/seaside-sprites.png', 'icons/icon-192.png'];
+// (hashed JS bundles) the first time it is fetched. Built into dist/sw.js by
+// vite.config.js with this build's id in the cache's name, so every new
+// version starts a fresh cache (and the old one is dropped): pictures never
+// get out of step with the code that uses them.
+const CACHE = 'farm-walk-__BUILD_ID__';
+const PICTURES = ['map.png', 'crossroads.jpg', 'seaside.jpg', 'seaside-sprites.png', 'seaside-overhead.png'];
+const PRECACHE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', ...PICTURES.map(p => `assets/${p}?v=__BUILD_ID__`)];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));

@@ -8,3 +8,14 @@ export const SPRITES = {
   row2: { frame: [140, 186, 105, 86], at: [0, 2212] },
   row3: { frame: [239, 0, 150, 104], at: [72, 2575] },
 };
+
+// The umbrellas' canopies in public/assets/seaside-overhead.png (box: x, y, w, h,
+// in the picture) and the y of the ground under each (drawn in front of
+// whoever's behind that).
+export const OVERHEAD = {
+  pink: { box: [873, 2319, 130, 83], base: 2466 },
+  blue: { box: [952, 2575, 126, 87], base: 2696 },
+  cafe1: { box: [754, 1532, 128, 70], base: 1680 },
+  cafe2: { box: [982, 1675, 126, 70], base: 1808 },
+  sand: { box: [350, 1823, 128, 83], base: 1950 },
+};

@@ -15,6 +15,11 @@ import { PLAYER_SPEED } from './constants.js';
 //
 // A scene extends this with `map` = { key, file, w, h, grid, scale, home }
 // and `exits`, calls `place(at)` in create and `edges()` in update.
+//
+// The pictures are much bigger than the screen; drawn shrunk as they are, the
+// screen would only pick up every third pixel or so, and lettering and
+// outlines would break up. So each is redrawn once at the size it's shown
+// (`fit`), smoothly, the way a photo is resized.
 
 const FADE_MS = 250;
 const TURN = { top: 'down', bottom: 'up', left: 'right', right: 'left' };
@@ -37,7 +42,9 @@ export default class MapScene extends Phaser.Scene {
       bottom: Math.min(MH, (MH + H / z) / 2),
     };
     this.view = view;
-    this.add.image(0, 0, key).setOrigin(0).setDepth(-1);
+    this.k = z;
+    const bg = this.fit(key);
+    this.add.image(0, 0, bg.key).setOrigin(0).setScale(bg.sx, bg.sy).setDepth(-1);
     this.cameras.main.setZoom(z).centerOn(MW / 2, MH / 2).fadeIn(FADE_MS);
 
     // each road where it leaves the screen, and a few steps back along it
@@ -89,6 +96,24 @@ export default class MapScene extends Phaser.Scene {
     const refit = () => this.scene.restart({ at: { x: this.player.x, y: this.player.y } });
     this.scale.on('resize', refit);
     this.events.once('shutdown', () => this.scale.off('resize', refit));
+  }
+
+  // Picture `key` redrawn at the size it's shown (this.k × its own), smoothly,
+  // as texture `${key}@fit`: shown at scale (sx, sy) it covers the picture's
+  // own size again. Frames can be added to it (in its own px: × k).
+  fit(key) {
+    const fitKey = `${key}@fit`;
+    if (this.textures.exists(fitKey)) this.textures.remove(fitKey);
+    const src = this.textures.get(key).getSourceImage();
+    const w = Math.max(1, Math.round(src.width * this.k));
+    const h = Math.max(1, Math.round(src.height * this.k));
+    const tex = this.textures.createCanvas(fitKey, w, h);
+    const ctx = tex.getContext();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(src, 0, 0, w, h);
+    tex.refresh();
+    return { key: fitKey, tex, sx: src.width / w, sy: src.height / h };
   }
 
   // At the edge of the screen: off along that road.

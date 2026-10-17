@@ -2,6 +2,7 @@ import MapScene from './MapScene.js';
 import { beachGrid } from './WalkGrid.js';
 import { preloadSeaside, animateSeaside } from './seaside.js';
 import { placeVillagers, BEACH_VILLAGERS } from './villagers.js';
+import { asset } from './asset.js';
 
 // The beach (assets/seaside.jpg), down the left-hand road from the crossroads:
 // a little seaside village (houses, a bakery, the Cozy Seaside Cafe, a
@@ -17,7 +18,7 @@ export default class BeachScene extends MapScene {
   constructor() {
     super({ key: 'Beach' });
     this.map = {
-      key: 'seaside', file: 'assets/seaside.jpg', w: 1408, h: 2928, grid: beachGrid,
+      key: 'seaside', file: asset('seaside.jpg'), w: 1408, h: 2928, grid: beachGrid,
       scale: 1.8, // as big as the people in the picture
       home: { x: 600, y: 1580 }, // on the road, by the cafe
     };

@@ -51,17 +51,17 @@ export const BEACH_VILLAGERS = [
   {
     id: 'marius', name: { af: 'Marius', en: 'Mark' },
     look: { hair: 'short', shorts: true, palette: { ...S, ...SHOES, R: '#e0b060', r: '#b08840', C: '#3a8ad0', c: '#2a68a8', O: '#f0e8d8', o: '#c8bca8' } },
-    does: 'sit', at: { x: 1192, y: 1776 }, face: 'down',
+    does: 'sit', at: { x: 1192, y: 1764 }, face: 'down',
   },
   {
     id: 'ruan', name: { af: 'Ruan', en: 'Ryan' },
     look: { hair: 'short', shorts: true, palette: { ...TAN, ...SHOES, R: '#7a5236', r: '#4e3420', C: '#78b848', c: '#589030', O: '#4a6a98', o: '#344e74' } },
-    does: 'sit', at: { x: 890, y: 2466 }, face: 'down',
+    does: 'sit', at: { x: 893, y: 2472 }, face: 'down', // in his deckchair, by the umbrella
   },
   {
     id: 'elsa', name: { af: 'Elsa', en: 'Elsie' },
     look: { hair: 'bob', shorts: true, palette: { ...S, ...SHOES, R: '#8a5a3a', r: '#5e3a22', C: '#f0a0b8', c: '#c87890', O: '#4a7ab8', o: '#345a90' } },
-    does: 'sit', at: { x: 1046, y: 2752 }, face: 'down',
+    does: 'sit', at: { x: 1052, y: 2754 }, face: 'down',
   },
 ];
 
