@@ -107,6 +107,12 @@ const LINES = {
     subtle: { af: 'As ek net iets gehad het om dit mee oop te wrik…', en: 'If only I had something to prise it open with…' },
     explicit: { af: 'Ek het ’n koevoet nodig om dit oop te wrik. Daar is een in die gereedskapskuur.', en: 'I need a crowbar to prise it open. There is one in the tool shed.' },
   },
+  // Pieter's gone home; Johan wants to go to town
+  toTown: {
+    none: null,
+    subtle: { af: 'Die pad dorp toe loop verby die plaashek…', en: 'The road to town goes out past the farm gate…' },
+    explicit: { af: 'Tik heel onder, verby die plaashek, om met die pad dorp toe te loop.', en: 'Tap right at the bottom, past the farm gate, to walk down the road to town.' },
+  },
   crowbarFound: {
     none: { af: '’n Koevoet.', en: 'A crowbar.' },
     subtle: { af: '’n Koevoet… net die ding om goed mee oop te wrik.', en: 'A crowbar… just the thing for prising things open.' },

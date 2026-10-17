@@ -19,7 +19,11 @@ needs hiding (tap the big chest; `src/sarah.js`). Then she comes in for a
 chat: Jones can own up that Bob's in the chest (she waits) or keep mum (she
 leaves). Either way the
 chest is stuck: the crowbar in the tool shed prises it open, and Bob goes
-home, with Louise or alone. In conversations
+home, with Louise or alone. Then Farmer Jones wants to go to town: tap right
+at the bottom of the farm and he walks down the road past the gate to the
+crossroads, **Level 2** (`src/RoadScene.js`, drawn in `src/road.js`). Up goes
+back to the farm; down to town, right to Bob's house and left to the beach
+(those three are still to come). In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it
 along, so there's always time to read it; place names and messages stay until
