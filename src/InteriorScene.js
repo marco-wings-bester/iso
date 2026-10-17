@@ -10,7 +10,7 @@ import { seatBob } from './bob.js';
 import { bakePie, eatHalf } from './baking.js';
 import { think } from './bubble.js';
 import { line } from './hints.js';
-import { knock, hideBob, bobWaiting, bobInChest, sarahVisits } from './sarah.js';
+import { knock, hideBob, bobWaiting, bobInChest, sarahVisits, sarahWaiting, openChest } from './sarah.js';
 
 const FADE_MS = 250;
 const BODY = 5; // half the farmer's width in sprite px: keeps him off walls and furniture
@@ -81,6 +81,8 @@ export default class InteriorScene extends Phaser.Scene {
     this.choice = null; // replies to pick from, while someone's waiting for one (src/dialog.js)
     document.body.classList.remove('choosing');
     this.sarah = null;
+    this.chestLid = null;  // Bob in the chest (src/sarah.js)…
+    this.wobbleChest = null; // …and its wobble
 
     // Fixed camera: the whole room fills the screen (~3x on a phone, so the
     // farmer is ~2.5x his farm size) and stays put while he walks around.
@@ -102,7 +104,11 @@ export default class InteriorScene extends Phaser.Scene {
       const b = spots.read.book;
       this.bookGap = this.add.rectangle(b.x, b.y, b.w, b.h, 0x4a2a14).setOrigin(0).setDepth(1).setVisible(false);
     }
-    if (spots.picker && !hasFlag('picker')) this.pickerProp = this.roomImage(`picker-${building}`, spots.picker.prop);
+    // things lying about to take (the apple picker, the crowbar)
+    this.props = {};
+    Object.entries(spots).forEach(([id, s]) => {
+      if (s.prop && !hasFlag(s.flag)) this.props[id] = this.roomImage(`${id}-${building}`, s.prop);
+    });
     if (spots.sleep) {
       // Him asleep in bed, and the room dimming to night (the fire stays bright).
       this.sleeper = this.roomImage(`sleeper-${building}`, spots.sleep.overlay).setDepth(0.4).setVisible(false);
@@ -131,9 +137,9 @@ export default class InteriorScene extends Phaser.Scene {
       const spot = Object.entries(spots).find(([, s]) => inRect(x, y, s.area));
       if (spot) {
         const [id, s] = spot;
-        const use = {
+        const use = s.prop ? () => this.take(id) : {
           read: () => this.read(), cook: () => this.useCupboard(), eat: () => this.eatPie(), sleep: () => this.tryToSleep(),
-          fire: () => this.lookAtFire(), picker: () => this.takePicker(), hide: () => this.useChest(),
+          fire: () => this.lookAtFire(), hide: () => this.useChest(),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
@@ -155,9 +161,12 @@ export default class InteriorScene extends Phaser.Scene {
       const knockSoon = () => this.time.delayedCall(2500, () => knock(this));
       if (hasFlag('sarahKnocked')) {
         this.add.image(pie.x, pie.y, pieTexture(this, 0)).setOrigin(0).setDepth(0.45); // his empty plate
-        if (hasFlag('bobHidden')) {
+        if (hasFlag('bobHome')) {
+          // all over: Bob's gone home
+        } else if (hasFlag('bobHidden')) {
           bobInChest(this);
           if (!hasFlag('sarahVisited')) this.time.delayedCall(1200, () => sarahVisits(this));
+          else if (hasFlag('toldSarah')) sarahWaiting(this);
         }
         else this.bob = bobWaiting(this);
       } else {
@@ -201,11 +210,13 @@ export default class InteriorScene extends Phaser.Scene {
     else bakePie(this);
   }
 
-  // The big chest: where Bob hides when Sarah knocks.
+  // The big chest: where Bob hides when Sarah knocks, then gets stuck in
+  // (until it's prised open with the crowbar).
   useChest() {
     this.player.face('right');
     if (hasFlag('sarahKnocked') && !hasFlag('bobHidden')) hideBob(this);
-    else this.think(hasFlag('bobHidden') ? "Shh… Bob's in there." : 'Just old blankets in here.');
+    else if (hasFlag('bobHidden') && hasFlag('sarahVisited') && !hasFlag('bobHome')) openChest(this);
+    else this.think(hasFlag('bobHidden') && !hasFlag('bobHome') ? "Shh… Bob's in there." : 'Just old blankets in here.');
   }
 
   // Sarah's at the door and Bob isn't hidden yet: no going out.
@@ -227,13 +238,14 @@ export default class InteriorScene extends Phaser.Scene {
     else this.think(line('bedEarly'));
   }
 
-  // The apple picker in the tool shed: take it, for the apples out of reach.
-  takePicker() {
+  // Take something lying about (the apple picker, the crowbar).
+  take(id) {
+    const s = this.room.spots[id];
     this.player.face('up');
-    if (hasFlag('picker')) return;
-    this.pickerProp.destroy();
-    setFlag('picker');
-    this.think(line('pickerFound'));
+    if (hasFlag(s.flag)) return;
+    this.props[id].destroy();
+    setFlag(s.flag);
+    this.think(line(s.found));
   }
 
   // Take the recipe book off the shelf, turn around and read until the next

@@ -6,7 +6,10 @@
 // the pie ('baked') → eat half of it ('ate') → sleep ('slept') → Bob at the
 // gate ('metBob', 'gavePie', …), who eats the other half ('pieEaten') → a
 // knock at the door: Sarah, Bob's wife ('sarahKnocked') → hide Bob in the
-// chest ('bobHidden') → Sarah comes in for a chat ('sarahVisited').
+// chest ('bobHidden') → Sarah comes in for a chat ('sarahVisited'): Jones
+// either owns up ('toldSarah', she waits) or not (she leaves); the chest is
+// stuck ('chestStuck') → the crowbar from the tool shed ('crowbar') prises
+// it open and Bob goes home, with Sarah or alone ('bobHome').
 // (v2: progress saved under the old order — read, sleep, Bob — is dropped.)
 const KEY = 'farm-walk-story-v2';
 let flags = {};
