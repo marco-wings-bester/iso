@@ -4,18 +4,20 @@ import pond from './views/pond.js';
 import tractor from './views/tractor.js';
 import fire from './views/fire.js';
 import apple from './views/apple.js';
+import pine from './views/pine.js';
 import { t } from './i18n.js';
 
 // First-person views: what Farmer Jones sees down a well, out over the pond
-// from the jetty, from the tractor's seat, into the fire at home, or up into
-// an apple tree. Each view draws a pixel-art
+// from the jetty, from the tractor's seat, into the fire at home, up into
+// an apple tree, or under the big pine. Each view draws a pixel-art
 // picture (160px on the short side, scaled up crisp) and may animate it.
 // Tap or any key returns to the scene it came from (`from`: the farm, or the
 // farmhouse for the fire). A view can take taps itself (`tap` returns true,
-// e.g. picking an apple), hold the scene `busy` meanwhile, and show his
-// thoughts along the bottom with `scene.say()`: one stays up until a tap or
+// e.g. picking an apple), hold the scene `busy` meanwhile, show his
+// thoughts along the bottom with `scene.say()`, and look away itself with
+// `scene.close(after)`: one stays up until a tap or
 // key moves it along (and that's all that tap does).
-const VIEWS = { well, pond, tractor, fire, apple };
+const VIEWS = { well, pond, tractor, fire, apple, pine };
 const ART = 160;
 const FADE_MS = 300;
 
@@ -50,17 +52,19 @@ export default class ViewScene extends Phaser.Scene {
     cam.setBackgroundColor('#000000').setZoom(s * 0.92).centerOn(w / 2, h / 2).fadeIn(FADE_MS);
     this.tweens.add({ targets: cam, zoom: s, duration: 900, ease: 'Sine.easeOut' });
 
-    // Tap or press any key to stop looking.
+    // Tap or press any key to stop looking (then `after`, if given).
     this.leaving = false;
-    const done = () => {
+    const done = (after) => {
       if (this.leaving) return;
       this.leaving = true;
       cam.fadeOut(FADE_MS);
       cam.once('camerafadeoutcomplete', () => {
         this.scene.resume(from);
         this.scene.stop();
+        after?.();
       });
     };
+    this.close = done;
     this.time.delayedCall(400, () => {
       this.input.on('pointerdown', (p) => {
         if (this.leaving || this.busy) return;

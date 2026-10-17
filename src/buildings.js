@@ -29,8 +29,8 @@ export const BUILDINGS = {
 export const ROAD = { tap: 1300, edge: 1362, back: { x: 384, y: 1336 } };
 
 // Things to look at: tap `area`, he walks to `stand`, faces `face`, and the
-// screen switches to what he sees (ViewScene: well, pond, tractor or apple
-// tree). The apple trees are off the path, so he stands on the path nearby.
+// screen switches to what he sees (ViewScene: well, pond, tractor, apple
+// tree or pine). The apple trees are off the path, so he stands on the path nearby.
 export const SPOTS = [
   { view: 'well', area: { x: 98, y: 540, w: 64, h: 92 }, stand: { x: 168, y: 590 }, face: 'left' },     // red-roofed well
   { view: 'well', area: { x: 458, y: 1060, w: 52, h: 80 }, stand: { x: 452, y: 1092 }, face: 'right' }, // orchard well
@@ -39,6 +39,7 @@ export const SPOTS = [
   { view: 'apple', area: { x: 305, y: 105, w: 90, h: 160 }, stand: { x: 286, y: 322 }, face: 'up' },     // big apple tree by the farmhouse
   { view: 'apple', area: { x: 495, y: 950, w: 85, h: 100 }, stand: { x: 482, y: 1050 }, face: 'right' }, // orchard apple trees
   { view: 'apple', area: { x: 580, y: 905, w: 90, h: 95 }, stand: { x: 482, y: 1026 }, face: 'right' },
+  { view: 'pine', area: { x: 612, y: 1145, w: 116, h: 150 }, stand: { x: 456, y: 1318 }, face: 'right' }, // the big pine, bottom right
 ];
 
 export function inRect(x, y, r) {

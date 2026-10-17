@@ -5,7 +5,10 @@ Walk into the farmhouse, barn or tool shed (or tap one) to go inside, where
 everything is shown about 3x bigger; walk out the door to leave. Tap a well, the
 pond or a tractor and he walks over and you see what he sees: down the well,
 out over the pond from the end of the jetty, or from the tractor's seat. In
-the farmhouse, tap the fireplace to look into the fire (`src/views/`).
+the farmhouse, tap the fireplace to look into the fire (`src/views/`). Tap the
+big pine at the bottom right of the farm to stand under it among its pine cones
+(a secret: tap the bottom right cone, then the top right one, to choose a
+level).
 
 The story: the farmhouse is locked, so first find the house key (Farmer Jones
 left it in the tractor: tap the tractor, then the key); read the recipe book
