@@ -13,7 +13,9 @@ left it in the tractor: tap the tractor, then the key); read the recipe book
 from the tool shed and pick an apple (tap an apple tree, then an apple); bake
 the pie (kitchen cupboard; `src/baking.js`) and eat half of it (tap it on the
 table), which makes Farmer Jones sleepy; go to sleep, and Bob turns up at the
-farm gate (and gets the other half). Doing things out of order gets a hint from Farmer Jones; how
+farm gate (and gets the other half). When Bob has finished it, there's a knock
+at the farmhouse door: it's Sarah, Bob's wife, and Bob needs hiding (tap the
+big chest; `src/sarah.js`). Doing things out of order gets a hint from Farmer Jones; how
 much he gives away is set under **Hints** in the ☰ menu (None / Subtle /
 Explicit).
 

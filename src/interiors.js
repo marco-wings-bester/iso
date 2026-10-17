@@ -9,7 +9,8 @@ import { obj, rng } from './pixelArt.js';
 // `solid` furniture rects (blocked for walking), `draw(ctx)`, and optional
 // `spots`: things to tap (area) that the farmer walks to (stand)
 // and uses — `read` the recipe book at the bookshelf, `cook` at the kitchen
-// cupboard (bakes the pie), `eat` half the pie, `sleep` in the bed, `fire`: look into the
+// cupboard (bakes the pie), `eat` half the pie, `hide` Bob in the chest,
+// `sleep` in the bed, `fire`: look into the
 // fireplace (a first-person view), `picker`: take the apple picker (tool
 // shed; its `prop` is drawn apart from the room so it can go). The farmhouse's `kitchen` has the places
 // and overlays the baking uses (src/baking.js).
@@ -462,6 +463,35 @@ function chest(ctx, x, y) {
   });
 }
 
+// The chest with its lid up: the lid standing open behind, dark inside.
+// (x, y) is the chest's top-left in the overlay canvas.
+function chestOpen(ctx, x, y) {
+  obj(ctx, x, y - 8, 22, 7, r => {
+    r(0, 0, 22, 7, C.woodDk);
+    r(0, 0, 22, 1, C.wood);
+    r(4, 0, 2, 7, C.metalDk);
+    r(16, 0, 2, 7, C.metalDk);
+  });
+  obj(ctx, x, y, 22, 6, r => {
+    r(0, 0, 22, 6, C.seam);
+    r(0, 0, 22, 1, C.woodDk);
+    r(1, 4, 20, 2, '#3a2a1a');
+  });
+}
+
+// Just the chest's lid (to give it a little wobble with someone inside).
+function chestLid(ctx, x, y) {
+  obj(ctx, x, y, 22, 6, r => {
+    r(0, 0, 22, 6, C.wood);
+    r(0, 0, 22, 1, C.woodLt);
+    r(4, 0, 2, 6, C.metalDk);
+    r(16, 0, 2, 6, C.metalDk);
+    r(4, 0, 2, 1, C.metal);
+    r(16, 0, 2, 1, C.metal);
+    r(10, 5, 2, 1, C.strawHi);
+  });
+}
+
 function hayBale(ctx, x, y, seed) {
   const R = rng(seed);
   drop(ctx, x, y, 20, 12);
@@ -638,6 +668,10 @@ export const ROOMS = {
         area: { x: 110, y: 14, w: 28, h: 40 }, // tap the bookshelf…
         stand: { x: 124, y: 57 },              // …to walk here and read the recipe book
       },
+      hide: {
+        area: { x: 110, y: 126, w: 26, h: 22 }, // tap the big chest in the corner…
+        stand: { x: 100, y: 152 },              // …to open it (for Bob to hide in, when Sarah knocks)
+      },
       eat: {
         area: { x: 90, y: 90, w: 20, h: 16 },  // tap the pie on the table, once baked…
         stand: { x: 86, y: 88 },               // …to sit behind the table and have half
@@ -665,6 +699,16 @@ export const ROOMS = {
       // middle of the table's back edge) is where the pie gets eaten
       table: { stand: { x: 86, y: 88 }, bowl: { x: 84, y: 94 }, pie: { x: 94, y: 95 }, seat: { x: 100, y: 91 } },
     },
+    // the big chest, where Bob hides from Sarah: opened, its lid, where he
+    // hops in from (behind it, Jones beside it), and where he waits (up from
+    // the table) to be hidden
+    chest: {
+      open: { x: 110, y: 121, w: 26, h: 17, draw: ctx => chestOpen(ctx, 2, 9) },
+      lid: { x: 111, y: 129, w: 24, h: 8, draw: ctx => chestLid(ctx, 1, 1) },
+      behind: { x: 123, y: 124 },
+      inside: { x: 123, y: 136 },
+    },
+    bobWaits: { x: 115, y: 77 },
     solid: [
       { x: 8, y: 20, w: 16, h: 30 },   // kitchen dresser
       { x: 26, y: 30, w: 14, h: 20 },  // stove
