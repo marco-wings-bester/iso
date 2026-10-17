@@ -14,22 +14,23 @@ from the tool shed and pick an apple (tap an apple tree, then an apple); bake
 the pie (kitchen cupboard; `src/baking.js`) and eat half of it (tap it on the
 table), which makes Farmer Jones sleepy; go to sleep, and Bob turns up at the
 farm gate (and gets the other half). When Bob has finished it, there's a knock
-at the farmhouse door: it's Sarah, Bob's wife, and Bob needs hiding (tap the
-big chest; `src/sarah.js`). Then Sarah comes in for a chat: Jones can own up
-that Bob's in the chest (she waits) or keep mum (she leaves). Either way the
+at the farmhouse door: it's Bob's wife, Louise (Wiesie in Afrikaans), and Bob
+needs hiding (tap the big chest; `src/sarah.js`). Then she comes in for a
+chat: Jones can own up that Bob's in the chest (she waits) or keep mum (she
+leaves). Either way the
 chest is stuck: the crowbar in the tool shed prises it open, and Bob goes
-home, with Sarah or alone. In conversations
+home, with Louise or alone. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it
 along, so there's always time to read it; place names and messages stay until
 the next tap. Doing things out of order gets a hint from Farmer Jones; how
-much he gives away is set under **Hints** in the ☰ menu (None / Subtle /
-Explicit).
+much he gives away is set under **Hints** in the ☰ menu (None, the default /
+Subtle / Explicit).
 
-The game is in **Afrikaans** by default, where Farmer Jones is **Boer Johan**
-and Bob is **Pieter**; switch to **English** under **Taal / Language** in the
-☰ menu. Every text is written in both languages side by side as `{ af, en }`,
-and `t()` in `src/i18n.js` picks the one to show.
+The game is in **Afrikaans** by default, where Farmer Jones is **Boer Johan**,
+Bob is **Pieter** and Louise is **Wiesie**; switch to **English** under
+**Taal / Language** in the ☰ menu. Every text is written in both languages side
+by side as `{ af, en }`, and `t()` in `src/i18n.js` picks the one to show.
 
 ## Play / install
 

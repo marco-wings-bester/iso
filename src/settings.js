@@ -1,13 +1,18 @@
 // Player settings (not story progress: New game keeps them), in localStorage.
 // Both are chosen in the menu:
 // - lang: 'af' (Afrikaans, the default) or 'en' (English; src/i18n.js);
-// - hints: how much Farmer Jones lets on about what to do next — 'none',
-//   'subtle' or 'explicit' (src/hints.js).
+// - hints: how much Farmer Jones lets on about what to do next — 'none' (the
+//   default), 'subtle' or 'explicit' (src/hints.js).
 // (index.html reads lang too, for its loading messages.)
 const KEY = 'farm-walk-settings';
-const settings = { lang: 'af', hints: 'subtle' };
+const VERSION = 2;
+const settings = { lang: 'af', hints: 'none' };
 try {
-  Object.assign(settings, JSON.parse(localStorage.getItem(KEY)));
+  const saved = JSON.parse(localStorage.getItem(KEY)) ?? {};
+  // Saved before version 2, hints 'subtle' was most likely just the old
+  // default (stored along with any other change), so it goes.
+  if (!saved.v && saved.hints === 'subtle') delete saved.hints;
+  Object.assign(settings, saved, { v: VERSION });
 } catch {
   // private mode: defaults for this visit
 }

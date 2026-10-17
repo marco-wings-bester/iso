@@ -89,7 +89,7 @@ const LINES = {
       ? { af: 'Tik op ’n appel om dit met die appelplukker te pluk.', en: 'Tap an apple to pick it with the apple picker.' }
       : { af: 'Die appels is te hoog. Die appelplukker is in die gereedskapskuur.', en: 'The apples are too high. The apple picker is in the tool shed.' }),
   },
-  // Sarah at the door, Bob begging to be hidden
+  // Bob's wife at the door, Bob begging to be hidden
   hideBob: {
     none: null,
     subtle: { af: 'Waar kan Pieter wegkruip…? Iewers wat groot genoeg vir hom is…', en: 'Where could Bob hide…? Somewhere big enough for him…' },
@@ -98,7 +98,7 @@ const LINES = {
   // trying to go out (or to bed) before Bob is hidden
   notNow: {
     none: { af: 'Nie nou nie!', en: 'Not now!' },
-    subtle: { af: 'Nie nou nie: Sarah is by die deur, en Pieter moet wegkruip!', en: "Not now: Sarah's at the door, and Bob needs hiding!" },
+    subtle: { af: 'Nie nou nie: Wiesie is by die deur, en Pieter moet wegkruip!', en: "Not now: Louise's at the door, and Bob needs hiding!" },
     explicit: { af: 'Nie nou nie: steek eers vir Pieter weg! Tik op die groot kis in die hoek.', en: 'Not now: hide Bob first! Tap the big chest in the corner.' },
   },
   // the chest Bob's hiding in won't open
@@ -123,5 +123,7 @@ const LINES = {
 
 // The line in the current language, or null.
 export function line(key) {
-  return t(LINES[key][getSetting('hints')] ?? LINES[key].subtle);
+  const lines = LINES[key];
+  const level = getSetting('hints');
+  return t(level in lines ? lines[level] : lines.none);
 }

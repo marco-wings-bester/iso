@@ -6,19 +6,19 @@ import { line } from './hints.js';
 import { walkSprite } from './bob.js';
 import { createBob, createSarah } from './CharacterSprite.js';
 
-// When Bob has eaten the pie, someone knocks at the farmhouse door: Sarah,
-// Bob's wife. Bob jumps up from the table — he should be out working — and
-// it's up to Farmer Jones to hide him: tap the big chest in the corner and
-// Bob hops in. Then Sarah comes in for a chat (Jones's replies are picked
-// from two each time). Asked if he's seen Bob, Jones can keep mum (she goes
-// off to keep looking) or own up (she waits). Either way the chest is stuck
-// fast: the crowbar from the tool shed prises it open, Bob climbs out, and
-// home he goes, with Sarah or alone. Lines move along with a tap. (In
-// Afrikaans, the default, Jones is Boer Johan and Bob is Pieter: every line
-// is { af, en }, src/i18n.js.)
+// When Bob has eaten the pie, someone knocks at the farmhouse door: his wife
+// (Louise in English, Wiesie in Afrikaans; `sarah` in the code). Bob jumps up
+// from the table — he should be out working — and it's up to Farmer Jones to
+// hide him: tap the big chest in the corner and Bob hops in. Then she comes in
+// for a chat (Jones's replies are picked from two each time). Asked if he's
+// seen Bob, Jones can keep mum (she goes off to keep looking) or own up (she
+// waits). Either way the chest is stuck fast: the crowbar from the tool shed
+// prises it open, Bob climbs out, and home he goes, with her or alone. Lines
+// move along with a tap. (In Afrikaans, the default, Jones is Boer Johan and
+// Bob is Pieter: every line is { af, en }, src/i18n.js.)
 
 const SPEED = 40; // room px/s, walking about
-const SARAH = { name: 'Sarah', color: '#b0408a' };
+const SARAH = { name: { af: 'Wiesie', en: 'Louise' }, color: '#b0408a' };
 
 function lock(scene, on) {
   scene.busy = on;
@@ -83,7 +83,7 @@ export async function knock(scene) {
   player.stop(); // and wakes him, if he's dozing
   lock(scene, true);
   scene.cameras.main.shake(300, 0.005);
-  const sarahAnswers = [['sarahOutside', { af: 'Dis Sarah!', en: "It's Sarah!" }]];
+  const sarahAnswers = [['sarahOutside', { af: 'Dis Wiesie!', en: "It's Louise!" }]];
   await converse(scene, cast(scene), [
     ['knock', { af: 'Klop, klop!', en: 'Knock, knock!' }],
     { choose: [
@@ -173,10 +173,10 @@ export async function sarahVisits(scene) {
   await converse(scene, cast(scene), [
     ['sarah', { af: 'Hallo, Johan! Jammer dat ek so by jou inval.', en: 'Hello, Jones! Sorry to barge in on you.' }],
     { choose: [
-      { say: { af: 'Hallo, Sarah! Kom binne, kom binne.', en: 'Hello, Sarah! Come in, come in.' }, then: [
+      { say: { af: 'Hallo, Wiesie! Kom binne, kom binne.', en: 'Hello, Louise! Come in, come in.' }, then: [
         ['sarah', { af: 'Mmm! Wat ruik so lekker? Het jy ’n tert gebak?', en: "Mmm! What's that lovely smell? Have you been baking a pie?" }],
       ] },
-      { say: { af: 'O! Sarah! Wat ’n… verrassing.', en: 'Oh! Sarah! What a… surprise.' }, then: [
+      { say: { af: 'O! Wiesie! Wat ’n… verrassing.', en: 'Oh! Louise! What a… surprise.' }, then: [
         ['sarah', { af: 'Goeie genade, jy lyk skrikkerig! Mmm… ruik ek tert?', en: 'Goodness, you look jumpy! Mmm… is that pie I can smell?' }],
       ] },
     ] },
@@ -213,7 +213,7 @@ export async function sarahVisits(scene) {
       { say: { af: 'Pieter? Nee, nie vandag nie.', en: 'Bob? Not today, no.' }, then: [
         ['sarah', { af: 'Hmm. Nou ja, as jy hom sien, laat weet my, sal jy?', en: "Hmm. Well, if you see him, let me know, won't you?" }],
         { choose: [
-          { say: { af: 'Natuurlik, Sarah. Ek sê jou dadelik.', en: "Of course, Sarah. I'll tell you straight away." }, then: bye },
+          { say: { af: 'Natuurlik, Wiesie. Ek sê jou dadelik.', en: "Of course, Louise. I'll tell you straight away." }, then: bye },
           { say: { af: 'Ek sal my oë oophou!', en: "I'll keep my eyes peeled!" }, then: bye },
         ] },
       ] },
@@ -314,8 +314,8 @@ export async function openChest(scene) {
       ['sarah', { af: 'Pieter! Wegkruip in ’n kis? Jy moet ons heining regmaak!', en: "Bob! Hiding in a chest? You're meant to be mending our fence!" }],
       { choose: [
         { say: {
-          af: 'Moenie kwaad wees nie, Sarah. Dit was my tert wat hom hier gehou het.',
-          en: "Don't be cross, Sarah. It was my pie that kept him.",
+          af: 'Moenie kwaad wees nie, Wiesie. Dit was my tert wat hom hier gehou het.',
+          en: "Don't be cross, Louise. It was my pie that kept him.",
         }, then: [
           ['sarah', { af: 'Hmf. Nou ja… dit hét baie lekker geruik.', en: 'Hmph. Well… it did smell very good.' }],
         ] },
