@@ -4,6 +4,8 @@ import { createCharacter, createBob } from './CharacterSprite.js';
 import { band, hash, pixels, ellipse } from './views/art.js';
 import { setFlag } from './state.js';
 import { t } from './i18n.js';
+import { UI } from './screen.js';
+import { FONT } from './bubble.js';
 
 // A close-up of Farmer Jones and Bob (Boer Johan and Pieter) at the gate,
 // talking, in the language chosen in the menu (src/i18n.js). The scene and the
@@ -196,24 +198,23 @@ export default class TalkScene extends Phaser.Scene {
 
     // bubble geometry, sized for the whole line
     const { width: W } = this.scale;
-    const font = Math.round(Math.max(15, Math.min(20, W / 22)));
+    const font = Math.round(Math.max(16, Math.min(21, W / UI / 22 + 1)) * UI);
     const pad = Math.round(font * 0.8);
-    const bw = Math.min(W - 24, 360);
-    const dpr = window.devicePixelRatio || 1;
+    const bw = Math.min(W - 24 * UI, 380 * UI);
     const name = this.add.text(0, 0, t(SPEAKERS[who].name), {
-      fontFamily: 'monospace', fontStyle: 'bold', fontSize: `${Math.round(font * 0.85)}px`, color: SPEAKERS[who].color, resolution: dpr,
+      fontFamily: FONT, fontStyle: 'bold', fontSize: `${Math.round(font * 0.85)}px`, color: SPEAKERS[who].color,
     });
     const message = this.add.text(0, 0, text, {
-      fontFamily: 'monospace', fontStyle: 'bold', fontSize: `${font}px`, color: INK, resolution: dpr,
-      wordWrap: { width: bw - pad * 2, useAdvancedWrap: true }, lineSpacing: Math.round(font * 0.2),
+      fontFamily: FONT, fontStyle: 'bold', fontSize: `${font}px`, color: INK,
+      wordWrap: { width: bw - pad * 2, useAdvancedWrap: true }, lineSpacing: Math.round(font * 0.25),
     });
     const bh = Math.round(pad * 2 + name.height + font * 0.3 + message.height);
 
     const speaker = this.people[who];
     const head = this.toScreen(speaker.x, this.ground - FRAME_H + 2);
     const tail = Math.round(this.z * 3);
-    const by = Math.round(head.y - tail - bh - 6);
-    const bx = Math.round(Phaser.Math.Clamp(head.x - bw / 2 + (who === 'jones' ? -bw * 0.15 : bw * 0.15), 12, W - 12 - bw));
+    const by = Math.round(head.y - tail - bh - 6 * UI);
+    const bx = Math.round(Phaser.Math.Clamp(head.x - bw / 2 + (who === 'jones' ? -bw * 0.15 : bw * 0.15), 12 * UI, W - 12 * UI - bw));
 
     const g = this.add.graphics();
     this.drawBubble(g, bx, by, bw, bh, head.x, by + bh + tail);
@@ -242,7 +243,7 @@ export default class TalkScene extends Phaser.Scene {
     this.tweens.add({ targets: speaker, y: this.ground - 0.75, duration: 140, yoyo: true, repeat: -1 });
 
     this.more = this.add.text(bx + bw - pad, by + bh - pad * 0.6, '▼', {
-      fontFamily: 'monospace', fontSize: `${Math.round(font * 0.7)}px`, color: INK, resolution: dpr,
+      fontFamily: FONT, fontSize: `${Math.round(font * 0.7)}px`, color: INK,
     }).setOrigin(1, 1).setAlpha(0);
     this.ui.add(this.more);
     this.uiObjects.push(this.more);
@@ -260,15 +261,14 @@ export default class TalkScene extends Phaser.Scene {
   // reply") label.
   ask(options) {
     const { width: W, height: H } = this.scale;
-    const font = Math.round(Math.max(14, Math.min(18, W / 24)));
+    const font = Math.round(Math.max(15, Math.min(19, W / UI / 24 + 1)) * UI);
     const pad = Math.round(font * 0.7);
-    const bw = Math.min(W - 24, 360);
+    const bw = Math.min(W - 24 * UI, 380 * UI);
     const bx = Math.round((W - bw) / 2);
     const gap = Math.round(font * 0.6);
-    const dpr = window.devicePixelRatio || 1;
-    const style = { fontFamily: 'monospace', fontStyle: 'bold', fontSize: `${font}px`, color: INK, resolution: dpr };
+    const style = { fontFamily: FONT, fontStyle: 'bold', fontSize: `${font}px`, color: INK };
 
-    let y = H - 16;
+    let y = H - 16 * UI;
     this.choices = options.map(o => ({ ...o })).reverse().map((c) => {
       const arrow = this.add.text(0, 0, '▶', { ...style, color: SPEAKERS.jones.color });
       const text = this.add.text(0, 0, t(c.say), {
@@ -283,14 +283,14 @@ export default class TalkScene extends Phaser.Scene {
       this.ui.add(parts);
       this.uiObjects.push(...parts);
       this.tweens.add({ targets: parts, alpha: { from: 0, to: 1 }, duration: 200 });
-      const choice = { ...c, g, area: { x: bx - 6, y: y - gap / 2, w: bw + 12, h: bh + gap }, box: [bx, y, bw, bh] };
-      y -= gap + 4;
+      const choice = { ...c, g, area: { x: bx - 6 * UI, y: y - gap / 2, w: bw + 12 * UI, h: bh + gap }, box: [bx, y, bw, bh] };
+      y -= gap + 4 * UI;
       return choice;
     }).reverse();
 
-    const label = this.add.text(bx + 2, y, t({ af: 'Jou antwoord', en: 'Your reply' }), {
-      fontFamily: 'monospace', fontStyle: 'bold', fontSize: `${Math.round(font * 0.85)}px`, color: '#fffcf2',
-      stroke: INK, strokeThickness: 4, resolution: dpr,
+    const label = this.add.text(bx + 2 * UI, y, t({ af: 'Jou antwoord', en: 'Your reply' }), {
+      fontFamily: FONT, fontStyle: 'bold', fontSize: `${Math.round(font * 0.85)}px`, color: '#fffcf2',
+      stroke: INK, strokeThickness: 4 * UI,
     }).setOrigin(0, 1);
     this.ui.add(label);
     this.uiObjects.push(label);
@@ -308,12 +308,12 @@ export default class TalkScene extends Phaser.Scene {
   // ✕ in the top-right corner to leave the talk; returns its tap area.
   drawClose() {
     const { width: W } = this.scale;
-    const s = 40;
-    const x = W - s - 12;
-    const y = 12;
+    const s = 40 * UI;
+    const x = W - s - 12 * UI;
+    const y = 12 * UI;
     const g = this.add.graphics();
     this.drawBox(g, x, y, s, s, 0xfffcf2, 0xe8e0cc);
-    const c = 4; // a 5×5-cell pixel X
+    const c = 4 * UI; // a 5×5-cell pixel X
     const ox = x + (s - 5 * c) / 2;
     const oy = y + (s - 5 * c) / 2;
     g.fillStyle(0x2e1d0c);
@@ -322,7 +322,7 @@ export default class TalkScene extends Phaser.Scene {
       g.fillRect(ox + (4 - i) * c, oy + i * c, c, c);
     }
     this.ui.add(g);
-    return { x: x - 10, y: 0, w: s + 22, h: s + 22 };
+    return { x: x - 10 * UI, y: 0, w: s + 22 * UI, h: s + 22 * UI };
   }
 
   // A chunky pixel-art bubble: white, dark outline, notched corners and a

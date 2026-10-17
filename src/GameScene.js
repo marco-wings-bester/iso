@@ -11,6 +11,7 @@ import { farmGrid } from './WalkGrid.js';
 import { BUILDINGS, ROAD, SPOTS, inRect, rectCenter } from './buildings.js';
 import { IMG_W, IMG_H, PLAYER_SPEED, DEBUG_PATH } from './constants.js';
 import { asset } from './asset.js';
+import { UI } from './screen.js';
 
 const SPAWN = { x: 387, y: 1265 }; // farm gate, image px
 const FADE_MS = 250;
@@ -45,9 +46,9 @@ export default class GameScene extends Phaser.Scene {
       y: start.y,
       dir: from ? from.face ?? 'down' : 'up',
       texture: 'player',
-      speed: PLAYER_SPEED / zoom, // screen px/s → image px/s
+      speed: PLAYER_SPEED * UI / zoom, // page px/s → image px/s
       grid: farmGrid,
-      markerScale: 1 / zoom,
+      markerScale: UI / zoom,
     });
     this.leaving = false;
 
@@ -64,8 +65,8 @@ export default class GameScene extends Phaser.Scene {
     const fit = () => {
       const z = coverZoom();
       cam.setZoom(z).centerOn(IMG_W / 2, IMG_H / 2);
-      this.player.speed = PLAYER_SPEED / z;
-      this.player.markerScale = 1 / z;
+      this.player.speed = PLAYER_SPEED * UI / z;
+      this.player.markerScale = UI / z;
     };
     fit();
     this.scale.on('resize', fit);

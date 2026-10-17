@@ -5,12 +5,14 @@ import WalkGrid from './WalkGrid.js';
 import { BUILDINGS, inRect } from './buildings.js';
 import { ROOMS, WALL, pieTexture } from './interiors.js';
 import { INTERIOR_SPEED } from './constants.js';
+import { UI } from './screen.js';
 import { hasFlag, setFlag } from './state.js';
 import { seatBob } from './bob.js';
 import { bakePie, eatHalf } from './baking.js';
 import { think } from './bubble.js';
 import { line } from './hints.js';
 import { knock, hideBob, bobWaiting, bobInChest, sarahVisits, sarahWaiting, openChest } from './sarah.js';
+import { setUpCafe, atCounter } from './cafe.js';
 
 const FADE_MS = 250;
 const BODY = 5; // half the farmer's width in sprite px: keeps him off walls and furniture
@@ -91,7 +93,7 @@ export default class InteriorScene extends Phaser.Scene {
     const fit = () => {
       const zoom = Math.min(this.scale.width / room.w, this.scale.height / room.h);
       cam.setZoom(zoom).centerOn(room.w / 2, room.h / 2);
-      this.player.markerScale = 1 / zoom;
+      this.player.markerScale = UI / zoom;
     };
     fit();
     this.scale.on('resize', fit);
@@ -139,7 +141,7 @@ export default class InteriorScene extends Phaser.Scene {
         const [id, s] = spot;
         const use = s.prop ? () => this.take(id) : {
           read: () => this.read(), cook: () => this.useCupboard(), eat: () => this.eatPie(), sleep: () => this.tryToSleep(),
-          fire: () => this.lookAtFire(), hide: () => this.useChest(),
+          fire: () => this.lookAtFire(), hide: () => this.useChest(), counter: () => atCounter(this),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
@@ -175,7 +177,9 @@ export default class InteriorScene extends Phaser.Scene {
       }
     }
 
-    this.game.events.emit('location', { name: BUILDINGS[building].name });
+    if (building === 'cafe') setUpCafe(this);
+
+    this.game.events.emit('location', { name: room.name ?? BUILDINGS[building].name });
   }
 
   // Tint Bob to match the room dimming to night.
@@ -271,17 +275,28 @@ export default class InteriorScene extends Phaser.Scene {
   // Look into the fire: his view of it (ViewScene), then back in the room.
   lookAtFire() {
     this.player.face('up');
+    this.look('fire');
+  }
+
+  // Look in his wallet (at the cafe's counter); resolves once he's done.
+  lookInWallet() {
+    return this.look('wallet');
+  }
+
+  // His view of something (ViewScene `view`), then back in the room.
+  look(view) {
     this.leaving = true;
     const cam = this.cameras.main;
     cam.fadeOut(300);
-    cam.once('camerafadeoutcomplete', () => {
+    return new Promise(done => cam.once('camerafadeoutcomplete', () => {
       this.events.once('resume', () => {
         this.leaving = false;
         cam.fadeIn(300);
+        done();
       });
-      this.scene.launch('View', { view: 'fire', from: 'Interior' });
+      this.scene.launch('View', { view, from: 'Interior' });
       this.scene.pause();
-    });
+    }));
   }
 
   // Climb into bed: the room darkens and z's float up until the next tap or key.
@@ -340,6 +355,8 @@ export default class InteriorScene extends Phaser.Scene {
     this.leaving = true;
     this.player.stop();
     this.cameras.main.fadeOut(FADE_MS);
-    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Game', { from: this.building }));
+    // out to the farm (by this building's door), or wherever its door goes
+    const { to = 'Game', data = { from: this.building } } = this.room.exit ?? {};
+    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start(to, data));
   }
 }

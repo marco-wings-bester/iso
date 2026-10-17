@@ -5,19 +5,22 @@ import tractor from './views/tractor.js';
 import fire from './views/fire.js';
 import apple from './views/apple.js';
 import pine from './views/pine.js';
+import wallet from './views/wallet.js';
 import { t } from './i18n.js';
+import { UI } from './screen.js';
+import { FONT } from './bubble.js';
 
 // First-person views: what Farmer Jones sees down a well, out over the pond
 // from the jetty, from the tractor's seat, into the fire at home, up into
-// an apple tree, or under the big pine. Each view draws a pixel-art
+// an apple tree, under the big pine, or into his wallet. Each view draws a pixel-art
 // picture (160px on the short side, scaled up crisp) and may animate it.
 // Tap or any key returns to the scene it came from (`from`: the farm, or the
-// farmhouse for the fire). A view can take taps itself (`tap` returns true,
+// farmhouse for the fire, the cafe for the wallet). A view can take taps itself (`tap` returns true,
 // e.g. picking an apple), hold the scene `busy` meanwhile, show his
-// thoughts along the bottom with `scene.say()`, and look away itself with
-// `scene.close(after)`: one stays up until a tap or
-// key moves it along (and that's all that tap does).
-const VIEWS = { well, pond, tractor, fire, apple, pine };
+// thoughts along the bottom with `scene.say(text, then)`, and look away itself
+// with `scene.close(after)`: a thought stays up until a tap or key moves it
+// along (and that's all that tap does, but for `then`).
+const VIEWS = { well, pond, tractor, fire, apple, pine, wallet };
 const ART = 160;
 const FADE_MS = 300;
 
@@ -68,12 +71,12 @@ export default class ViewScene extends Phaser.Scene {
     this.time.delayedCall(400, () => {
       this.input.on('pointerdown', (p) => {
         if (this.leaving || this.busy) return;
-        if (this.caption) this.caption.destroy();
+        if (this.caption) this.caption.moveOn();
         else if (!v.tap?.(this, p.worldX, p.worldY)) done();
       });
       this.input.keyboard.on('keydown', () => {
         if (this.busy) return;
-        if (this.caption) this.caption.destroy();
+        if (this.caption) this.caption.moveOn();
         else done();
       });
     });
@@ -81,28 +84,29 @@ export default class ViewScene extends Phaser.Scene {
 
   // A thought of his along the bottom of the view, in a box like the room's
   // thought bubbles (with a blinking ▼: tap to go on); the words are kept at
-  // screen resolution while the camera zooms. Text can be { af, en }.
-  say(text) {
+  // screen resolution while the camera zooms. Text can be { af, en }; once
+  // it's moved along, `then()` (if given).
+  say(text, then) {
     this.caption?.destroy();
     const cam = this.cameras.main;
     const words = this.add.text(0, 0, t(text), {
-      fontFamily: 'monospace', fontStyle: 'bold', fontSize: '15px', color: '#2e1d0c', align: 'center',
-      wordWrap: { width: Math.min(this.scale.width - 56, 320) }, resolution: window.devicePixelRatio || 1,
+      fontFamily: FONT, fontStyle: 'bold', fontSize: `${16 * UI}px`, color: '#2e1d0c', align: 'center',
+      wordWrap: { width: Math.min(this.scale.width - 56 * UI, 340 * UI) }, lineSpacing: 2 * UI,
     }).setOrigin(0.5, 1).setDepth(1e5 + 1);
     const more = this.add.text(0, 0, '▼', {
-      fontFamily: 'monospace', fontSize: '10px', color: '#2e1d0c', resolution: window.devicePixelRatio || 1,
+      fontFamily: FONT, fontSize: `${11 * UI}px`, color: '#2e1d0c',
     }).setOrigin(1, 1).setDepth(1e5 + 1);
     const box = this.add.graphics().setDepth(1e5);
     const place = () => {
       const z = cam.zoom;
       const v = cam.worldView;
-      const bw = (words.width + 20) / z;
-      const bh = (words.height + 14) / z;
+      const bw = (words.width + 20 * UI) / z;
+      const bh = (words.height + 14 * UI) / z;
       const x = v.centerX - bw / 2;
-      const y = v.bottom - bh - 28 / z;
-      const q = 3 / z;
-      words.setScale(1 / z).setPosition(v.centerX, y + bh - 7 / z);
-      more.setScale(1 / z).setPosition(x + bw - 3 / z, y + bh - 2 / z);
+      const y = v.bottom - bh - 28 * UI / z;
+      const q = 3 * UI / z;
+      words.setScale(1 / z).setPosition(v.centerX, y + bh - 7 * UI / z);
+      more.setScale(1 / z).setPosition(x + bw - 3 * UI / z, y + bh - 2 * UI / z);
       box.clear().fillStyle(0x2e1d0c).fillRect(x, y - q, bw, bh + 2 * q).fillRect(x - q, y, bw + 2 * q, bh);
       box.fillStyle(0xfffcf2).fillRect(x, y, bw, bh);
     };
@@ -117,6 +121,10 @@ export default class ViewScene extends Phaser.Scene {
         this.events.off('shutdown', caption.destroy);
         [words, more, box].forEach(o => o.destroy());
         if (this.caption === caption) this.caption = null;
+      },
+      moveOn: () => {
+        caption.destroy();
+        then?.();
       },
     };
     this.caption = caption;

@@ -35,8 +35,12 @@ sunbathers on the sand; tap one and Farmer Jones walks over. Boats rock gently
 at anchor, a fish jumps now and then, coffee steams at the cafe, and the
 umbrellas are drawn in front of whoever sits under them (`src/seaside.js`; the
 boats and canopies are cut out of the picture, `art/beach-source.jpg`, and its
-people taken out, by `scripts/cut-seaside.py`);
-down to town and right to Bob's house are still to come. Both picture maps are
+people taken out, by `scripts/cut-seaside.py`). Tap the **Cozy Seaside Cafe**
+(or its deck) and Boer Johan goes in (`src/cafe.js`, the room in
+`src/interiors.js`): he'd love a coffee, so he orders one from Sannie (Sally in
+English) at the counter, checks his wallet (his view of it,
+`src/views/wallet.js`) and finds he hasn't a cent in cash; she says to come
+back when he has some. Down to town and right to Bob's house are still to come. Both picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it
@@ -49,6 +53,12 @@ The game is in **Afrikaans** by default, where Farmer Jones is **Boer Johan**,
 Bob is **Pieter** and Louise is **Wiesie**; switch to **English** under
 **Taal / Language** in the ☰ menu. Every text is written in both languages side
 by side as `{ af, en }`, and `t()` in `src/i18n.js` picks the one to show.
+
+All lettering is drawn at the phone's own screen sharpness: the game draws
+at up to twice the page's pixel size (`UI` in `src/screen.js`) and every size
+on screen (text, bubbles, buttons, the tap marker) is scaled by it. Speech,
+thoughts, captions and replies are a sturdy bold monospace (`FONT` in
+`src/bubble.js`) with a little space between lines.
 
 ## Play / install
 

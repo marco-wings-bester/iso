@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { createCharacter } from './CharacterSprite.js';
 import Player from './Player.js';
 import { PLAYER_SPEED } from './constants.js';
+import { UI } from './screen.js';
 
 // A place drawn as one picture (Level 2: the crossroads, the beach). The
 // picture covers the screen like the farm's map, centred, and he walks where
@@ -67,9 +68,9 @@ export default class MapScene extends Phaser.Scene {
       ...start,
       dir: from ? TURN[this.exits[from].side] : 'down',
       texture: 'player',
-      speed: PLAYER_SPEED / z,
+      speed: PLAYER_SPEED * UI / z,
       grid,
-      markerScale: 1 / z,
+      markerScale: UI / z,
     });
     this.player.sprite.setScale(scale);
     this.leaving = false;

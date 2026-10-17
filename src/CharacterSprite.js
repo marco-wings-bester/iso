@@ -622,13 +622,12 @@ function buildSitFrame(dir) {
   return dir === 'right' ? done.map(row => row.slice().reverse()) : done;
 }
 
-// A villager's sheet `key`, at the farm's resolution: the direction
-// animations (`${key}-walk-${dir}`, `${key}-idle-${dir}`) and sitting
-// (`${key}-sit-${dir}`).
-export function createVillager(scene, key, spec) {
+// A villager's sheet `key`, at the farm's resolution (or `p` texels per
+// sprite pixel: 1 for indoors, kept crisp): the direction animations
+// (`${key}-walk-${dir}`, `${key}-idle-${dir}`) and sitting (`${key}-sit-${dir}`).
+export function createVillager(scene, key, spec, p = ART_PX) {
   if (scene.textures.exists(key)) return;
   look = villagerLook(spec);
-  const p = ART_PX;
   const cols = 4;
   const fw = FRAME_W * p;
   const fh = FRAME_H * p;
@@ -642,6 +641,7 @@ export function createVillager(scene, key, spec) {
     scene.anims.create({ key: `${key}-sit-${dir}`, frames: [{ key, frame: `sit-${dir}` }], frameRate: 1, repeat: -1 });
   });
   tex.refresh();
+  if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   look = FARMER;
 }
 
