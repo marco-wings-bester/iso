@@ -1,10 +1,12 @@
 import MapScene from './MapScene.js';
 import { beachGrid } from './WalkGrid.js';
+import { preloadSeaside, animateSeaside } from './seaside.js';
 
-// The beach (assets/beach.jpg), down the left-hand road from the crossroads:
+// The beach (assets/seaside.jpg), down the left-hand road from the crossroads:
 // a little seaside village (houses, a bakery, the Cozy Seaside Cafe, a
 // souvenir shop) with its road winding down past them, and the sand, the
-// umbrellas and the jetty below. Boer Johan comes in by the road at the top
+// umbrellas and the jetty below; its people and boats move about
+// (src/seaside.js). Boer Johan comes in by the road at the top
 // right; he can walk the road, the sand and out along the jetty. Off the
 // right-hand edge (either road) is back to the crossroads.
 
@@ -14,7 +16,7 @@ export default class BeachScene extends MapScene {
   constructor() {
     super({ key: 'Beach' });
     this.map = {
-      key: 'beach', file: 'assets/beach.jpg', w: 1408, h: 2928, grid: beachGrid,
+      key: 'seaside', file: 'assets/seaside.jpg', w: 1408, h: 2928, grid: beachGrid,
       scale: 1.8, // as big as the people in the picture
       home: { x: 600, y: 1580 }, // on the road, by the cafe
     };
@@ -25,8 +27,14 @@ export default class BeachScene extends MapScene {
     };
   }
 
+  preload() {
+    super.preload();
+    preloadSeaside(this);
+  }
+
   create({ at } = {}) {
     this.place(at, 'crossroads');
+    animateSeaside(this);
     if (!at) this.game.events.emit('location', { name: HERE });
   }
 

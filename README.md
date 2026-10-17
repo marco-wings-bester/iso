@@ -27,7 +27,10 @@ at the bottom of the farm and he walks down the road past the gate to the
 crossroads, **Level 2** (`src/RoadScene.js`; the map is
 `public/assets/crossroads.jpg`). Up goes back to the farm (or tap
 right at the top); left goes to **the beach**, a little seaside village with
-its cafe, the sand and a jetty (`src/BeachScene.js`, `public/assets/beach.jpg`);
+its cafe, the sand and a jetty (`src/BeachScene.js`), where boats rock and
+drift, villagers stroll, a fish jumps by the fisherman's float and coffee
+steams at the cafe (`src/seaside.js`; the moving people and boats are cut out
+of the picture, `art/beach-source.jpg`, by `scripts/cut-seaside.py`);
 down to town and right to Bob's house are still to come. Both picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
@@ -74,7 +77,7 @@ re-run it if you change `public/assets/map.png`. Set `DEBUG_PATH = true` in
 `src/constants.js` to see the walkable area in-game. The crossroads' four roads
 and the beach's road, sand and jetty are baked the same way, into
 `src/roadMask.js` and `src/beachMask.js`, by `scripts/build-masks.py` from
-`public/assets/crossroads.jpg` and `public/assets/beach.jpg`.
+`public/assets/crossroads.jpg` and `public/assets/seaside.jpg`.
 
 ## Buildings
 
