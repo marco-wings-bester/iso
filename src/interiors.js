@@ -11,8 +11,9 @@ import { obj, rng } from './pixelArt.js';
 // and uses — `read` the recipe book at the bookshelf, `cook` at the kitchen
 // cupboard (bakes the pie), `eat` half the pie, `hide` Bob in the chest,
 // `sleep` in the bed, `fire`: look into the
-// fireplace (a first-person view), `picker`: take the apple picker (tool
-// shed; its `prop` is drawn apart from the room so it can go). The farmhouse's `kitchen` has the places
+// fireplace (a first-person view); `picker`, `crowbar`: things lying about
+// in the tool shed to take (their `prop` is drawn apart from the room so it
+// can go; taking one sets `flag` and he thinks hint line `found`). The farmhouse's `kitchen` has the places
 // and overlays the baking uses (src/baking.js).
 
 export const WALL = 6; // side/bottom wall thickness
@@ -359,6 +360,18 @@ function applePicker(ctx, x, y) {
   });
 }
 
+// A crowbar: a red-painted iron bar, hooked at one end, a claw at the other.
+// 15×3, lying flat.
+function crowbar(ctx, x, y) {
+  obj(ctx, x, y, 15, 3, r => {
+    r(0, 0, 2, 3, C.redDk);
+    r(1, 1, 14, 1, C.red);
+    r(2, 1, 11, 1, C.redHi);
+    r(13, 0, 2, 1, C.metal);
+    r(13, 2, 2, 1, C.metalDk);
+  });
+}
+
 // A little cast-iron cooking stove with an oven, its pipe going up the wall.
 // 14×28.
 function stove(ctx, x, y) {
@@ -700,15 +713,18 @@ export const ROOMS = {
       table: { stand: { x: 86, y: 88 }, bowl: { x: 84, y: 94 }, pie: { x: 94, y: 95 }, seat: { x: 100, y: 91 } },
     },
     // the big chest, where Bob hides from Sarah: opened, its lid, where he
-    // hops in from (behind it, Jones beside it), and where he waits (up from
-    // the table) to be hidden
+    // hops in from (behind it, Jones beside it), the crowbar prising it open,
+    // where he waits (up from the table) to be hidden, and where Sarah waits
+    // (when she knows he's in there)
     chest: {
       open: { x: 110, y: 121, w: 26, h: 17, draw: ctx => chestOpen(ctx, 2, 9) },
       lid: { x: 111, y: 129, w: 24, h: 8, draw: ctx => chestLid(ctx, 1, 1) },
+      bar: { x: 0, y: 0, w: 17, h: 5, draw: ctx => crowbar(ctx, 1, 1), at: { x: 114, y: 136 } },
       behind: { x: 123, y: 124 },
       inside: { x: 123, y: 136 },
     },
     bobWaits: { x: 115, y: 77 },
+    sarahWaits: { x: 84, y: 132 },
     solid: [
       { x: 8, y: 20, w: 16, h: 30 },   // kitchen dresser
       { x: 26, y: 30, w: 14, h: 20 },  // stove
@@ -797,6 +813,15 @@ export const ROOMS = {
         area: { x: 96, y: 0, w: 12, h: 56 },  // tap the apple picker in the corner…
         stand: { x: 100, y: 58 },             // …to walk over and take it
         prop: { x: 99, y: 0, w: 8, h: 50, draw: ctx => applePicker(ctx, 1, 1) },
+        flag: 'picker',
+        found: 'pickerFound',
+      },
+      crowbar: {
+        area: { x: 62, y: 22, w: 26, h: 16 }, // tap the crowbar on the workbench…
+        stand: { x: 76, y: 56 },              // …to take it
+        prop: { x: 67, y: 31, w: 17, h: 5, draw: ctx => crowbar(ctx, 1, 1) },
+        flag: 'crowbar',
+        found: 'crowbarFound',
       },
     },
     solid: [

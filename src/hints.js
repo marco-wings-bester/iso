@@ -86,6 +86,17 @@ const LINES = {
     subtle: "Not now: Sarah's at the door, and Bob needs hiding!",
     explicit: 'Not now: hide Bob first! Tap the big chest in the corner.',
   },
+  // the chest Bob's hiding in won't open
+  chestStuck: {
+    none: null,
+    subtle: 'If only I had something to prise it open with…',
+    explicit: 'I need a crowbar to prise it open. There is one in the tool shed.',
+  },
+  crowbarFound: {
+    none: 'A crowbar.',
+    subtle: 'A crowbar… just the thing for prising things open.',
+    explicit: () => (hasFlag('chestStuck') ? 'A crowbar! That will open the stuck chest.' : 'A crowbar. Handy for prising things open.'),
+  },
   pickerFound: {
     none: 'An apple picker.',
     subtle: 'An apple picker… handy for high branches.',
