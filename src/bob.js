@@ -72,31 +72,40 @@ export function spawnBob(scene, { showMark }) {
       walking = true;
       this.hideMark();
       bob.off('animationcomplete');
-      const step = () => {
-        const p = route.shift();
-        if (!p) {
-          scene.tweens.add({ targets: bob, alpha: 0, duration: 250, onComplete: () => bob.destroy() });
-          return;
-        }
-        const dx = p.x - bob.x;
-        const dy = p.y - bob.y;
-        const dir = Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
-        bob.play(`bob-walk-${dir}`, true);
-        scene.tweens.add({
-          targets: bob, x: p.x, y: p.y, duration: (Math.hypot(dx, dy) / speed) * 1000,
-          onUpdate: () => bob.setDepth(bob.y), onComplete: step,
-        });
-      };
-      step();
+      walkSprite(scene, bob, 'bob', route, speed, () => {
+        scene.tweens.add({ targets: bob, alpha: 0, duration: 250, onComplete: () => bob.destroy() });
+      });
     },
   };
 }
 
+// Walk a character's `sprite` along `route` at `speed` px/s with the walking
+// frames of sheet `key`; it's left facing (and walking) the last way it went
+// (`sprite.facing`), then `onDone`.
+export function walkSprite(scene, sprite, key, route, speed, onDone) {
+  const step = () => {
+    const p = route.shift();
+    if (!p) {
+      onDone?.();
+      return;
+    }
+    const dx = p.x - sprite.x;
+    const dy = p.y - sprite.y;
+    sprite.facing = Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
+    sprite.play(`${key}-walk-${sprite.facing}`, true);
+    scene.tweens.add({
+      targets: sprite, x: p.x, y: p.y, duration: (Math.hypot(dx, dy) / speed) * 1000,
+      onUpdate: () => sprite.setDepth(sprite.y), onComplete: step,
+    });
+  };
+  step();
+}
+
 // In the farmhouse: Bob on the chair behind the table, eating the half of the
 // pie Farmer Jones left (src/eating.js). The first time he's seen there he
-// sits down; once it's gone he sits back patting his belly. Returns him (to
-// dim at night).
-export function seatBob(scene) {
+// sits down; once it's gone he sits back patting his belly, and `onFinished`
+// runs. Returns him (to dim at night).
+export function seatBob(scene, onFinished) {
   createBob(scene);
   const at = scene.room.kitchen.table.pie;
   const pie = scene.add.image(at.x, at.y, pieTexture(scene, 4)).setOrigin(0).setDepth(0.45);
@@ -105,6 +114,9 @@ export function seatBob(scene) {
     to: 0,
     sitDown: !hasFlag('bobSat'),
     onSeated: () => setFlag('bobSat'),
-    onFull: () => setFlag('pieEaten'),
+    onFull: () => {
+      setFlag('pieEaten');
+      onFinished?.();
+    },
   });
 }

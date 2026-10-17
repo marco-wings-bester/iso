@@ -74,6 +74,18 @@ const LINES = {
     subtle: () => (hasFlag('picker') ? 'Now, which apple…?' : 'Lovely apples… right up high.'),
     explicit: () => (hasFlag('picker') ? 'Tap an apple to pick it with the apple picker.' : 'The apples are too high. The apple picker is in the tool shed.'),
   },
+  // Sarah at the door, Bob begging to be hidden
+  hideBob: {
+    none: null,
+    subtle: 'Where could Bob hide…? Somewhere big enough for him…',
+    explicit: 'Quick! Tap the big chest in the corner so Bob can hide in it.',
+  },
+  // trying to go out before Bob is hidden
+  notNow: {
+    none: 'Not now!',
+    subtle: "Not now: Sarah's at the door, and Bob needs hiding!",
+    explicit: 'Not now: hide Bob first! Tap the big chest in the corner.',
+  },
   pickerFound: {
     none: 'An apple picker.',
     subtle: 'An apple picker… handy for high branches.',

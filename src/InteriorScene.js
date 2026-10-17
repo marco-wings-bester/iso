@@ -10,6 +10,7 @@ import { seatBob } from './bob.js';
 import { bakePie, eatHalf } from './baking.js';
 import { think } from './bubble.js';
 import { line } from './hints.js';
+import { knock, hideBob, bobWaiting, bobInChest } from './sarah.js';
 
 const FADE_MS = 250;
 const BODY = 5; // half the farmer's width in sprite px: keeps him off walls and furniture
@@ -75,7 +76,8 @@ export default class InteriorScene extends Phaser.Scene {
     });
     this.exitY = room.h - 3;
     this.leaving = false;
-    this.busy = false;  // baking: taps and keys are ignored
+    this.busy = false;  // baking, eating, talking: taps and keys are ignored…
+    this.skippable = false; // …or, while people talk, a tap cuts a line short
     this.carry = null;  // what he's carrying (follows him)
 
     // Fixed camera: the whole room fills the screen (~3x on a phone, so the
@@ -107,8 +109,10 @@ export default class InteriorScene extends Phaser.Scene {
     }
 
     // Tap to walk; tapping the doorway or below the room walks out; tapping
-    // a spot (bookshelf, cupboard, bed, fireplace) walks there and uses it.
+    // a spot (bookshelf, cupboard, table, chest, bed, fireplace) walks there
+    // and uses it.
     this.input.on('pointerdown', (pointer) => {
+      if (this.busy && this.skippable) this.thought?.destroy();
       if (this.leaving || this.busy) return;
       const { worldX: x, worldY: y } = pointer;
       const spot = Object.entries(spots).find(([, s]) => inRect(x, y, s.area));
@@ -116,7 +120,7 @@ export default class InteriorScene extends Phaser.Scene {
         const [id, s] = spot;
         const use = {
           read: () => this.read(), cook: () => this.useCupboard(), eat: () => this.eatPie(), sleep: () => this.tryToSleep(),
-          fire: () => this.lookAtFire(), picker: () => this.takePicker(),
+          fire: () => this.lookAtFire(), picker: () => this.takePicker(), hide: () => this.useChest(),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
@@ -124,14 +128,27 @@ export default class InteriorScene extends Phaser.Scene {
     });
 
     // Once baked, the pie is on the table (half of it once Jones has had his);
-    // given the rest, Bob is there eating it. The night overlay is under Bob,
-    // so he's dimmed by hand while Jones sleeps.
+    // given the rest, Bob is there eating it, and once he's finished there's
+    // a knock at the door (src/sarah.js): then he's waiting to be hidden, or
+    // hidden in the chest. The night overlay is under Bob, so he's dimmed by
+    // hand while Jones sleeps.
     const house = building === 'house';
+    const { pie } = room.kitchen?.table ?? {};
     if (house && hasFlag('baked') && !hasFlag('gavePie')) {
-      const { pie } = room.kitchen.table;
       this.pie = this.add.image(pie.x, pie.y, pieTexture(this, hasFlag('ate') ? 4 : 8)).setOrigin(0).setDepth(0.45);
     }
-    this.bob = house && hasFlag('gavePie') ? seatBob(this) : null;
+    this.bob = null;
+    if (house && hasFlag('gavePie')) {
+      const knockSoon = () => this.time.delayedCall(2500, () => knock(this));
+      if (hasFlag('sarahKnocked')) {
+        this.add.image(pie.x, pie.y, pieTexture(this, 0)).setOrigin(0).setDepth(0.45); // his empty plate
+        if (hasFlag('bobHidden')) bobInChest(this);
+        else this.bob = bobWaiting(this);
+      } else {
+        this.bob = seatBob(this, knockSoon);
+        if (hasFlag('pieEaten')) knockSoon();
+      }
+    }
 
     this.game.events.emit('location', { name: BUILDINGS[building].name });
   }
@@ -166,6 +183,18 @@ export default class InteriorScene extends Phaser.Scene {
     else if (hasFlag('baked')) this.think(hasFlag('gavePie') ? 'Bob has the pie now.' : "I've already baked a pie.");
     else if (!hasFlag('apple')) this.think(line('cupboardNoApple'));
     else bakePie(this);
+  }
+
+  // The big chest: where Bob hides when Sarah knocks.
+  useChest() {
+    this.player.face('right');
+    if (hasFlag('sarahKnocked') && !hasFlag('bobHidden')) hideBob(this);
+    else this.think(hasFlag('bobHidden') ? "Shh… Bob's in there." : 'Just old blankets in here.');
+  }
+
+  // Sarah's at the door and Bob isn't hidden yet: no going out.
+  mustHideBob() {
+    return this.building === 'house' && hasFlag('sarahKnocked') && !hasFlag('bobHidden');
   }
 
   // The pie on the table: he has half of it, and that makes him sleepy.
@@ -264,7 +293,16 @@ export default class InteriorScene extends Phaser.Scene {
     // what he carries is in his hands: in front of him, or hidden behind him facing away
     const side = { left: -4, right: 4 }[dir] ?? 0;
     this.carry?.setPosition(x + side, y - 7).setDepth(y + (dir === 'up' ? -0.5 : 0.5));
-    if (y >= this.exitY) this.leave();
+    if (y < this.exitY) return;
+    if (!this.mustHideBob()) {
+      this.leave();
+      return;
+    }
+    // back from the doorway
+    this.player.stop();
+    this.player.y = this.room.h - WALL - 10;
+    this.player.face('up');
+    this.think(line('notNow'));
   }
 
   leave() {
