@@ -10,9 +10,14 @@ import { asset } from './asset.js';
 // umbrellas and the jetty below; its boats move about (src/seaside.js), and
 // its people are villagers (src/villagers.js). Boer Johan comes in by the road at the top
 // right; he can walk the road, the sand and out along the jetty. Off the
-// right-hand edge (either road) is back to the crossroads.
+// right-hand edge (either road) is back to the crossroads. Tapping the cafe
+// (or its deck) walks him to the foot of its steps and in (ROOMS.cafe,
+// src/cafe.js); he comes out there again.
 
 const HERE = { af: 'Die strand', en: 'The beach' };
+// The cafe and its deck in the picture, and the foot of the deck's steps.
+const CAFE = [{ x: 890, y: 1290, w: 410, h: 340 }, { x: 670, y: 1610, w: 560, h: 160 }];
+const CAFE_STEPS = { x: 776, y: 1806 };
 
 export default class BeachScene extends MapScene {
   constructor() {
@@ -34,18 +39,24 @@ export default class BeachScene extends MapScene {
     preloadSeaside(this);
   }
 
-  create({ at } = {}) {
-    this.place(at, 'crossroads');
+  // `at`: where he is (redrawn for a new screen size, or out of the cafe:
+  // `out`); otherwise he comes down the road from the crossroads.
+  create({ at, out } = {}) {
+    this.place(at, at ? null : 'crossroads');
     animateSeaside(this);
     this.villagers = placeVillagers(this, BEACH_VILLAGERS, this.map.scale);
-    if (!at) this.game.events.emit('location', { name: HERE });
+    if (!at || out) this.game.events.emit('location', { name: HERE });
   }
 
   // Tapping someone: Johan walks over to them (the nearest he can get), and
-  // they notice him.
+  // they notice him. Tapping the cafe: in he goes.
   tapThing(x, y) {
     const v = this.villagers.find(o => o.contains(x, y));
-    if (!v) return false;
+    if (!v) {
+      if (!CAFE.some(r => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h)) return false;
+      this.player.walkTo(CAFE_STEPS.x, CAFE_STEPS.y, () => this.enterCafe());
+      return true;
+    }
     const side = this.player.x < v.x ? -1 : 1;
     this.player.walkTo(v.x + side * 60, v.y, () => {
       const dx = v.x - this.player.x;
@@ -54,6 +65,15 @@ export default class BeachScene extends MapScene {
       v.notice(this.player);
     });
     return true;
+  }
+
+  enterCafe() {
+    this.leaving = true;
+    this.player.stop();
+    this.player.face('up');
+    const cam = this.cameras.main;
+    cam.fadeOut(250);
+    cam.once('camerafadeoutcomplete', () => this.scene.start('Interior', { building: 'cafe' }));
   }
 
   update(_time, delta) {

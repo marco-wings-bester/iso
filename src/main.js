@@ -9,15 +9,29 @@ import BeachScene from './BeachScene.js';
 import { setupMenu } from './menu.js';
 import { resetFlags, setFlag, LEVEL2_STORY } from './state.js';
 import { watchForUpdates } from './updates.js';
+import { UI } from './screen.js';
 
+// Drawn at the screen's own resolution, so text and pictures are sharp on a
+// phone: the canvas is UI times the page's size, shown at the page's size
+// (src/screen.js), and kept so when the window changes size.
+const pageSize = () => [Math.round(window.innerWidth * UI), Math.round(window.innerHeight * UI)];
+const [startW, startH] = pageSize();
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   backgroundColor: '#5a9e4a',
   scale: {
-    mode: Phaser.Scale.RESIZE,
+    mode: Phaser.Scale.NONE,
+    width: startW,
+    height: startH,
+    zoom: 1 / UI,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
+  render: { pixelArt: false, antialias: true },
   scene: [GameScene, InteriorScene, ViewScene, TalkScene, RoadScene, BeachScene, UIScene],
+});
+window.addEventListener('resize', () => {
+  const [w, h] = pageSize();
+  if (w !== game.scale.width || h !== game.scale.height) game.scale.resize(w, h);
 });
 
 // Hide the "Loading farm…" message from index.html once the farm is up.

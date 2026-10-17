@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { t } from './i18n.js';
+import { UI } from './screen.js';
 
 // Bubbles over someone's head (in a room or out on the farm): a pixel-art box
 // with the words drawn at screen resolution so they stay sharp at any zoom.
@@ -20,18 +21,21 @@ export function say(scene, who, text, { name, color, below } = {}) {
   return bubble(scene, who, t(text), { name: t(name), color, below, speech: true });
 }
 
+// The game's lettering: a clear, sturdy monospace.
+export const FONT = 'ui-monospace, Menlo, Consolas, "DejaVu Sans Mono", monospace';
+
 function bubble(scene, who, text, { name, color = '#447a34', speech = false, below = false }) {
   scene.thought?.destroy();
   const cam = scene.cameras.main;
   const z = cam.zoom;
-  const u = Math.max(1, Math.round(3 / z)); // a 'pixel' of the bubble: about 3 screen px
+  const u = Math.max(1, Math.round(3 * UI / z)); // a 'pixel' of the bubble: about 3 page px
   const style = {
-    fontFamily: 'monospace', fontStyle: 'bold', fontSize: '13px', color: '#2e1d0c', align: 'center',
-    wordWrap: { width: 200 }, resolution: window.devicePixelRatio || 1,
+    fontFamily: FONT, fontStyle: 'bold', fontSize: `${14 * UI}px`, color: '#2e1d0c', align: 'center',
+    wordWrap: { width: 210 * UI }, lineSpacing: 2 * UI,
   };
   const words = scene.add.text(0, 0, text, style).setScale(1 / z).setOrigin(0.5, 1).setDepth(1e5 + 1);
-  const label = name ? scene.add.text(0, 0, name, { ...style, fontSize: '12px', color }).setScale(1 / z).setOrigin(0.5, 0).setDepth(1e5 + 1) : null;
-  const more = scene.add.text(0, 0, '▼', { ...style, fontSize: '9px' }).setScale(1 / z).setOrigin(1, 1).setDepth(1e5 + 1);
+  const label = name ? scene.add.text(0, 0, name, { ...style, fontSize: `${13 * UI}px`, color }).setScale(1 / z).setOrigin(0.5, 0).setDepth(1e5 + 1) : null;
+  const more = scene.add.text(0, 0, '▼', { ...style, fontSize: `${10 * UI}px` }).setScale(1 / z).setOrigin(1, 1).setDepth(1e5 + 1);
   const g = scene.add.graphics().setDepth(1e5);
   const w = Math.ceil(Math.max(words.width, label ? label.width : 0) / z) + 6 * u;
   const h = Math.ceil((words.height + (label ? label.height : 0)) / z) + 4 * u;

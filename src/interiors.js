@@ -667,6 +667,66 @@ function sack(ctx, x, y) {
   });
 }
 
+// ── The cafe ──────────────────────────────────────────────────────────────
+
+// The chalkboard menu on the wall: a coffee cup and the prices in chalk.
+function chalkboard(ctx, x, y) {
+  obj(ctx, x, y, 28, 22, r => {
+    r(0, 0, 28, 22, C.woodDk);
+    r(0, 0, 28, 1, C.woodLt);
+    r(2, 2, 24, 18, '#2e3a34');
+    r(4, 7, 7, 6, C.linen); r(11, 8, 2, 3, C.linen); r(4, 12, 7, 1, C.linenDk); // a cup
+    r(6, 4, 1, 2, C.linenDk); r(8, 3, 1, 3, C.linenDk);                        // its steam
+    r(15, 5, 9, 1, C.linenDk); r(15, 8, 7, 1, C.linenDk); r(15, 11, 9, 1, C.linenDk);
+    r(4, 15, 14, 1, C.linenDk); r(20, 14, 4, 3, C.strawHi);                      // and the price
+  });
+}
+
+// The counter, along the back: its top (with the coffee machine, the till and
+// the cake stand on it) and its panelled front. Drawn on its own, in front of
+// whoever's behind it. (x, y): the top's front-left; w wide.
+function cafeCounter(ctx, x, y, w) {
+  // the coffee machine, steaming at the back left
+  obj(ctx, x + 6, y - 22, 18, 20, r => {
+    r(0, 0, 18, 20, C.metal); r(0, 0, 18, 2, C.metalHi); r(14, 2, 4, 18, C.metalDk);
+    r(3, 5, 8, 5, '#2a2a30'); r(4, 6, 2, 1, C.red); r(7, 6, 2, 1, C.leafHi);
+    r(5, 12, 4, 3, C.metalDk); r(5, 16, 5, 4, C.linen); r(9, 17, 2, 2, C.linen);
+  });
+  // the till
+  obj(ctx, x + w - 46, y - 12, 14, 10, r => {
+    r(0, 0, 14, 10, '#5a8ac8'); r(0, 0, 14, 2, '#8ab4e0'); r(2, 3, 10, 3, '#2a3a2a'); r(3, 4, 4, 1, C.leafHi);
+  });
+  // cakes under a glass dome
+  obj(ctx, x + w - 26, y - 16, 20, 14, r => {
+    r(1, 10, 18, 4, C.metalHi); r(2, 2, 16, 9, C.glass); r(4, 0, 12, 3, C.glass);
+    r(4, 6, 6, 4, '#f0a8b8'); r(4, 5, 6, 1, C.white); r(11, 7, 5, 3, '#8c5838'); r(11, 6, 5, 1, C.strawHi);
+    r(5, 2, 2, 1, C.glint);
+  });
+  obj(ctx, x, y, w, 20, r => {
+    r(0, 0, w, 6, C.woodLt);
+    r(0, 0, w, 1, C.woodHi);
+    r(0, 6, w, 14, '#9cc8e4');
+    r(0, 6, w, 1, C.dark);
+    for (let px = 3; px < w - 4; px += 14) { r(px, 9, 10, 8, '#bcdcf0'); r(px, 16, 10, 1, '#7aa8c8'); }
+    r(0, 18, w, 2, '#7aa8c8');
+  });
+  // two cups waiting on the counter
+  [x + 32, x + 38].forEach(cx => obj(ctx, cx, y + 1, 3, 3, r => { r(0, 0, 3, 3, C.linen); r(2, 0, 1, 3, C.linenDk); }));
+}
+
+// A little round cafe table with a cup on it, and a chair each side.
+function cafeTable(ctx, x, y) {
+  chair(ctx, x - 9, y + 2, false);
+  chair(ctx, x + 19, y + 2, true);
+  drop(ctx, x, y, 18, 16);
+  obj(ctx, x, y, 18, 16, r => {
+    r(1, 0, 16, 9, C.linen); r(0, 1, 18, 7, C.linen); r(1, 8, 16, 1, C.linenDk);
+    for (let i = 2; i < 16; i += 3) r(i, 0, 1, 1, '#5a8ac8');
+    r(8, 9, 2, 5, C.metalDk); r(5, 14, 8, 2, C.metalDk);
+  });
+  obj(ctx, x + 7, y + 2, 4, 3, r => { r(0, 0, 4, 3, '#f8f0e0'); r(1, 0, 2, 1, '#6a3a1e'); });
+}
+
 // ── Rooms ─────────────────────────────────────────────────────────────────
 
 const OAK = { base: '#b07a48', hi: '#c88f5a', seam: '#5a3418', grain: '#9a6a3c' };
@@ -768,6 +828,53 @@ export const ROOMS = {
     },
     animate(scene) {
       flames(scene, 78, 33);
+    },
+  },
+
+  // The Cozy Seaside Cafe at the beach (src/cafe.js): Sannie behind the
+  // counter, coffee on the go. Out of the door is back to the beach.
+  cafe: {
+    w: 144, h: 172, wallH: 44,
+    name: { af: 'Cozy Seaside Cafe', en: 'Cozy Seaside Cafe' },
+    door: { x: 60, w: 24 },
+    exit: { to: 'Beach', data: { at: { x: 776, y: 1806 }, out: true } }, // the foot of the deck's steps
+    spots: {
+      counter: {
+        area: { x: 40, y: 20, w: 98, h: 52 }, // tap the counter…
+        stand: { x: 84, y: 84 },              // …to walk up to it
+      },
+    },
+    // the counter (with what's on it) drawn over Sannie behind it, so she
+    // shows from the waist up; steam curls up off the coffee machine
+    counter: { x: 39, y: 31, w: 100, h: 44, depth: 70, draw: ctx => cafeCounter(ctx, 1, 23, 98) },
+    sannie: { x: 77, y: 64 },
+    steam: { x: 55, y: 31 },
+    solid: [
+      { x: 40, y: 40, w: 98, h: 34 },  // the counter
+      { x: 14, y: 98, w: 40, h: 22 },  // a table and its chairs
+      { x: 90, y: 122, w: 40, h: 22 }, // another
+      { x: 120, y: 150, w: 14, h: 20 }, // plant
+    ],
+    draw(ctx) {
+      const { w, h, wallH } = this;
+      planks(ctx, 0, wallH, w, h - wallH, OAK, 31);
+      // a checked rug where you queue
+      for (let y = 78; y < 96; y += 4) for (let x = 64; x < 108; x += 4) fill(ctx, x, y, 4, 4, ((x - 64 + y - 78) / 4) % 2 ? '#f4ecd8' : '#5a8ac8');
+      windowLight(ctx, 10, wallH, 20, 30);
+      doormat(ctx, this);
+      // back wall: cream with blue stripes, like the awning outside, over a wainscot
+      fill(ctx, 0, 0, w, wallH, '#f4ecd8');
+      for (let x = 2; x < w; x += 12) fill(ctx, x, 0, 6, wallH - 14, '#9cc8e4');
+      fill(ctx, 0, wallH - 14, w, 12, C.wood);
+      for (let x = 4; x < w; x += 12) fill(ctx, x, wallH - 12, 1, 10, C.woodDkr);
+      fill(ctx, 0, wallH - 15, w, 2, C.woodLt);
+      fill(ctx, 0, wallH - 2, w, 2, C.woodDeep);
+      frame(ctx, this);
+      windowPane(ctx, 10, 10);
+      chalkboard(ctx, 46, 6);
+      cafeTable(ctx, 26, 100);
+      cafeTable(ctx, 102, 124);
+      plant(ctx, 120, 150);
     },
   },
 

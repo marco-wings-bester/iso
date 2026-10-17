@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { t } from './i18n.js';
+import { UI } from './screen.js';
 
-const STYLE = { fontSize: '24px', fill: '#ffffff', stroke: '#000000', strokeThickness: 5, align: 'center' };
+const STYLE = { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: `${25 * UI}px`, fill: '#ffffff', stroke: '#000000', strokeThickness: 5 * UI, align: 'center' };
 
 // Screen-space overlay above the game: shows the name of the place you just
 // walked into (or news, like someone at the gate). Scenes report location via
@@ -14,8 +15,8 @@ export default class UIScene extends Phaser.Scene {
   }
 
   create() {
-    this.label = this.add.text(this.scale.width / 2, 72, '', STYLE).setOrigin(0.5).setAlpha(0);
-    const fit = (width) => this.label.setX(width / 2).setWordWrapWidth(width - 32);
+    this.label = this.add.text(this.scale.width / 2, 72 * UI, '', STYLE).setOrigin(0.5).setAlpha(0);
+    const fit = (width) => this.label.setX(width / 2).setWordWrapWidth(width - 32 * UI);
     fit(this.scale.width);
     this.scale.on('resize', ({ width }) => fit(width));
 

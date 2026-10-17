@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { say } from './bubble.js';
 import { t } from './i18n.js';
+import { UI } from './screen.js';
+import { FONT } from './bubble.js';
 
 // Conversations in a room. `cast` names who's talking — a sprite, or a spot
 // {x, y} with a `name`, a `color` and `below` for a voice outside the door —
@@ -38,18 +40,17 @@ export async function converse(scene, cast, steps, choiceNext = false) {
 export function choose(scene, options) {
   const cam = scene.cameras.main;
   const z = cam.zoom;
-  const u = Math.max(1, Math.round(3 / z));
+  const u = Math.max(1, Math.round(3 * UI / z));
   const view = cam.worldView;
-  const dpr = window.devicePixelRatio || 1;
-  const style = { fontFamily: 'monospace', fontStyle: 'bold', fontSize: '14px', color: '#2e1d0c', resolution: dpr };
-  const width = Math.min(scene.scale.width - 24, 360) / z;
+  const style = { fontFamily: FONT, fontStyle: 'bold', fontSize: `${15 * UI}px`, color: '#2e1d0c', lineSpacing: 2 * UI };
+  const width = Math.min(scene.scale.width - 24 * UI, 380 * UI) / z;
   const x = view.centerX - width / 2;
   const parts = [];
   const boxes = [];
   let y = view.bottom - 5 * u;
   [...options].reverse().forEach((text) => {
     const arrow = scene.add.text(0, 0, '▶', { ...style, color: '#b8402e' }).setScale(1 / z);
-    const words = scene.add.text(0, 0, t(text), { ...style, wordWrap: { width: width * z - 40 } }).setScale(1 / z);
+    const words = scene.add.text(0, 0, t(text), { ...style, wordWrap: { width: width * z - 40 * UI } }).setScale(1 / z);
     const h = words.height / z + 4 * u;
     y -= h;
     const g = scene.add.graphics();
@@ -60,7 +61,7 @@ export function choose(scene, options) {
     y -= 3 * u;
   });
   const label = scene.add.text(x + u, y, t({ af: 'Jou antwoord', en: 'Your reply' }), {
-    ...style, fontSize: '12px', color: '#fffcf2', stroke: '#2e1d0c', strokeThickness: 4,
+    ...style, fontSize: `${13 * UI}px`, color: '#fffcf2', stroke: '#2e1d0c', strokeThickness: 4 * UI,
   }).setScale(1 / z).setOrigin(0, 1);
   parts.push(label);
   const paint = (selected) => boxes.forEach(({ g, x: bx, y: by, w, h }, i) => {
