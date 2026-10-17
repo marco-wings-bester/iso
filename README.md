@@ -25,8 +25,8 @@ chest is stuck: the crowbar in the tool shed prises it open, and Bob goes
 home, with Louise or alone. Then Farmer Jones wants to go to town: tap right
 at the bottom of the farm and he walks down the road past the gate to the
 crossroads, **Level 2** (`src/RoadScene.js`; the map is
-`public/assets/crossroads.jpg`, its roads baked by `scripts/build-roadmask.py`). Up goes back to the farm (tap the
-sign, or right at the top); down to town, right to Bob's house and left to the
+`public/assets/crossroads.jpg`, its roads baked by `scripts/build-roadmask.py`). Up goes back to the farm (or tap
+right at the top); down to town, right to Bob's house and left to the
 beach (those three are still to come). In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it

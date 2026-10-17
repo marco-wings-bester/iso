@@ -4,7 +4,6 @@ import Player from './Player.js';
 import { roadGrid } from './WalkGrid.js';
 import { PLAYER_SPEED } from './constants.js';
 import { setFlag } from './state.js';
-import { t } from './i18n.js';
 
 // Level 2: the crossroads past the farm gate, where Boer Johan comes on his
 // way to town once Pieter has gone home. The picture (assets/crossroads.jpg)
@@ -13,8 +12,8 @@ import { t } from './i18n.js';
 // road back up goes there. Down goes to town, right to Pieter's house and
 // left to the beach: those three aren't there yet, so at the edge of the
 // screen he turns back and it says so. Tap to walk (or the arrow keys);
-// tapping a sign walks to the end of its road, tapping right at the top back
-// to the farm.
+// tapping near the end of a road walks all the way to it, tapping right at
+// the top back to the farm. (No name boards: the roads speak for themselves.)
 
 const MAP_W = 704;
 const MAP_H = 1504;
@@ -22,12 +21,6 @@ const SCALE = 0.85; // the farmer as big as the one in the picture
 const CROSSING = { x: 350, y: 830 };
 const FADE_MS = 250;
 const LEVEL = { af: 'Vlak 2\nDie kruispad', en: 'Level 2\nThe crossroads' };
-const SIGNS = {
-  farm: { af: '▲ Plaas', en: '▲ Farm' },
-  town: { af: '▼ Dorp', en: '▼ Town' },
-  beach: { af: '◀ Strand', en: '◀ Beach' },
-  pieter: { af: 'Pieter se huis ▶', en: "Bob's house ▶" },
-};
 const SOON = {
   town: { af: 'Die dorp\nkom binnekort', en: 'Town\ncoming soon' },
   beach: { af: 'Die strand\nkom binnekort', en: 'The beach\ncoming soon' },
@@ -96,23 +89,13 @@ export default class RoadScene extends Phaser.Scene {
       if (inView) this.player.walkTo(inView.x, inView.y);
     }
 
-    const vh = view.bottom - view.top;
-    const farmSign = roadGrid.crossing('y', view.top + vh * 0.12, 380);
-    this.signs = [
-      { to: 'farm', x: farmSign.x + 26, y: farmSign.y, ox: 0, oy: 0.5 },
-      { to: 'town', x: this.ends.town.x - 30, y: view.bottom - vh * 0.08, ox: 1, oy: 0.5 },
-      { to: 'beach', x: view.left + 6, y: this.ends.beach.y - 52, ox: 0, oy: 1 },
-      { to: 'pieter', x: view.right - 6, y: this.ends.pieter.y - 56, ox: 1, oy: 1 },
-    ].map(s => this.sign(s, z));
-
     this.input.on('pointerdown', (p) => {
       if (this.leaving) return;
       const { worldX: x, worldY: y } = p;
-      // a sign, or near the end of a road: all the way to its end; right at
-      // the top: back to the farm (as at the bottom of the farm)
-      const sign = this.signs.find(s => s.area.contains(x, y));
+      // near the end of a road: all the way to its end; right at the top:
+      // back to the farm (as at the bottom of the farm)
       const end = Object.values(this.ends).find(e => Math.hypot(e.x - x, e.y - y) < 70);
-      const to = sign ? this.ends[sign.to] : end ?? (y < view.top + 40 ? this.ends.farm : { x, y });
+      const to = end ?? (y < view.top + 40 ? this.ends.farm : { x, y });
       this.player.walkTo(to.x, to.y);
     });
 
@@ -125,27 +108,6 @@ export default class RoadScene extends Phaser.Scene {
       setFlag('level2');
       this.game.events.emit('location', { name: LEVEL });
     }
-  }
-
-  // A wooden sign naming a road, its words sharp at any zoom (behind him, as
-  // signs by the road are); returns its tap area and which road it is.
-  sign({ to, x, y, ox, oy }, z) {
-    const words = this.add.text(0, 0, t(SIGNS[to]), {
-      fontFamily: 'monospace', fontStyle: 'bold', fontSize: '13px', color: '#fff3c4',
-      resolution: window.devicePixelRatio || 1,
-    }).setScale(1 / z).setDepth(2);
-    const q = 2 / z / 1.4; // a pixel of the board: about 1.4 screen px
-    const w = Math.ceil(words.width / z + 10 * q);
-    const h = Math.ceil(words.height / z + 6 * q);
-    const bx = Math.round(Phaser.Math.Clamp(x - ox * w, this.view.left + 4, this.view.right - w - 4));
-    const by = Math.round(y - oy * h);
-    const g = this.add.graphics().setDepth(1);
-    g.fillStyle(0x2e1d0c).fillRect(bx - q, by, w + 2 * q, h).fillRect(bx, by - q, w, h + 2 * q);
-    g.fillStyle(0x8c5838).fillRect(bx, by, w, h);
-    g.fillStyle(0xa86a3c).fillRect(bx, by, w, q);
-    g.fillStyle(0x6a4028).fillRect(bx, by + h - q, w, q);
-    words.setPosition(bx + 5 * q, by + 3 * q);
-    return { to, area: new Phaser.Geom.Rectangle(bx - 10, by - 10, w + 20, h + 20) };
   }
 
   update(_time, delta) {
