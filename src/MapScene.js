@@ -15,7 +15,9 @@ import { UI } from './screen.js';
 // is (or, if that's off the screen now, at `home`).
 //
 // A scene extends this with `map` = { key, file, w, h, grid, scale, home }
-// and `exits`, calls `place(at)` in create and `edges()` in update.
+// and `exits`, calls `place(at)` in create and `edges()` in update. Someone
+// can talk to him there (`talk`: src/dialog.js); taps meanwhile only move the
+// talk along.
 //
 // The pictures are much bigger than the screen; drawn shrunk as they are, the
 // screen would only pick up every third pixel or so, and lettering and
@@ -74,12 +76,28 @@ export default class MapScene extends Phaser.Scene {
     });
     this.player.sprite.setScale(scale);
     this.leaving = false;
+    this.busy = false;  // talking: taps and keys only move it along
+    this.choice = null; // replies to pick from (src/dialog.js)
+    this.refitAfter = false;
+    document.body.classList.remove('choosing');
     const walkIn = !at && from && road(from, 140 * scale);
     if (walkIn) this.player.walkTo(walkIn.x, walkIn.y);
 
+    this.input.keyboard.on('keydown', (e) => {
+      if ((e.key === ' ' || e.key === 'Enter') && this.thought && !this.choice) this.thought.destroy();
+    });
     this.input.on('pointerdown', (p) => {
-      if (this.leaving) return;
       const { worldX: x, worldY: y } = p;
+      if (this.choice) {
+        this.choice.tap(x, y);
+        return;
+      }
+      // a bubble stays up until a tap moves it along (and that's all the tap does)
+      if (this.thought) {
+        this.thought.destroy();
+        return;
+      }
+      if (this.leaving || this.busy) return;
       if (this.tapThing?.(x, y)) return; // someone or something there (the scene's own)
       // near the end of a road: all the way to its end (and, for a road
       // with `strip`, anywhere along that edge of the screen)
@@ -94,9 +112,26 @@ export default class MapScene extends Phaser.Scene {
       this.player.walkTo(to.x, to.y);
     });
 
-    const refit = () => this.scene.restart({ at: { x: this.player.x, y: this.player.y } });
+    // (not in the middle of a talk: once it's over)
+    const refit = () => {
+      if (this.busy) this.refitAfter = true;
+      else this.scene.restart({ at: { x: this.player.x, y: this.player.y } });
+    };
+    this.refit = refit;
     this.scale.on('resize', refit);
     this.events.once('shutdown', () => this.scale.off('resize', refit));
+  }
+
+  // A talk (or anything else he has to stand still for): `work()` returns a
+  // promise; meanwhile he stays put and taps only move speech along.
+  async talk(work) {
+    this.busy = true;
+    this.player.locked = true;
+    this.player.stop();
+    await work();
+    this.busy = false;
+    this.player.locked = false;
+    if (this.refitAfter) this.refit();
   }
 
   // Picture `key` redrawn at the size it's shown (this.k × its own), smoothly,

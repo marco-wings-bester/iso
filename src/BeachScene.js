@@ -3,6 +3,7 @@ import { beachGrid } from './WalkGrid.js';
 import { preloadSeaside, animateSeaside } from './seaside.js';
 import { placeVillagers, BEACH_VILLAGERS } from './villagers.js';
 import { asset } from './asset.js';
+import { talkToDerik, BY_DERIK } from './derik.js';
 
 // The beach (assets/seaside.jpg), down the left-hand road from the crossroads:
 // a little seaside village (houses, a bakery, the Cozy Seaside Cafe, a
@@ -49,12 +50,17 @@ export default class BeachScene extends MapScene {
   }
 
   // Tapping someone: Johan walks over to them (the nearest he can get), and
-  // they notice him. Tapping the cafe: in he goes.
+  // they notice him; Derik, fishing, talks to him (src/derik.js). Tapping the
+  // cafe: in he goes.
   tapThing(x, y) {
     const v = this.villagers.find(o => o.contains(x, y));
     if (!v) {
       if (!CAFE.some(r => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h)) return false;
       this.player.walkTo(CAFE_STEPS.x, CAFE_STEPS.y, () => this.enterCafe());
+      return true;
+    }
+    if (v.id === 'derik') {
+      this.player.walkTo(BY_DERIK.x, BY_DERIK.y, () => talkToDerik(this, v));
       return true;
     }
     const side = this.player.x < v.x ? -1 : 1;
