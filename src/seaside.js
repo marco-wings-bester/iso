@@ -1,11 +1,9 @@
 import { SPRITES } from './seasideSprites.js';
 
-// Life at the beach (BeachScene): the people and boats cut out of its picture
-// (scripts/cut-seaside.py) put back where they were, and moving. Sailboats
-// drift and rock, rowing boats bob, two villagers stroll along the road, the
-// child on the jetty hops, the fisherman's float bobs (and now and then a
-// fish jumps), cafe guests chat over steaming coffee and the sunbathers
-// breathe slowly. All in picture px.
+// Life at the beach (BeachScene), besides its people (src/villagers.js): the
+// boats cut out of its picture (scripts/cut-seaside.py) put back where they
+// were, sailboats drifting and rocking, rowing boats bobbing; now and then a
+// fish jumps by the jetty, and coffee steams at the cafe. All in picture px.
 
 const SHEET = 'seaside-sprites';
 const loop = { yoyo: true, repeat: -1, ease: 'Sine.easeInOut' };
@@ -41,29 +39,6 @@ function ripple(scene, x, y, size = 1) {
   scene.tweens.add({ targets: r, scaleX: 3, scaleY: 3, alpha: 0, duration: 1100, onComplete: () => r.destroy() });
 }
 
-// Someone strolling from where they stand to (+dx, +dy) and back, pausing at
-// each end, waddling a little as they go. `faces` is the way the picture
-// has them facing ('left', 'right', or null if straight at us).
-function stroll(scene, name, dx, dy, faces) {
-  const p = put(scene, name);
-  const home = { x: p.x, y: p.y };
-  const ms = (Math.hypot(dx, dy) / 34) * 1000;
-  const go = (out) => {
-    if (faces) p.setFlipX((faces === 'left') === (out ? dx > 0 : dx < 0));
-    const step = scene.tweens.add({ targets: p, angle: { from: -3, to: 3 }, duration: 240, yoyo: true, repeat: -1 });
-    scene.tweens.add({
-      targets: p, x: out ? home.x + dx : home.x, y: out ? home.y + dy : home.y, duration: ms,
-      onUpdate: () => p.setDepth(p.y),
-      onComplete: () => {
-        step.remove();
-        p.setAngle(0);
-        scene.time.delayedCall(rand(900, 2600), () => go(!out));
-      },
-    });
-  };
-  scene.time.delayedCall(rand(200, 1500), () => go(true));
-}
-
 // Every so often (between `min` and `max` ms), `act()`.
 function nowAndThen(scene, min, max, act) {
   const next = () => scene.time.delayedCall(rand(min, max), () => { act(); next(); });
@@ -86,21 +61,7 @@ export function animateSeaside(scene) {
     scene.tweens.add({ targets: b, angle: { from: -1.6, to: 1.6 }, duration: 2100 + i * 310, delay: i * 250, ...loop });
   });
 
-  // villagers out for a stroll along the road
-  stroll(scene, 'girl', 46, 54, null);
-  stroll(scene, 'man', -96, -62, 'left');
-
-  // the fisherman (breathing) and his float, bobbing, with rings on the water;
-  // now and then a fish jumps
-  const fisher = put(scene, 'fisher');
-  scene.tweens.add({ targets: fisher, scaleY: 1.03, duration: 1900, ...loop });
-  const float = scene.add.image(206, 2566, texture(scene, 'float', 12, 12, (g) => {
-    g.fillStyle(0x2e1d0c).fillCircle(6, 6, 6);
-    g.fillStyle(0xffffff).fillCircle(6, 6, 4.5);
-    g.fillStyle(0xd04c3a).fillRect(1.5, 1.5, 9, 4.5);
-  })).setDepth(2566);
-  scene.tweens.add({ targets: float, y: float.y + 3, duration: 900, ...loop });
-  nowAndThen(scene, 1800, 3200, () => ripple(scene, float.x, float.y + 4));
+  // now and then a fish jumps out of the sea by the jetty
   const fishKey = texture(scene, 'fish', 26, 12, (g) => {
     g.fillStyle(0x2e1d0c).fillEllipse(11, 6, 22, 12).fillTriangle(18, 6, 26, 0, 26, 12);
     g.fillStyle(0xf0a050).fillEllipse(11, 6, 18, 8).fillTriangle(19, 6, 24, 2, 24, 10);
@@ -116,17 +77,7 @@ export function animateSeaside(scene) {
     scene.tweens.add({ targets: fish, y: y - 56, duration: 400, yoyo: true, ease: 'Quad.easeOut' });
   });
 
-  // the child on the jetty, hopping about
-  const child = put(scene, 'child');
-  nowAndThen(scene, 2500, 5000, () => {
-    scene.tweens.add({ targets: child, y: child.y - 16, duration: 170, yoyo: true, repeat: Math.random() < 0.4 ? 1 : 0, ease: 'Quad.easeOut' });
-  });
-
-  // cafe guests chatting (a nod now and then), their coffee steaming
-  ['guest2', 'guest3'].forEach((name) => {
-    const g = put(scene, name);
-    nowAndThen(scene, 1200, 3000, () => scene.tweens.add({ targets: g, scaleY: 1.04, duration: 160, yoyo: true }));
-  });
+  // coffee steaming at the cafe
   [[804, 1630], [1222, 1688]].forEach(([x, y]) => {
     scene.time.addEvent({
       delay: 420, loop: true,
@@ -135,11 +86,5 @@ export function animateSeaside(scene) {
         scene.tweens.add({ targets: wisp, y: y - rand(36, 52), x: wisp.x + rand(-10, 10), scale: 1.6, alpha: 0, duration: 1700, onComplete: () => wisp.destroy() });
       },
     });
-  });
-
-  // sunbathers, breathing slowly
-  ['sun1', 'sun2'].forEach((name, i) => {
-    const s = put(scene, name);
-    scene.tweens.add({ targets: s, scaleY: 1.025, duration: 2600 + i * 500, ...loop });
   });
 }

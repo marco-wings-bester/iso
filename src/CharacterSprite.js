@@ -266,7 +266,7 @@ function stamp(grid, rows, x0, y0) {
 
 // Leg with a per-row horizontal offset (for side-view strides); `back` legs are darker.
 function leg(grid, x, lift, offsets, back = false) {
-  LEG.forEach((row, r) => {
+  (look.leg ?? LEG).forEach((row, r) => {
     const dx = offsets ? offsets[r] : 0;
     [...row].forEach((ch, c) => {
       const shaded = back ? { O: 'o', B: 'd' }[ch] || ch : ch;
@@ -527,6 +527,121 @@ export function createSarah(scene) {
   directionRows(scene, key, tex.getContext(), FRAME_W, FRAME_H, 1, cols);
   tex.refresh();
   tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  look = FARMER;
+}
+
+// Villagers (the people at the beach, src/villagers.js): the same body,
+// shading and animations as Farmer Jones and Bob, in their own clothes and
+// hair. `hair` picks the head: 'short', 'bob' (to the jaw), 'long' (over the
+// shoulders) or 'hat' (a sun hat and a beard); `skirt` puts a skirt over the
+// legs, `shorts` shows the shins; `palette` colours it (H/h/j/b hat, R/r
+// hair, S/s skin, C/c top, O/o trousers or skirt, B/d shoes).
+const FACE = {
+  down: ['....rSSSSSSr....', '....rSSSSSSr....', '....SSeSSeSs....', '....sSSSSSSs....', '.....sSSSSs.....', '......ssss......'],
+  left: ['.....sssssRr....', '....SSSSSSRr....', '....SeSSSsRr....', '....sSSSSsRr....', '.....sSSSsr.....', '.......sss......'],
+};
+const HAIR_TOP = {
+  down: ['................', '................', '.....rRRRRr.....', '....rRRRRRRr....', '...rRRRRRRRRr...', '...rRRRRRRRRr...'],
+  up: ['................', '................', '.....rRRRRr.....', '....rRRRRRRr....', '...rRRRRRRRRr...', '...RRRRRRRRRR...'],
+  left: ['................', '................', '......rRRRRr....', '.....rRRRRRRr...', '....rRRRRRRRRr..', '....RRRRRRRRRr..'],
+};
+const HEADS = {
+  short: {
+    down: [...HAIR_TOP.down, ...FACE.down],
+    up: [...HAIR_TOP.up, '....rRRRRRRr....', '....rRRRRRRr....', '....sRRRRRRs....', '....rRRRRRRr....', '.....rrrrrr.....', '......ssss......'],
+    left: [...HAIR_TOP.left, ...FACE.left],
+  },
+  bob: {
+    down: [...HAIR_TOP.down.slice(0, 5), '...RRRRRRRRRR...', '...RrSSSSSSrR...', '...RRSSSSSSRR...', '...RSSeSSeSsR...', '...RsSSSSSSsR...', '...rRsSSSSsRr...', '....rrssssrr....'],
+    up: [...HAIR_TOP.up, '...RRRRRRRRRR...', '...RRRRRRRRRR...', '...RRRRRRRRRR...', '...RRRRRRRRRR...', '...rRRRRRRRRr...', '....rrrrrrrr....'],
+    left: [...HAIR_TOP.left, '....rSSSRRRRRR..', '....SSSSSRRRRR..', '....SeSSsRRRRR..', '....sSSSsRRRRr..', '.....sSSsRRRr...', '.......ssrr.....'],
+  },
+  hat: {
+    down: [...FARMER_UPPER.down.slice(0, 9), '....RSSSSSSR....', '....RRSssSRR....', '.....RRRRRR.....'],
+    up: FARMER_UPPER.up.slice(0, 12),
+    left: [...FARMER_UPPER.left.slice(0, 9), '...RSSSSSRRr....', '...RRRSSRRr.....', '....RRRRRr......'],
+  },
+};
+// long hair: the bob, falling on over the shoulders
+HEADS.long = {
+  down: [...HEADS.bob.down.slice(0, 11), '...RRrssssrRR...', '...RCCCCCCCcR...', '...rCCCCCCCcr...'],
+  up: [...HEADS.bob.up.slice(0, 11), '...RRRRRRRRRR...', '...rCRRRRRRCr...', '....CrRRRRrc....'],
+  left: [...HEADS.bob.left.slice(0, 11), '.......ssRRRR...', '......CCCRRRr...', '......CCCCRr....'],
+};
+const TORSO = {
+  down: ['....CCCCCCCc....', '....CCCCCCCc....', '....cCCCCCCc....', '....cCCCCCCc....', '.....OOOOOo.....', '.....OOOOOo.....', '.....oOOOoo.....'],
+  up: ['....CCCCCCCc....', '....CCCCCCCc....', '....cCCCCCCc....', '....cCCCCCCc....', '.....OOOOOo.....', '.....OOOOOo.....', '.....oOOOoo.....'],
+  left: ['......CCCCc.....', '......CCCCc.....', '......CCCCc.....', '......cCCCc.....', '......OOOOo.....', '......OOOOo.....', '......oOOoo.....'],
+};
+const VILLAGER_SKIRT = {
+  down: ['....OOOOOOOo....', '...OOOOOOOOOo...', '...OOOOOOOOOo...', '...ooooooooooo..'],
+  up: ['....OOOOOOOo....', '...OOOOOOOOOo...', '...OOOOOOOOOo...', '...ooooooooooo..'],
+  left: ['......OOOOo.....', '.....OOOOOOo....', '.....OOOOOOo....', '....ooooooooo...'],
+};
+const SHORTS_LEG = ['OOo', 'SSs', 'SSs', 'BBd', 'BBd', 'ddd'];
+
+function villagerLook({ hair, palette, skirt, shorts }) {
+  const upper = {};
+  ['down', 'up', 'left'].forEach((dir) => {
+    const head = HEADS[hair][dir];
+    upper[dir] = [...head, ...TORSO[dir].slice(head.length - 12)];
+  });
+  return {
+    palette: { ...FARMER_PALETTE, ...palette },
+    upper,
+    skirt: skirt ? VILLAGER_SKIRT : null,
+    leg: shorts ? SHORTS_LEG : null,
+  };
+}
+
+// Sitting (on a chair, a bench or the ground), facing `dir`: the body lower
+// by a thigh's length, knees towards us (or out in front, side on), feet on
+// the ground.
+function buildSitFrame(dir) {
+  const g = grid(FRAME_W, FRAME_H);
+  const drop = 3;
+  const shin = look.leg ? 'S' : 'O';
+  if (dir === 'down') {
+    stamp(g, look.upper.down, 0, 1 + drop);
+    stamp(g, ['....OOOOOOOo....', '....oOOooOOo....', `.....${shin}${shin}..${shin}${shin}.....`, '.....BB..BB.....'], 0, 23);
+    arm(g, ARM_L, 2, 13 + drop);
+    arm(g, ARM_R, 12, 13 + drop);
+  } else if (dir === 'up') {
+    stamp(g, look.upper.up, 0, 1 + drop);
+    stamp(g, ['....OOOOOOOo....', '....oooooooo....'], 0, 23);
+    arm(g, ARM_L, 2, 13 + drop);
+    arm(g, ARM_R, 12, 13 + drop);
+  } else {
+    stamp(g, look.upper.left, 0, 1 + drop);
+    stamp(g, ['OOOOOOo', 'ooooooo'], 3, 21);
+    stamp(g, [`${shin}${shin}`, `${shin}${shin.toLowerCase()}`], 3, 23);
+    stamp(g, ['BBd', 'ddd'], 2, 25);
+    arm(g, ARM_SIDE, 6, 13 + drop);
+  }
+  const done = outline(g);
+  return dir === 'right' ? done.map(row => row.slice().reverse()) : done;
+}
+
+// A villager's sheet `key`, at the farm's resolution: the direction
+// animations (`${key}-walk-${dir}`, `${key}-idle-${dir}`) and sitting
+// (`${key}-sit-${dir}`).
+export function createVillager(scene, key, spec) {
+  if (scene.textures.exists(key)) return;
+  look = villagerLook(spec);
+  const p = ART_PX;
+  const cols = 4;
+  const fw = FRAME_W * p;
+  const fh = FRAME_H * p;
+  const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 1));
+  const ctx = tex.getContext();
+  directionRows(scene, key, ctx, fw, fh, p, cols);
+  const sitRow = DIRECTIONS.length;
+  DIRECTIONS.forEach((dir, i) => {
+    drawFrame(ctx, i * fw, sitRow * fh, buildSitFrame(dir), p);
+    tex.add(`sit-${dir}`, 0, i * fw, sitRow * fh, fw, fh);
+    scene.anims.create({ key: `${key}-sit-${dir}`, frames: [{ key, frame: `sit-${dir}` }], frameRate: 1, repeat: -1 });
+  });
+  tex.refresh();
   look = FARMER;
 }
 

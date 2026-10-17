@@ -72,6 +72,7 @@ export default class MapScene extends Phaser.Scene {
     this.input.on('pointerdown', (p) => {
       if (this.leaving) return;
       const { worldX: x, worldY: y } = p;
+      if (this.tapThing?.(x, y)) return; // someone or something there (the scene's own)
       // near the end of a road: all the way to its end (and, for a road
       // with `strip`, anywhere along that edge of the screen)
       const near = Object.keys(this.exits).find((name) => {
