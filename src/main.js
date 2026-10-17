@@ -5,6 +5,7 @@ import UIScene from './UIScene.js';
 import ViewScene from './ViewScene.js';
 import TalkScene from './TalkScene.js';
 import RoadScene from './RoadScene.js';
+import BeachScene from './BeachScene.js';
 import { setupMenu } from './menu.js';
 import { resetFlags, setFlag, LEVEL2_STORY } from './state.js';
 import { watchForUpdates } from './updates.js';
@@ -16,7 +17,7 @@ const game = new Phaser.Game({
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [GameScene, InteriorScene, ViewScene, TalkScene, RoadScene, UIScene],
+  scene: [GameScene, InteriorScene, ViewScene, TalkScene, RoadScene, BeachScene, UIScene],
 });
 
 // Hide the "Loading farm…" message from index.html once the farm is up.
@@ -30,7 +31,7 @@ game.events.once('ready', () => {
 // wherever he is (a building, or out on the farm). The secret level select
 // (two pine cones under the big pine, src/views/pine.js) starts Level 1 the
 // same way, or Level 2 at the crossroads with the story done up to there.
-const scenes = ['Interior', 'View', 'Talk', 'Road'];
+const scenes = ['Interior', 'View', 'Talk', 'Road', 'Beach'];
 const menu = setupMenu({
   onNewGame() {
     resetFlags();
