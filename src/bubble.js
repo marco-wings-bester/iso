@@ -1,23 +1,26 @@
 import Phaser from 'phaser';
+import { t } from './i18n.js';
 
 // Bubbles over someone's head (in a room or out on the farm): a pixel-art box
 // with the words drawn at screen resolution so they stay sharp at any zoom.
 // `think` trails two little bubbles down to them; `say` is speech, with a
 // pointed tail (and, with `name`, who's speaking: for a voice from behind a
 // door; `below` puts it under the spot, pointing up). `who` is a sprite, or
-// just a spot {x, y} to point at. It follows them while it's up, kept on
-// screen (one at a time per scene: `scene.thought`), and the promise resolves
-// when it's gone. Thoughts fade by themselves; speech stays up (a blinking ▼)
-// until a tap moves it along: the scene calls `scene.thought.destroy()`.
-export function think(scene, who, text, ms = 2600) {
-  return bubble(scene, who, text, { ms });
+// just a spot {x, y} to point at. Text (and name) can be { af, en }
+// (src/i18n.js). It follows them while it's up, kept on screen (one at a time
+// per scene: `scene.thought`), and the promise resolves when it's gone.
+// Nothing goes by itself, so there's always time to read it: it stays up (a
+// blinking ▼) until a tap, Space or Enter moves it along, and the scene calls
+// `scene.thought.destroy()`.
+export function think(scene, who, text) {
+  return bubble(scene, who, t(text), {});
 }
 
 export function say(scene, who, text, { name, color, below } = {}) {
-  return bubble(scene, who, text, { ms: Infinity, name, color, below, speech: true });
+  return bubble(scene, who, t(text), { name: t(name), color, below, speech: true });
 }
 
-function bubble(scene, who, text, { ms, name, color = '#447a34', speech = false, below = false }) {
+function bubble(scene, who, text, { name, color = '#447a34', speech = false, below = false }) {
   scene.thought?.destroy();
   const cam = scene.cameras.main;
   const z = cam.zoom;
@@ -28,7 +31,7 @@ function bubble(scene, who, text, { ms, name, color = '#447a34', speech = false,
   };
   const words = scene.add.text(0, 0, text, style).setScale(1 / z).setOrigin(0.5, 1).setDepth(1e5 + 1);
   const label = name ? scene.add.text(0, 0, name, { ...style, fontSize: '12px', color }).setScale(1 / z).setOrigin(0.5, 0).setDepth(1e5 + 1) : null;
-  const more = ms === Infinity ? scene.add.text(0, 0, '▼', { ...style, fontSize: '9px' }).setScale(1 / z).setOrigin(1, 1).setDepth(1e5 + 1) : null;
+  const more = scene.add.text(0, 0, '▼', { ...style, fontSize: '9px' }).setScale(1 / z).setOrigin(1, 1).setDepth(1e5 + 1);
   const g = scene.add.graphics().setDepth(1e5);
   const w = Math.ceil(Math.max(words.width, label ? label.width : 0) / z) + 6 * u;
   const h = Math.ceil((words.height + (label ? label.height : 0)) / z) + 4 * u;
@@ -54,18 +57,17 @@ function bubble(scene, who, text, { ms, name, color = '#447a34', speech = false,
     else g.fillRect(tx, b + 2 * u, 2 * u, 2 * u).fillRect(tx + 2 * u, b + 7 * u, u, u);
     label?.setPosition(bx + w / 2, by + 2 * u);
     words.setPosition(bx + w / 2, b - 2 * u);
-    more?.setPosition(bx + w - u, b - u);
+    more.setPosition(bx + w - u, b - u);
   };
   place();
   scene.events.on('update', place);
 
   const parts = [g, words, label, more].filter(Boolean);
   scene.tweens.add({ targets: parts, alpha: { from: 0, to: 1 }, duration: 150 });
-  if (more) scene.tweens.add({ targets: more, alpha: 0.2, duration: 450, yoyo: true, repeat: -1, delay: 300 });
+  scene.tweens.add({ targets: more, alpha: 0.2, duration: 450, yoyo: true, repeat: -1, delay: 300 });
   return new Promise((resolve) => {
     let gone = false;
     const handle = {
-      speech,
       destroy() {
         if (gone) return;
         gone = true;
@@ -78,10 +80,5 @@ function bubble(scene, who, text, { ms, name, color = '#447a34', speech = false,
     };
     scene.thought = handle;
     scene.events.once('shutdown', handle.destroy); // listeners outlive the scene's objects
-    if (ms === Infinity) return;
-    scene.time.delayedCall(ms, () => {
-      if (scene.thought !== handle) return;
-      scene.tweens.add({ targets: parts, alpha: 0, duration: 200, onComplete: () => handle.destroy() });
-    });
   });
 }

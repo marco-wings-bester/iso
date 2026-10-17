@@ -10,7 +10,7 @@ import { eatAtTable } from './eating.js';
 // apple: "I think I'll make a pie", a bowl from the kitchen cupboard, mixing
 // and rolling pastry at the table (the apple beside it goes in the filling),
 // the pie into the oven and back out onto the table, steaming.
-// You just watch (taps and keys are ignored meanwhile); then the 'baked'
+// You just watch (taps and keys only move his thoughts along); then the 'baked'
 // flag is set and he's free again, the pie on the table (scene.pie). Tapping
 // it then, he sits down and has half (eatHalf): full, he's sleepy.
 
@@ -79,7 +79,7 @@ export async function bakePie(scene) {
 
   // "I think I'll make a pie" — and out of the cupboard comes a bowl of flour
   player.face('left');
-  await think(scene, player.sprite, "I think I'll make a pie.", 2000);
+  await think(scene, player.sprite, { af: 'Ek dink ek maak ’n tert.', en: "I think I'll make a pie." });
   const open = overlay(scene, 'kitchen-cupboard-open', cupboard.open);
   await wait(600);
   hold(prop(scene, 'bake-bowl'));
@@ -123,7 +123,7 @@ export async function bakePie(scene) {
   const glow = scene.add.rectangle(v.x, v.y, v.w, v.h, 0xffa040).setOrigin(0).setDepth(0.4);
   scene.tweens.add({ targets: glow, alpha: 0.4, duration: 180, yoyo: true, repeat: -1 });
   const steam = scene.time.addEvent({ delay: 260, loop: true, callback: () => puff(scene, v.x + Math.random() * v.w, v.y + 3, 0xd8d8d8, 10) });
-  await think(scene, player.sprite, 'Mmm… it smells good already.', 2600);
+  await think(scene, player.sprite, { af: 'Mmm… dit ruik al klaar lekker.', en: 'Mmm… it smells good already.' });
   steam.remove();
   glow.destroy();
 
@@ -157,7 +157,7 @@ export async function eatHalf(scene) {
   });
   setFlag('ate');
   await new Promise(r => scene.time.delayedCall(1200, r));
-  await think(scene, jones, line('full'), 2400);
+  await think(scene, jones, line('full'));
   jones.destroy();
   player.sprite.setVisible(true);
   player.face('down');

@@ -4,6 +4,7 @@ import pond from './views/pond.js';
 import tractor from './views/tractor.js';
 import fire from './views/fire.js';
 import apple from './views/apple.js';
+import { t } from './i18n.js';
 
 // First-person views: what Farmer Jones sees down a well, out over the pond
 // from the jetty, from the tractor's seat, into the fire at home, or up into
@@ -12,7 +13,8 @@ import apple from './views/apple.js';
 // Tap or any key returns to the scene it came from (`from`: the farm, or the
 // farmhouse for the fire). A view can take taps itself (`tap` returns true,
 // e.g. picking an apple), hold the scene `busy` meanwhile, and show his
-// thoughts along the bottom with `scene.say()`.
+// thoughts along the bottom with `scene.say()`: one stays up until a tap or
+// key moves it along (and that's all that tap does).
 const VIEWS = { well, pond, tractor, fire, apple };
 const ART = 160;
 const FADE_MS = 300;
@@ -61,23 +63,31 @@ export default class ViewScene extends Phaser.Scene {
     };
     this.time.delayedCall(400, () => {
       this.input.on('pointerdown', (p) => {
-        if (this.leaving || this.busy || v.tap?.(this, p.worldX, p.worldY)) return;
-        done();
+        if (this.leaving || this.busy) return;
+        if (this.caption) this.caption.destroy();
+        else if (!v.tap?.(this, p.worldX, p.worldY)) done();
       });
-      this.input.keyboard.on('keydown', () => { if (!this.busy) done(); });
+      this.input.keyboard.on('keydown', () => {
+        if (this.busy) return;
+        if (this.caption) this.caption.destroy();
+        else done();
+      });
     });
   }
 
   // A thought of his along the bottom of the view, in a box like the room's
-  // thought bubbles; the words are kept at screen resolution while the
-  // camera zooms.
-  say(text, ms = 2800) {
+  // thought bubbles (with a blinking ▼: tap to go on); the words are kept at
+  // screen resolution while the camera zooms. Text can be { af, en }.
+  say(text) {
     this.caption?.destroy();
     const cam = this.cameras.main;
-    const words = this.add.text(0, 0, text, {
+    const words = this.add.text(0, 0, t(text), {
       fontFamily: 'monospace', fontStyle: 'bold', fontSize: '15px', color: '#2e1d0c', align: 'center',
       wordWrap: { width: Math.min(this.scale.width - 56, 320) }, resolution: window.devicePixelRatio || 1,
     }).setOrigin(0.5, 1).setDepth(1e5 + 1);
+    const more = this.add.text(0, 0, '▼', {
+      fontFamily: 'monospace', fontSize: '10px', color: '#2e1d0c', resolution: window.devicePixelRatio || 1,
+    }).setOrigin(1, 1).setDepth(1e5 + 1);
     const box = this.add.graphics().setDepth(1e5);
     const place = () => {
       const z = cam.zoom;
@@ -88,6 +98,7 @@ export default class ViewScene extends Phaser.Scene {
       const y = v.bottom - bh - 28 / z;
       const q = 3 / z;
       words.setScale(1 / z).setPosition(v.centerX, y + bh - 7 / z);
+      more.setScale(1 / z).setPosition(x + bw - 3 / z, y + bh - 2 / z);
       box.clear().fillStyle(0x2e1d0c).fillRect(x, y - q, bw, bh + 2 * q).fillRect(x - q, y, bw + 2 * q, bh);
       box.fillStyle(0xfffcf2).fillRect(x, y, bw, bh);
     };
@@ -100,16 +111,13 @@ export default class ViewScene extends Phaser.Scene {
         gone = true;
         this.events.off('update', place);
         this.events.off('shutdown', caption.destroy);
-        words.destroy();
-        box.destroy();
+        [words, more, box].forEach(o => o.destroy());
         if (this.caption === caption) this.caption = null;
       },
     };
     this.caption = caption;
     this.events.once('shutdown', caption.destroy); // listeners outlive the scene's objects
-    this.tweens.add({ targets: [words, box], alpha: { from: 0, to: 1 }, duration: 150 });
-    this.time.delayedCall(ms, () => {
-      if (this.caption === caption) this.tweens.add({ targets: [words, box], alpha: 0, duration: 200, onComplete: caption.destroy });
-    });
+    this.tweens.add({ targets: [words, box, more], alpha: { from: 0, to: 1 }, duration: 150 });
+    this.tweens.add({ targets: more, alpha: 0.2, duration: 450, yoyo: true, repeat: -1, delay: 300 });
   }
 }

@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
 import { say } from './bubble.js';
+import { t } from './i18n.js';
 
 // Conversations in a room. `cast` names who's talking — a sprite, or a spot
 // {x, y} with a `name`, a `color` and `below` for a voice outside the door —
 // and `steps` are, in order:
-//   [who, text]       they say it; a tap moves it along
+//   [who, text]       they say it; a tap moves it along (text, and the
+//                     cast's names, can be { af, en }: src/i18n.js)
 //   { choose: [...] } Farmer Jones's reply, picked from the options at the
 //                     bottom of the screen; each { say, then } (his pick isn't
 //                     shown again: whoever he's talking to just answers it)
@@ -30,8 +32,8 @@ export async function converse(scene, cast, steps, choiceNext = false) {
   }
 }
 
-// Replies to pick from at the bottom of the screen, under "Your reply" (as
-// in the talk at the gate): tap one, or press its number. Resolves with its
+// Replies to pick from at the bottom of the screen, under "Jou antwoord"
+// ("Your reply", as in the talk at the gate): tap one, or press its number. Resolves with its
 // index; the line it answers (if still up) goes once it's picked.
 export function choose(scene, options) {
   const cam = scene.cameras.main;
@@ -47,7 +49,7 @@ export function choose(scene, options) {
   let y = view.bottom - 5 * u;
   [...options].reverse().forEach((text) => {
     const arrow = scene.add.text(0, 0, '▶', { ...style, color: '#b8402e' }).setScale(1 / z);
-    const words = scene.add.text(0, 0, text, { ...style, wordWrap: { width: width * z - 40 } }).setScale(1 / z);
+    const words = scene.add.text(0, 0, t(text), { ...style, wordWrap: { width: width * z - 40 } }).setScale(1 / z);
     const h = words.height / z + 4 * u;
     y -= h;
     const g = scene.add.graphics();
@@ -57,7 +59,7 @@ export function choose(scene, options) {
     boxes.unshift({ g, x, y, w: width, h });
     y -= 3 * u;
   });
-  const label = scene.add.text(x + u, y, 'Your reply', {
+  const label = scene.add.text(x + u, y, t({ af: 'Jou antwoord', en: 'Your reply' }), {
     ...style, fontSize: '12px', color: '#fffcf2', stroke: '#2e1d0c', strokeThickness: 4,
   }).setScale(1 / z).setOrigin(0, 1);
   parts.push(label);
