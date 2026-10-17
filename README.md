@@ -19,10 +19,17 @@ big chest; `src/sarah.js`). Then Sarah comes in for a chat: Jones can own up
 that Bob's in the chest (she waits) or keep mum (she leaves). Either way the
 chest is stuck: the crowbar in the tool shed prises it open, and Bob goes
 home, with Sarah or alone. In conversations
-Farmer Jones's replies are picked from two (`src/dialog.js`), and speech moves
-along with a tap. Doing things out of order gets a hint from Farmer Jones; how
+Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
+bubble, thought and caption stays up until a tap (or Space/Enter) moves it
+along, so there's always time to read it; place names and messages stay until
+the next tap. Doing things out of order gets a hint from Farmer Jones; how
 much he gives away is set under **Hints** in the ☰ menu (None / Subtle /
 Explicit).
+
+The game is in **Afrikaans** by default, where Farmer Jones is **Boer Johan**
+and Bob is **Pieter**; switch to **English** under **Taal / Language** in the
+☰ menu. Every text is written in both languages side by side as `{ af, en }`,
+and `t()` in `src/i18n.js` picks the one to show.
 
 ## Play / install
 
@@ -30,8 +37,8 @@ Explicit).
 
 Open the **☰ menu** (bottom-left) to **Install app**, **Share game** (sends
 the link through the phone's share sheet), **Update game** (load the newest
-version now) or start a **New game** (back to the farm gate with the story
-reset, so Bob isn't waiting there yet). Installing on Android needs Chrome;
+version now), start a **New game** (back to the farm gate with the story
+reset, so Bob isn't waiting there yet), or choose the language and hints. Installing on Android needs Chrome;
 if the link opened inside another app, the menu offers **Open in Chrome** first.
 
 Open the GitHub Pages site (deployed from the default branch, `claude/phaser-character-walk-game-gej34`). It's an installable app (PWA) that works offline once it's loaded:

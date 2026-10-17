@@ -170,7 +170,7 @@ function animate(scene, w, h) {
   // still after an apple for the pie? (a nudge, at the chosen hint level)
   if (hasFlag('read') && !hasFlag('apple') && !hasFlag('baked')) {
     const text = line('treeEnter');
-    if (text) scene.time.delayedCall(1000, () => scene.say(text));
+    if (text) scene.time.delayedCall(1000, () => { if (!scene.caption && !scene.busy && !hasFlag('apple')) scene.say(text); });
   }
 }
 
@@ -211,7 +211,9 @@ function pickWithPole(scene, apple, w, h) {
             scene.apples = scene.apples.filter(a => a !== apple);
             setFlag('apple');
             scene.busy = false;
-            scene.say(hasFlag('read') ? 'Got one! Just right for a pie.' : 'A lovely apple!');
+            scene.say(hasFlag('read')
+              ? { af: 'Het een! Net reg vir ’n tert.', en: 'Got one! Just right for a pie.' }
+              : { af: '’n Pragtige appel!', en: 'A lovely apple!' });
           });
         },
       });
@@ -226,7 +228,7 @@ function tap(scene, x, y) {
   const apple = scene.apples.find(a => Math.hypot(a.x - x, a.y + 5 - y) < 8);
   if (!apple) return false;
   if (hasFlag('apple') || hasFlag('baked')) {
-    scene.say('One apple is enough for a pie.');
+    scene.say({ af: 'Een appel is genoeg vir ’n tert.', en: 'One apple is enough for a pie.' });
   } else if (!hasFlag('picker')) {
     scene.tweens.add({ targets: apple, scale: 1.15, duration: 120, yoyo: true });
     scene.say(line('tooHigh'));

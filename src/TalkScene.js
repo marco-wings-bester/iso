@@ -3,8 +3,10 @@ import { FRAME_H, FEET_Y } from './constants.js';
 import { createCharacter, createBob } from './CharacterSprite.js';
 import { band, hash, pixels, ellipse } from './views/art.js';
 import { setFlag } from './state.js';
+import { t } from './i18n.js';
 
-// A close-up of Farmer Jones and Bob at the gate, talking. The scene and the
+// A close-up of Farmer Jones and Bob (Boer Johan and Pieter) at the gate,
+// talking, in the language chosen in the menu (src/i18n.js). The scene and the
 // two of them are pixel art at a big, crisp zoom; speech bubbles are drawn on
 // a screen-resolution layer on top so the words stay sharp. Lines type out;
 // tap to finish a line or go to the next; after the last, back to the farm.
@@ -14,8 +16,8 @@ import { setFlag } from './state.js';
 
 const FADE_MS = 300;
 const SPEAKERS = {
-  jones: { name: 'Farmer Jones', color: '#b8402e' },
-  bob: { name: 'Bob', color: '#447a34' },
+  jones: { name: { af: 'Boer Johan', en: 'Farmer Jones' }, color: '#b8402e' },
+  bob: { name: { af: 'Pieter', en: 'Bob' }, color: '#447a34' },
 };
 const SKY = [[110, 172, 226], [134, 190, 236], [164, 208, 240], [196, 226, 246]];
 const INK = '#2e1d0c';
@@ -185,7 +187,8 @@ export default class TalkScene extends Phaser.Scene {
     else this.finish();
   }
 
-  say(who, text) {
+  say(who, line) {
+    const text = t(line);
     this.uiObjects.forEach(o => o.destroy());
     this.uiObjects = [];
     this.tweens.killTweensOf(Object.values(this.people));
@@ -197,7 +200,7 @@ export default class TalkScene extends Phaser.Scene {
     const pad = Math.round(font * 0.8);
     const bw = Math.min(W - 24, 360);
     const dpr = window.devicePixelRatio || 1;
-    const name = this.add.text(0, 0, SPEAKERS[who].name, {
+    const name = this.add.text(0, 0, t(SPEAKERS[who].name), {
       fontFamily: 'monospace', fontStyle: 'bold', fontSize: `${Math.round(font * 0.85)}px`, color: SPEAKERS[who].color, resolution: dpr,
     });
     const message = this.add.text(0, 0, text, {
@@ -253,7 +256,8 @@ export default class TalkScene extends Phaser.Scene {
     else this.tweens.add({ targets: this.more, alpha: 1, duration: 300, yoyo: true, repeat: -1 });
   }
 
-  // Two reply buttons along the bottom, under a "Your reply" label.
+  // Two reply buttons along the bottom, under a "Jou antwoord" ("Your
+  // reply") label.
   ask(options) {
     const { width: W, height: H } = this.scale;
     const font = Math.round(Math.max(14, Math.min(18, W / 24)));
@@ -267,7 +271,7 @@ export default class TalkScene extends Phaser.Scene {
     let y = H - 16;
     this.choices = options.map(o => ({ ...o })).reverse().map((c) => {
       const arrow = this.add.text(0, 0, '▶', { ...style, color: SPEAKERS.jones.color });
-      const text = this.add.text(0, 0, c.say, {
+      const text = this.add.text(0, 0, t(c.say), {
         ...style, wordWrap: { width: bw - pad * 3 - arrow.width, useAdvancedWrap: true }, lineSpacing: Math.round(font * 0.2),
       });
       const bh = Math.round(text.height + pad * 1.6);
@@ -284,7 +288,7 @@ export default class TalkScene extends Phaser.Scene {
       return choice;
     }).reverse();
 
-    const label = this.add.text(bx + 2, y, 'Your reply', {
+    const label = this.add.text(bx + 2, y, t({ af: 'Jou antwoord', en: 'Your reply' }), {
       fontFamily: 'monospace', fontStyle: 'bold', fontSize: `${Math.round(font * 0.85)}px`, color: '#fffcf2',
       stroke: INK, strokeThickness: 4, resolution: dpr,
     }).setOrigin(0, 1);

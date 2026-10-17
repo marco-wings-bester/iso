@@ -13,7 +13,9 @@ import { createBob, createSarah } from './CharacterSprite.js';
 // from two each time). Asked if he's seen Bob, Jones can keep mum (she goes
 // off to keep looking) or own up (she waits). Either way the chest is stuck
 // fast: the crowbar from the tool shed prises it open, Bob climbs out, and
-// home he goes, with Sarah or alone. Lines move along with a tap.
+// home he goes, with Sarah or alone. Lines move along with a tap. (In
+// Afrikaans, the default, Jones is Boer Johan and Bob is Pieter: every line
+// is { af, en }, src/i18n.js.)
 
 const SPEED = 40; // room px/s, walking about
 const SARAH = { name: 'Sarah', color: '#b0408a' };
@@ -43,7 +45,9 @@ function cast(scene) {
     knock: door,
     sarahOutside: { ...door, ...SARAH },
     // from inside the chest
-    bobChest: { x: room.chest.inside.x, y: room.chest.inside.y - 2, name: 'Bob (in the chest)', color: '#447a34' },
+    bobChest: {
+      x: room.chest.inside.x, y: room.chest.inside.y - 2, name: { af: 'Pieter (in die kis)', en: 'Bob (in the chest)' }, color: '#447a34',
+    },
     chest: { x: room.chest.inside.x, y: room.chest.inside.y - 2 },
   };
 }
@@ -67,7 +71,7 @@ export function bobWaiting(scene) {
   const { x, y } = scene.room.bobWaits;
   const bob = standingBob(scene, x, y);
   scene.time.delayedCall(900, () => {
-    if (!scene.busy) converse(scene, cast(scene), [['bob', 'Quick, hide me!']]);
+    if (!scene.busy) converse(scene, cast(scene), [['bob', { af: 'Gou, steek my weg!', en: 'Quick, hide me!' }]]);
   });
   return bob;
 }
@@ -79,12 +83,12 @@ export async function knock(scene) {
   player.stop(); // and wakes him, if he's dozing
   lock(scene, true);
   scene.cameras.main.shake(300, 0.005);
-  const sarahAnswers = [['sarahOutside', "It's Sarah!"]];
+  const sarahAnswers = [['sarahOutside', { af: 'Dis Sarah!', en: "It's Sarah!" }]];
   await converse(scene, cast(scene), [
-    ['knock', 'Knock, knock!'],
+    ['knock', { af: 'Klop, klop!', en: 'Knock, knock!' }],
     { choose: [
-      { say: 'Who is it?', then: sarahAnswers },
-      { say: "Just a minute! Who's there?", then: sarahAnswers },
+      { say: { af: 'Wie is dit?', en: 'Who is it?' }, then: sarahAnswers },
+      { say: { af: 'Net ’n oomblik! Wie is daar?', en: "Just a minute! Who's there?" }, then: sarahAnswers },
     ] },
     // Bob jumps up from the table and steps out from behind it
     async () => {
@@ -95,7 +99,10 @@ export async function knock(scene) {
       await walk(scene, scene.bob, 'bob-px', [{ x: seat.x + 12, y: seat.y - 2 }, room.bobWaits]);
       scene.bob.play('bob-px-idle-down');
     },
-    ['bob', "Oh no, I don't want my wife to catch me here! I should be out doing my work. Quick, hide me!"],
+    ['bob', {
+      af: 'O nee, ek wil nie hê my vrou moet my hier vang nie! Ek moet buite aan die werk wees. Gou, steek my weg!',
+      en: "Oh no, I don't want my wife to catch me here! I should be out doing my work. Quick, hide me!",
+    }],
   ]);
   setFlag('sarahKnocked');
   lock(scene, false);
@@ -115,7 +122,7 @@ export async function hideBob(scene) {
   const open = scene.roomImage('chest-open', chest.open).setDepth(0.4);
   await walk(scene, bob, 'bob-px', player.grid.findRoute(bob.x, bob.y, chest.behind.x, chest.behind.y), SPEED * 1.5);
   bob.play('bob-px-idle-down');
-  await converse(scene, cast(scene), [['bob', 'Thanks, Jones!']]);
+  await converse(scene, cast(scene), [['bob', { af: 'Dankie, Johan!', en: 'Thanks, Jones!' }]]);
   // a hop up and down into the chest
   const { x, y } = chest.inside;
   await new Promise(r => scene.tweens.add({ targets: bob, x, y: y - 5, duration: 260, ease: 'Quad.easeOut', onComplete: r }));
@@ -126,7 +133,7 @@ export async function hideBob(scene) {
   open.destroy();
   setFlag('bobHidden');
   bobInChest(scene);
-  await think(scene, player.sprite, 'Phew! Just in time.', 1600);
+  await think(scene, player.sprite, { af: 'Sjoe! Net betyds.', en: 'Phew! Just in time.' });
   await sarahVisits(scene);
 }
 
@@ -162,53 +169,63 @@ export async function sarahVisits(scene) {
   await jonesThere;
   player.face('left');
 
+  const bye = [['sarah', { af: 'Dankie, Johan. Totsiens!', en: 'Thank you, Jones. Bye now!' }]];
   await converse(scene, cast(scene), [
-    ['sarah', 'Hello, Jones! Sorry to barge in on you.'],
+    ['sarah', { af: 'Hallo, Johan! Jammer dat ek so by jou inval.', en: 'Hello, Jones! Sorry to barge in on you.' }],
     { choose: [
-      { say: 'Hello, Sarah! Come in, come in.', then: [
-        ['sarah', "Mmm! What's that lovely smell? Have you been baking a pie?"],
+      { say: { af: 'Hallo, Sarah! Kom binne, kom binne.', en: 'Hello, Sarah! Come in, come in.' }, then: [
+        ['sarah', { af: 'Mmm! Wat ruik so lekker? Het jy ’n tert gebak?', en: "Mmm! What's that lovely smell? Have you been baking a pie?" }],
       ] },
-      { say: 'Oh! Sarah! What a… surprise.', then: [
-        ['sarah', 'Goodness, you look jumpy! Mmm… is that pie I can smell?'],
+      { say: { af: 'O! Sarah! Wat ’n… verrassing.', en: 'Oh! Sarah! What a… surprise.' }, then: [
+        ['sarah', { af: 'Goeie genade, jy lyk skrikkerig! Mmm… ruik ek tert?', en: 'Goodness, you look jumpy! Mmm… is that pie I can smell?' }],
       ] },
     ] },
     { choose: [
-      { say: 'Apple pie. My own recipe!', then: [
-        ['sarah', "Well, aren't you clever! It smells wonderful. You're a fine baker, Jones."],
+      { say: { af: 'Appeltert. My eie resep!', en: 'Apple pie. My own recipe!' }, then: [
+        ['sarah', {
+          af: 'Ag, maar jy is slim! Dit ruik wonderlik. Jy is ’n puik bakker, Johan.',
+          en: "Well, aren't you clever! It smells wonderful. You're a fine baker, Jones.",
+        }],
       ] },
-      { say: "Just a little one. It's nothing special.", then: [
-        ['sarah', "Don't be modest! It smells wonderful. You're a fine baker, Jones."],
+      { say: { af: 'Net ’n kleintjie. Dis niks besonders nie.', en: "Just a little one. It's nothing special." }, then: [
+        ['sarah', {
+          af: 'Moenie so beskeie wees nie! Dit ruik wonderlik. Jy is ’n puik bakker, Johan.',
+          en: "Don't be modest! It smells wonderful. You're a fine baker, Jones.",
+        }],
       ] },
     ] },
     async () => scene.wobbleChest?.(),
-    ['sarah', 'Bob would have loved it. That man really loves pie!'],
+    ['sarah', { af: 'Pieter sou dit geniet het. Daai man is mal oor tert!', en: 'Bob would have loved it. That man really loves pie!' }],
     { choose: [
-      { say: 'Does he now? I had no idea.', then: [
-        ['sarah', "Oh, yes. He'd do anything for a slice of pie."],
+      { say: { af: 'Is hy? Ek het geen idee gehad nie.', en: 'Does he now? I had no idea.' }, then: [
+        ['sarah', { af: 'O, ja. Hy sal enigiets doen vir ’n stukkie tert.', en: "Oh, yes. He'd do anything for a slice of pie." }],
       ] },
-      { say: 'Ha… yes… everyone loves pie.', then: [
-        ['sarah', 'Not like Bob does!'],
+      { say: { af: 'Ha… ja… almal hou van tert.', en: 'Ha… yes… everyone loves pie.' }, then: [
+        ['sarah', { af: 'Nie soos Pieter nie!', en: 'Not like Bob does!' }],
       ] },
     ] },
-    ['sarah', "Speaking of Bob, he's meant to be mending our fence. Have you seen him?"],
+    ['sarah', {
+      af: 'Van Pieter gepraat, hy moet eintlik ons heining regmaak. Het jy hom gesien?',
+      en: "Speaking of Bob, he's meant to be mending our fence. Have you seen him?",
+    }],
     { choose: [
       // keep mum: she goes off to keep looking
-      { say: 'Bob? Not today, no.', then: [
-        ['sarah', "Hmm. Well, if you see him, let me know, won't you?"],
+      { say: { af: 'Pieter? Nee, nie vandag nie.', en: 'Bob? Not today, no.' }, then: [
+        ['sarah', { af: 'Hmm. Nou ja, as jy hom sien, laat weet my, sal jy?', en: "Hmm. Well, if you see him, let me know, won't you?" }],
         { choose: [
-          { say: "Of course, Sarah. I'll tell you straight away.", then: [['sarah', 'Thank you, Jones. Bye now!']] },
-          { say: "I'll keep my eyes peeled!", then: [['sarah', 'Thank you, Jones. Bye now!']] },
+          { say: { af: 'Natuurlik, Sarah. Ek sê jou dadelik.', en: "Of course, Sarah. I'll tell you straight away." }, then: bye },
+          { say: { af: 'Ek sal my oë oophou!', en: "I'll keep my eyes peeled!" }, then: bye },
         ] },
       ] },
       // own up: she waits for him to come out
-      { say: "Oh, I can't lie to you… he's hiding in the chest!", then: [
+      { say: { af: 'Ag, ek kan nie vir jou jok nie… hy kruip in die kis weg!', en: "Oh, I can't lie to you… he's hiding in the chest!" }, then: [
         async () => {
           setFlag('toldSarah');
           scene.wobbleChest?.();
         },
-        ['sarah', 'In the CHEST?! Bob! Come out of there this minute!'],
-        ['bobChest', 'Mmmph… sorry, dear!'],
-        ['sarah', "Well, don't just stand there, Jones. Open it!"],
+        ['sarah', { af: 'In die KIS?! Pieter! Kom dadelik daar uit!', en: 'In the CHEST?! Bob! Come out of there this minute!' }],
+        ['bobChest', { af: 'Mmmf… jammer, skat!', en: 'Mmmph… sorry, dear!' }],
+        ['sarah', { af: 'Nou moenie net daar staan nie, Johan. Maak oop!', en: "Well, don't just stand there, Jones. Open it!" }],
       ] },
     ] },
   ]);
@@ -226,7 +243,7 @@ export async function sarahVisits(scene) {
   scene.sarah = null;
   setFlag('sarahVisited');
   lock(scene, false);
-  think(scene, player.sprite, 'Phew… she\'s gone.');
+  think(scene, player.sprite, { af: 'Sjoe… sy is weg.', en: "Phew… she's gone." });
 }
 
 // Back in the farmhouse with Sarah still waiting for the chest to be opened.
@@ -234,7 +251,7 @@ export function sarahWaiting(scene) {
   const { x, y } = scene.room.sarahWaits;
   scene.sarah = standingSarah(scene, x, y, 'right');
   scene.time.delayedCall(900, () => {
-    if (!scene.busy) converse(scene, cast(scene), [['sarah', 'Well, Jones? Is it open yet?']]);
+    if (!scene.busy) converse(scene, cast(scene), [['sarah', { af: 'En, Johan? Is dit al oop?', en: 'Well, Jones? Is it open yet?' }]]);
   });
 }
 
@@ -246,11 +263,11 @@ export async function openChest(scene) {
   const { chest } = room;
   lock(scene, true);
   if (!hasFlag('crowbar')) {
-    await think(scene, player.sprite, "Huh? It won't budge… the lid's stuck fast!", 2200);
+    await think(scene, player.sprite, { af: 'Hè? Dit wil nie roer nie… die deksel sit styf vas!', en: "Huh? It won't budge… the lid's stuck fast!" });
     scene.wobbleChest?.();
     await converse(scene, cast(scene), [
-      ['bobChest', 'Mmmph! Get me out of here, Jones!'],
-      ...(scene.sarah ? [['sarah', "Stuck? Oh, for goodness' sake!"]] : []),
+      ['bobChest', { af: 'Mmmf! Kry my hier uit, Johan!', en: 'Mmmph! Get me out of here, Jones!' }],
+      ...(scene.sarah ? [['sarah', { af: 'Vas? Ag, goeie genade!', en: "Stuck? Oh, for goodness' sake!" }]] : []),
     ]);
     setFlag('chestStuck');
     lock(scene, false);
@@ -260,14 +277,16 @@ export async function openChest(scene) {
   }
 
   // prise it open: the crowbar in the lid's seam, levered until it gives
-  await think(scene, player.sprite, hasFlag('chestStuck') ? "Right. Let's get this open!" : "Stuck? Good thing I've got this crowbar!", 1600);
+  await think(scene, player.sprite, hasFlag('chestStuck')
+    ? { af: 'Reg. Kom ons kry dit oop!', en: "Right. Let's get this open!" }
+    : { af: 'Vas? Gelukkig het ek hierdie koevoet!', en: "Stuck? Good thing I've got this crowbar!" });
   const bar = scene.roomImage('chest-crowbar', chest.bar).setOrigin(0.9, 0.5).setPosition(chest.bar.at.x, chest.bar.at.y)
     .setAngle(25).setDepth(chest.bar.at.y + 20);
   for (let i = 0; i < 3; i++) {
     await new Promise(r => scene.tweens.add({ targets: bar, angle: 5, duration: 220, yoyo: true, ease: 'Sine.easeInOut', onComplete: r }));
     scene.wobbleChest?.();
   }
-  await converse(scene, cast(scene), [['chest', 'Creak… CRACK!']]);
+  await converse(scene, cast(scene), [['chest', { af: 'Kraak… KRAK!', en: 'Creak… CRACK!' }]]);
   bar.destroy();
   scene.chestLid?.setVisible(false);
   const open = scene.roomImage('chest-open', chest.open).setDepth(0.4);
@@ -284,21 +303,28 @@ export async function openChest(scene) {
   scene.chestLid?.setVisible(true);
   scene.wobbleChest = null;
 
+  const thanks = ['bob', {
+    af: 'Dankie vir die tert, Johan. Die beste tert wat ek nog ooit geëet het!',
+    en: 'Thanks for the pie, Jones. Best pie I ever had!',
+  }];
   const sarah = scene.sarah;
   if (sarah) {
     await converse(scene, cast(scene), [
-      ['bob', "Hello, dear… lovely day, isn't it?"],
-      ['sarah', "Bob! Hiding in a chest? You're meant to be mending our fence!"],
+      ['bob', { af: 'Hallo, skat… mooi dag, nè?', en: "Hello, dear… lovely day, isn't it?" }],
+      ['sarah', { af: 'Pieter! Wegkruip in ’n kis? Jy moet ons heining regmaak!', en: "Bob! Hiding in a chest? You're meant to be mending our fence!" }],
       { choose: [
-        { say: "Don't be cross, Sarah. It was my pie that kept him.", then: [
-          ['sarah', 'Hmph. Well… it did smell very good.'],
+        { say: {
+          af: 'Moenie kwaad wees nie, Sarah. Dit was my tert wat hom hier gehou het.',
+          en: "Don't be cross, Sarah. It was my pie that kept him.",
+        }, then: [
+          ['sarah', { af: 'Hmf. Nou ja… dit hét baie lekker geruik.', en: 'Hmph. Well… it did smell very good.' }],
         ] },
-        { say: 'He did chase a fox off my hens this morning…', then: [
-          ['sarah', 'Did he now? Hmph. Well, that was good of him.'],
+        { say: { af: 'Hy het wel vanoggend ’n jakkals by my henne weggejaag…', en: 'He did chase a fox off my hens this morning…' }, then: [
+          ['sarah', { af: 'Regtig? Hmf. Nou ja, dit was gaaf van hom.', en: 'Did he now? Hmph. Well, that was good of him.' }],
         ] },
       ] },
-      ['bob', 'Thanks for the pie, Jones. Best pie I ever had!'],
-      ['sarah', 'Come along, Bob. Home, and that fence!'],
+      thanks,
+      ['sarah', { af: 'Kom, Pieter. Huis toe, en daai heining!', en: 'Come along, Bob. Home, and that fence!' }],
     ]);
     // home they go, Sarah following Bob out
     const bobGoes = goOut(scene, bob, 'bob-px');
@@ -307,16 +333,22 @@ export async function openChest(scene) {
     await bobGoes;
   } else {
     await converse(scene, cast(scene), [
-      ['bob', 'Phew! Thanks, Jones! I thought I was stuck in there for good. Is she gone?'],
+      ['bob', {
+        af: 'Sjoe! Dankie, Johan! Ek het gedink ek sit vir altyd daarin vas. Is sy weg?',
+        en: 'Phew! Thanks, Jones! I thought I was stuck in there for good. Is she gone?',
+      }],
       { choose: [
-        { say: "She's gone. You're safe… for now.", then: [
-          ['bob', "Then I'd best get home and mend that fence before she finds out!"],
+        { say: { af: 'Sy is weg. Jy is veilig… vir eers.', en: "She's gone. You're safe… for now." }, then: [
+          ['bob', {
+            af: 'Dan moet ek liewer huis toe gaan en daai heining regmaak voor sy uitvind!',
+            en: "Then I'd best get home and mend that fence before she finds out!",
+          }],
         ] },
-        { say: "She's out looking for you everywhere!", then: [
-          ['bob', "Uh-oh! I'd best get home and mend that fence, quick!"],
+        { say: { af: 'Sy soek jou oral!', en: "She's out looking for you everywhere!" }, then: [
+          ['bob', { af: 'O-o! Ek moet gou huis toe gaan en daai heining regmaak!', en: "Uh-oh! I'd best get home and mend that fence, quick!" }],
         ] },
       ] },
-      ['bob', 'Thanks for the pie, Jones. Best pie I ever had!'],
+      thanks,
     ]);
     await goOut(scene, bob, 'bob-px');
   }
@@ -324,5 +356,5 @@ export async function openChest(scene) {
   scene.sarah = null;
   setFlag('bobHome');
   lock(scene, false);
-  think(scene, player.sprite, 'What a day!');
+  think(scene, player.sprite, { af: 'Wat ’n dag!', en: 'What a day!' });
 }

@@ -120,7 +120,7 @@ export default class InteriorScene extends Phaser.Scene {
     // a spot (bookshelf, cupboard, table, chest, bed, fireplace) walks there
     // and uses it.
     this.input.keyboard.on('keydown', (e) => {
-      if ((e.key === ' ' || e.key === 'Enter') && this.thought?.speech && !this.choice) this.thought.destroy();
+      if ((e.key === ' ' || e.key === 'Enter') && this.thought && !this.choice) this.thought.destroy();
     });
     this.input.on('pointerdown', (pointer) => {
       const { worldX: x, worldY: y } = pointer;
@@ -128,10 +128,10 @@ export default class InteriorScene extends Phaser.Scene {
         this.choice.tap(x, y);
         return;
       }
-      // speech stays up until a tap moves it along
-      if (this.thought?.speech) {
+      // a bubble stays up until a tap moves it along (and that's all the tap does)
+      if (this.thought) {
         this.thought.destroy();
-        if (this.busy) return;
+        return;
       }
       if (this.leaving || this.busy) return;
       const spot = Object.entries(spots).find(([, s]) => inRect(x, y, s.area));
@@ -205,7 +205,8 @@ export default class InteriorScene extends Phaser.Scene {
   useCupboard() {
     this.player.face('left');
     if (!hasFlag('read')) this.think(line('cupboardNoRecipe'));
-    else if (hasFlag('baked')) this.think(hasFlag('gavePie') ? 'Bob has the pie now.' : "I've already baked a pie.");
+    else if (hasFlag('gavePie')) this.think({ af: 'Pieter het nou die tert.', en: 'Bob has the pie now.' });
+    else if (hasFlag('baked')) this.think({ af: 'Ek het al klaar ’n tert gebak.', en: "I've already baked a pie." });
     else if (!hasFlag('apple')) this.think(line('cupboardNoApple'));
     else bakePie(this);
   }
@@ -216,7 +217,8 @@ export default class InteriorScene extends Phaser.Scene {
     this.player.face('right');
     if (hasFlag('sarahKnocked') && !hasFlag('bobHidden')) hideBob(this);
     else if (hasFlag('bobHidden') && hasFlag('sarahVisited') && !hasFlag('bobHome')) openChest(this);
-    else this.think(hasFlag('bobHidden') && !hasFlag('bobHome') ? "Shh… Bob's in there." : 'Just old blankets in here.');
+    else if (hasFlag('bobHidden') && !hasFlag('bobHome')) this.think({ af: 'Sjuut… Pieter is daarin.', en: "Shh… Bob's in there." });
+    else this.think({ af: 'Net ou komberse hierin.', en: 'Just old blankets in here.' });
   }
 
   // Sarah's at the door and Bob isn't hidden yet: no going out.
@@ -227,7 +229,7 @@ export default class InteriorScene extends Phaser.Scene {
   // The pie on the table: he has half of it, and that makes him sleepy.
   eatPie() {
     if (!hasFlag('baked') || hasFlag('gavePie')) return;
-    if (hasFlag('ate')) this.think("I'm full. I'll save the rest for later.");
+    if (hasFlag('ate')) this.think({ af: 'Ek is vol. Ek hou die res vir later.', en: "I'm full. I'll save the rest for later." });
     else eatHalf(this);
   }
 

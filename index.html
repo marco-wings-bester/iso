@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="af">
 <head>
   <meta charset="UTF-8" />
   <!-- user-scalable=no stops pinch-zoom which causes scroll on iOS -->
@@ -134,7 +134,7 @@
     .btn.update { background: #3a6ea5; color: #fff; border: 2px solid #2c5684; }
     .btn.new { background: #f8d870; color: #2e1d0c; border: 2px solid #c8a440; }
     .btn.secondary { background: transparent; color: #2e1d0c; border: 2px solid #2e1d0c; }
-    .hints { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: bold 15px sans-serif; }
+    .setting { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: bold 15px sans-serif; }
     .seg { display: flex; border: 2px solid #2e1d0c; border-radius: 9px; overflow: hidden; }
     .seg button { padding: 8px 9px; border: 0; border-left: 2px solid #2e1d0c; background: transparent; color: #2e1d0c; font: bold 14px sans-serif; }
     .seg button:first-child { border-left: 0; }
@@ -158,6 +158,12 @@
     // instead of leaving a blank page.
     (function () {
       var KEY = 'farm-walk-recovered';
+      // in the language chosen in the menu (src/settings.js): Afrikaans unless it's English
+      var en = false;
+      try { en = JSON.parse(localStorage.getItem('farm-walk-settings')).lang === 'en'; } catch (e) {}
+      document.documentElement.lang = en ? 'en' : 'af';
+      var t = function (af, english) { return en ? english : af; };
+      window.farmWalkBootText = t('Laai die plaas…', 'Loading farm…');
 
       function recover() {
         try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
@@ -177,7 +183,7 @@
         }
         el.textContent = msg;
         var btn = document.createElement('button');
-        btn.textContent = 'Reload';
+        btn.textContent = t('Herlaai', 'Reload');
         btn.onclick = recover;
         el.appendChild(btn);
       }
@@ -188,21 +194,22 @@
           var retried = false;
           try { retried = sessionStorage.getItem(KEY); } catch (err) {}
           if (!retried) return recover();
-          return show('The game failed to load. Check your connection and try again.');
+          return show(t('Die speletjie wou nie laai nie. Kyk na jou verbinding en probeer weer.', 'The game failed to load. Check your connection and try again.'));
         }
-        show('Something went wrong: ' + (e.message || 'unknown error'));
+        show(t('Iets het skeefgeloop: ', 'Something went wrong: ') + (e.message || t('onbekende fout', 'unknown error')));
       }, true);
       window.addEventListener('unhandledrejection', function (e) {
-        show('Something went wrong: ' + ((e.reason && e.reason.message) || e.reason));
+        show(t('Iets het skeefgeloop: ', 'Something went wrong: ') + ((e.reason && e.reason.message) || e.reason));
       });
       setTimeout(function () {
-        if (document.getElementById('boot') && !window.farmWalkStarted) show('Still loading…');
+        if (document.getElementById('boot') && !window.farmWalkStarted) show(t('Laai nog steeds…', 'Still loading…'));
       }, 20000);
     })();
   </script>
 </head>
 <body>
-  <div id="boot">Loading farm…</div>
+  <div id="boot">Laai die plaas…</div>
+  <script>document.getElementById('boot').textContent = window.farmWalkBootText;</script>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

@@ -54,7 +54,8 @@ export default class GameScene extends Phaser.Scene {
     this.bob = null;
     if (hasFlag('ate') && hasFlag('slept') && !hasFlag('gavePie')) {
       this.bob = spawnBob(this, { showMark: !hasFlag('metBob') });
-      if (from && !hasFlag('metBob')) this.time.delayedCall(600, () => this.game.events.emit('location', { name: 'Someone is at the gate!' }));
+      const news = { af: 'Daar is iemand by die hek!', en: 'Someone is at the gate!' };
+      if (from && !hasFlag('metBob')) this.time.delayedCall(600, () => this.game.events.emit('location', { name: news }));
     }
 
     // Keep the map covering the screen if the window size changes.
@@ -69,9 +70,18 @@ export default class GameScene extends Phaser.Scene {
     this.events.once('shutdown', () => this.scale.off('resize', fit));
 
     // Tap to walk; tapping a building walks to its door; tapping a well, the
-    // pond or a tractor walks there and shows what he sees.
+    // pond or a tractor walks there and shows what he sees. A thought of his
+    // stays up until a tap (or Space/Enter) moves it along, and that's all
+    // that tap does.
+    this.input.keyboard.on('keydown', (e) => {
+      if ((e.key === ' ' || e.key === 'Enter') && this.thought) this.thought.destroy();
+    });
     this.input.on('pointerdown', (pointer) => {
       if (this.leaving) return;
+      if (this.thought) {
+        this.thought.destroy();
+        return;
+      }
       const { worldX: x, worldY: y } = pointer;
       if (this.bob && inRect(x, y, BOB_AREA)) {
         this.player.walkTo(BOB_STAND.x, BOB_STAND.y, () => this.talkToBob());
@@ -100,7 +110,7 @@ export default class GameScene extends Phaser.Scene {
       Object.values(BUILDINGS).forEach(b => g.strokeRect(b.door.x, b.door.y, b.door.w, b.door.h));
     }
 
-    if (!(from && this.bob && !hasFlag('metBob'))) this.game.events.emit('location', { name: from ? 'Farm' : null });
+    if (!(from && this.bob && !hasFlag('metBob'))) this.game.events.emit('location', { name: from ? { af: 'Plaas', en: 'Farm' } : null });
   }
 
   update(_time, delta) {
@@ -170,7 +180,7 @@ export default class GameScene extends Phaser.Scene {
     this.bob = null; // nobody to talk to at the gate now
     const door = rectCenter(BUILDINGS.house.door);
     bob.walkInto(farmGrid.findRoute(bob.sprite.x, bob.sprite.y, door.x, door.y), this.player.speed * 0.8);
-    this.game.events.emit('location', { name: "Bob's off for his pie!" });
+    this.game.events.emit('location', { name: { af: 'Pieter is op pad na sy tert!', en: "Bob's off for his pie!" } });
   }
 
   enter(id) {

@@ -224,7 +224,7 @@ function animate(scene, w, h) {
     scene.key = scene.add.image(ignition.x, ignition.y, keyTexture(scene)).setOrigin(0.5, 0.1).setDepth(4);
     scene.tweens.add({ targets: scene.key, angle: { from: -5, to: 5 }, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     const text = line('tractorKey');
-    if (text) scene.time.delayedCall(1000, () => scene.say(text));
+    if (text) scene.time.delayedCall(1000, () => { if (scene.key && !scene.caption) scene.say(text); });
   }
   const needles = scene.add.graphics();
   const base = [-2.2, -1.2]; // revs, temperature (radians)
@@ -266,7 +266,7 @@ function tap(scene, x, y) {
   scene.tweens.killTweensOf(key);
   scene.tweens.add({ targets: key, y: key.y + 30, scale: 0.6, alpha: 0, duration: 450, ease: 'Sine.easeIn', onComplete: () => key.destroy() });
   setFlag('key');
-  scene.say('My house key! Now I can get in.');
+  scene.say({ af: 'My huissleutel! Nou kan ek in.', en: 'My house key! Now I can get in.' });
   return true;
 }
 

@@ -12,6 +12,9 @@
 // updating) isn't retried in a loop; the button is shown instead.
 // The menu's "Update game" checks on demand (updateNow).
 
+import { t } from './i18n.js';
+import { toast } from './toast.js';
+
 const KEY = 'farm-walk-update-target';
 
 function remember(build) {
@@ -43,7 +46,7 @@ export function watchForUpdates() {
   // Just reloaded to update?
   if (recalled() === __BUILD_ID__) {
     remember(null);
-    toast('✨ Updated to the latest version');
+    toast(t({ af: '✨ Opgedateer na die nuutste weergawe', en: '✨ Updated to the latest version' }), { id: 'update-toast', className: '' });
   }
 
   const check = async (canReload) => {
@@ -85,14 +88,8 @@ function showButton() {
   const btn = Object.assign(document.createElement('button'), {
     id: 'update-btn',
     type: 'button',
-    textContent: '✨ New version — tap to update',
+    textContent: t({ af: '✨ Nuwe weergawe — tik om op te dateer', en: '✨ New version — tap to update' }),
   });
   btn.onclick = () => location.reload();
   document.body.append(btn);
-}
-
-function toast(text) {
-  const el = Object.assign(document.createElement('div'), { id: 'update-toast', textContent: text });
-  document.body.append(el);
-  setTimeout(() => el.remove(), 2500);
 }
