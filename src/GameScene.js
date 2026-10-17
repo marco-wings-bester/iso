@@ -10,6 +10,7 @@ import Player from './Player.js';
 import { farmGrid } from './WalkGrid.js';
 import { BUILDINGS, ROAD, SPOTS, inRect, rectCenter } from './buildings.js';
 import { IMG_W, IMG_H, PLAYER_SPEED, DEBUG_PATH } from './constants.js';
+import { asset } from './asset.js';
 
 const SPAWN = { x: 387, y: 1265 }; // farm gate, image px
 const FADE_MS = 250;
@@ -22,7 +23,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('map', 'assets/map.png');
+    this.load.image('map', asset('map.png'));
   }
 
   create(data = {}) {

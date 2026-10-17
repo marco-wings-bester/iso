@@ -1,25 +1,36 @@
-import { SPRITES } from './seasideSprites.js';
+import { SPRITES, OVERHEAD } from './seasideSprites.js';
+import { asset } from './asset.js';
 
 // Life at the beach (BeachScene), besides its people (src/villagers.js): the
 // boats cut out of its picture (scripts/cut-seaside.py) put back where they
-// were, sailboats drifting and rocking, rowing boats bobbing; now and then a
-// fish jumps by the jetty, and coffee steams at the cafe. All in picture px.
+// were, rocking gently at anchor; now and then a fish jumps by the jetty, and
+// coffee steams at the cafe. And the umbrellas' canopies drawn over the
+// picture at their places, in front of whoever's behind or under them. All
+// in picture px; boats and canopies shrunk with the picture (MapScene.fit),
+// so they match it.
 
 const SHEET = 'seaside-sprites';
+const OVER = 'seaside-overhead';
 const loop = { yoyo: true, repeat: -1, ease: 'Sine.easeInOut' };
 const rand = (a, b) => a + Math.random() * (b - a);
 
 export function preloadSeaside(scene) {
-  scene.load.image(SHEET, 'assets/seaside-sprites.png');
+  scene.load.image(SHEET, asset('seaside-sprites.png'));
+  scene.load.image(OVER, asset('seaside-overhead.png'));
 }
 
-// A cut-out back in its place, its origin at (ox, oy) of it; in front of
-// whatever's behind its foot.
-function put(scene, name, ox = 0.5, oy = 1) {
-  const tex = scene.textures.get(SHEET);
-  const { frame: [fx, fy, w, h], at: [x, y] } = SPRITES[name];
-  if (!tex.has(name)) tex.add(name, 0, fx, fy, w, h);
-  return scene.add.image(x + w * ox, y + h * oy, SHEET, name).setOrigin(ox, oy).setDepth(y + h);
+// A frame (x, y, w, h in picture px) of a fitted texture, as an image whose
+// top left is at (x, y) in the picture, its origin at (ox, oy) of it.
+function piece(scene, fitted, name, [x, y, w, h], at, ox, oy) {
+  const { key, tex, sx, sy } = fitted;
+  const fx = Math.floor(x / sx);
+  const fy = Math.floor(y / sy);
+  const fw = Math.ceil((x + w) / sx) - fx;
+  const fh = Math.ceil((y + h) / sy) - fy;
+  if (!tex.has(name)) tex.add(name, 0, fx, fy, fw, fh);
+  const px = at ? at[0] : fx * sx;
+  const py = at ? at[1] : fy * sy;
+  return scene.add.image(px + fw * sx * ox, py + fh * sy * oy, key, name).setScale(sx, sy).setOrigin(ox, oy);
 }
 
 // A little texture drawn once: (w, h) px, painted by `paint(g)`.
@@ -46,19 +57,18 @@ function nowAndThen(scene, min, max, act) {
 }
 
 export function animateSeaside(scene) {
-  // sailboats drifting, rocking and bobbing on the swell
-  [['sail1', 0, 52, 8000], ['sail2', -34, 34, 9500]].forEach(([name, from, to, ms], i) => {
-    const b = put(scene, name, 0.5, 0.85);
-    const x = b.x;
-    scene.tweens.add({ targets: b, x: { from: x + from, to: x + to }, duration: ms, ...loop });
-    scene.tweens.add({ targets: b, angle: { from: -2.5, to: 2.5 }, duration: 2300 + i * 500, ...loop });
-    scene.tweens.add({ targets: b, y: b.y - 5, duration: 1700 + i * 300, ...loop });
-  });
-  // rowing boats bobbing at their moorings
-  ['row1', 'row2', 'row3'].forEach((name, i) => {
-    const b = put(scene, name, 0.5, 0.7);
-    scene.tweens.add({ targets: b, y: b.y - 4, duration: 1500 + i * 230, delay: i * 400, ...loop });
-    scene.tweens.add({ targets: b, angle: { from: -1.6, to: 1.6 }, duration: 2100 + i * 310, delay: i * 250, ...loop });
+  // the umbrellas' canopies, in front of whoever's behind their poles
+  const over = scene.fit(OVER);
+  Object.entries(OVERHEAD).forEach(([name, { box, base }]) => piece(scene, over, name, box, null, 0, 0).setDepth(base));
+
+  // boats at anchor, rocking gently on the swell (slowly, staying put)
+  const boats = scene.fit(SHEET);
+  Object.entries(SPRITES).forEach(([name, { frame, at }], i) => {
+    const sail = name.startsWith('sail');
+    const b = piece(scene, boats, name, frame, at, 0.5, sail ? 0.85 : 0.7);
+    b.setDepth(at[1] + frame[3]);
+    scene.tweens.add({ targets: b, y: b.y - 1.5, duration: 3400 + i * 450, delay: i * 600, ...loop });
+    scene.tweens.add({ targets: b, angle: { from: sail ? -0.8 : -0.5, to: sail ? 0.8 : 0.5 }, duration: 4600 + i * 520, delay: i * 350, ...loop });
   });
 
   // now and then a fish jumps out of the sea by the jetty

@@ -31,10 +31,11 @@ its cafe, the sand and a jetty (`src/BeachScene.js`). Its people are real
 characters like Farmer Jones and Bob, drawn the same way, each with a name
 (`src/villagers.js`): Anika and Kobus stroll the village road, Oom Gert fishes
 off the jetty with Lientjie watching, three guests sit at the cafe and two
-sunbathers on the sand; tap one and Farmer Jones walks over. Boats rock and
-drift, a fish jumps now and then and coffee steams at the cafe
-(`src/seaside.js`; the boats are cut out of the picture, `art/beach-source.jpg`,
-and its people taken out, by `scripts/cut-seaside.py`);
+sunbathers on the sand; tap one and Farmer Jones walks over. Boats rock gently
+at anchor, a fish jumps now and then, coffee steams at the cafe, and the
+umbrellas are drawn in front of whoever sits under them (`src/seaside.js`; the
+boats and canopies are cut out of the picture, `art/beach-source.jpg`, and its
+people taken out, by `scripts/cut-seaside.py`);
 down to town and right to Bob's house are still to come. Both picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
@@ -59,7 +60,7 @@ version now), start a **New game** (back to the farm gate with the story
 reset, so Bob isn't waiting there yet), or choose the language and hints. Installing on Android needs Chrome;
 if the link opened inside another app, the menu offers **Open in Chrome** first.
 
-Open the GitHub Pages site (deployed from the default branch, `claude/phaser-character-walk-game-gej34`). It's an installable app (PWA) that works offline once it's loaded:
+Open the GitHub Pages site (deployed from the default branch, `claude/phaser-character-walk-game-gej34`). It's an installable app (PWA) that works offline once it's loaded (the service worker, `src/sw.js`, is built with each release's id in its cache's name, and pictures are loaded with it in their address, `src/asset.js`, so a new release never shows pictures cached for an older one):
 
 - **Android (Chrome):** menu ⋮ → *Install app* / *Add to Home screen*
 - **iPhone/iPad (Safari):** Share → *Add to Home Screen*

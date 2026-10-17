@@ -1,6 +1,7 @@
 import MapScene from './MapScene.js';
 import { roadGrid } from './WalkGrid.js';
 import { setFlag } from './state.js';
+import { asset } from './asset.js';
 
 // Level 2: the crossroads past the farm gate (assets/crossroads.jpg), where
 // Boer Johan comes on his way to town once Pieter has gone home. He comes in
@@ -16,7 +17,7 @@ export default class RoadScene extends MapScene {
   constructor() {
     super({ key: 'Road' });
     this.map = {
-      key: 'crossroads', file: 'assets/crossroads.jpg', w: 704, h: 1504, grid: roadGrid,
+      key: 'crossroads', file: asset('crossroads.jpg'), w: 704, h: 1504, grid: roadGrid,
       scale: 0.85, // as big as the farmer in the picture
       home: { x: 350, y: 830 }, // the crossing
     };
