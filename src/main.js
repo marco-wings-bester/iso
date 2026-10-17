@@ -4,6 +4,7 @@ import InteriorScene from './InteriorScene.js';
 import UIScene from './UIScene.js';
 import ViewScene from './ViewScene.js';
 import TalkScene from './TalkScene.js';
+import RoadScene from './RoadScene.js';
 import { setupMenu } from './menu.js';
 import { resetFlags } from './state.js';
 import { watchForUpdates } from './updates.js';
@@ -15,7 +16,7 @@ const game = new Phaser.Game({
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [GameScene, InteriorScene, ViewScene, TalkScene, UIScene],
+  scene: [GameScene, InteriorScene, ViewScene, TalkScene, RoadScene, UIScene],
 });
 
 // Hide the "Loading farm…" message from index.html once the farm is up.
@@ -30,7 +31,7 @@ game.events.once('ready', () => {
 setupMenu({
   onNewGame() {
     resetFlags();
-    ['Interior', 'View', 'Talk'].forEach(key => game.scene.stop(key));
+    ['Interior', 'View', 'Talk', 'Road'].forEach(key => game.scene.stop(key));
     game.scene.start('Game');
   },
 });

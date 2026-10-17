@@ -8,7 +8,7 @@ import { think } from './bubble.js';
 import { line } from './hints.js';
 import Player from './Player.js';
 import { farmGrid } from './WalkGrid.js';
-import { BUILDINGS, SPOTS, inRect, rectCenter } from './buildings.js';
+import { BUILDINGS, ROAD, SPOTS, inRect, rectCenter } from './buildings.js';
 import { IMG_W, IMG_H, PLAYER_SPEED, DEBUG_PATH } from './constants.js';
 
 const SPAWN = { x: 387, y: 1265 }; // farm gate, image px
@@ -35,13 +35,14 @@ export default class GameScene extends Phaser.Scene {
     createAmbient(this);
     createCharacter(this);
 
-    // Coming back out of a building: stand outside its door, facing out.
-    const from = BUILDINGS[data.from];
+    // Coming back out of a building: stand outside its door, facing out (or
+    // back up the road from the crossroads, facing the farm).
+    const from = data.from === 'road' ? { exit: ROAD.back, face: 'up' } : BUILDINGS[data.from];
     const start = from ? from.exit : SPAWN;
     this.player = new Player(this, {
       x: start.x,
       y: start.y,
-      dir: from ? 'down' : 'up',
+      dir: from ? from.face ?? 'down' : 'up',
       texture: 'player',
       speed: PLAYER_SPEED / zoom, // screen px/s → image px/s
       grid: farmGrid,
@@ -70,7 +71,8 @@ export default class GameScene extends Phaser.Scene {
     this.events.once('shutdown', () => this.scale.off('resize', fit));
 
     // Tap to walk; tapping a building walks to its door; tapping a well, the
-    // pond or a tractor walks there and shows what he sees. A thought of his
+    // pond or a tractor walks there and shows what he sees; tapping right at
+    // the bottom walks down the road off the farm. A thought of his
     // stays up until a tap (or Space/Enter) moves it along, and that's all
     // that tap does.
     this.input.keyboard.on('keydown', (e) => {
@@ -90,6 +92,10 @@ export default class GameScene extends Phaser.Scene {
       const spot = SPOTS.find(s => inRect(x, y, s.area));
       if (spot) {
         this.player.walkTo(spot.stand.x, spot.stand.y, () => this.lookAt(spot));
+        return;
+      }
+      if (y >= ROAD.tap) {
+        this.player.walkTo(x, IMG_H - 2);
         return;
       }
       const b = Object.values(BUILDINGS).find(bd => inRect(x, y, bd.area));
@@ -118,6 +124,10 @@ export default class GameScene extends Phaser.Scene {
     this.player.update(delta / 1000);
 
     const { x, y } = this.player;
+    if (y >= ROAD.edge) {
+      this.offTheFarm();
+      return;
+    }
     const id = Object.keys(BUILDINGS).find(k => inRect(x, y, BUILDINGS[k].door));
     if (id === 'house' && !hasFlag('key')) this.locked();
     else if (id) this.enter(id);
@@ -132,6 +142,23 @@ export default class GameScene extends Phaser.Scene {
     this.player.sprite.setPosition(exit.x, exit.y);
     this.player.face('down');
     think(this, this.player.sprite, line('doorLocked'));
+  }
+
+  // Down the road past the gate to the crossroads (Level 2), once Pieter has
+  // gone home and Johan's off to town; until then he turns back.
+  offTheFarm() {
+    const { player } = this;
+    player.stop();
+    if (!hasFlag('bobHome')) {
+      Object.assign(player, ROAD.back);
+      player.sprite.setPosition(ROAD.back.x, ROAD.back.y);
+      player.face('up');
+      think(this, player.sprite, { af: 'Nog nie; daar is nog werk op die plaas.', en: "Not yet; there's still work to do on the farm." });
+      return;
+    }
+    this.leaving = true;
+    this.cameras.main.fadeOut(FADE_MS);
+    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Road'));
   }
 
   // Switch to his eyes: down the well, over the pond, or from the tractor seat.

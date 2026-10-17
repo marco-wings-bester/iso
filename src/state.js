@@ -9,7 +9,9 @@
 // chest ('bobHidden') → Sarah comes in for a chat ('sarahVisited'): Jones
 // either owns up ('toldSarah', she waits) or not (she leaves); the chest is
 // stuck ('chestStuck') → the crowbar from the tool shed ('crowbar') prises
-// it open and Bob goes home, with Sarah or alone ('bobHome').
+// it open and Bob goes home, with Sarah or alone ('bobHome') → Jones wants to
+// go to town: down the road past the gate to the crossroads, Level 2
+// ('level2').
 // (v2: progress saved under the old order — read, sleep, Bob — is dropped.)
 const KEY = 'farm-walk-story-v2';
 let flags = {};

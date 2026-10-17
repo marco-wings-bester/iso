@@ -22,6 +22,12 @@ export const BUILDINGS = {
   },
 };
 
+// The road off the farm, down past the gate: a tap anywhere along the bottom
+// (below `tap`) walks down it, and once his feet cross `edge` he's off the
+// farm, to the crossroads (Level 2, src/RoadScene.js); coming back up, he
+// stands at `back`.
+export const ROAD = { tap: 1300, edge: 1362, back: { x: 384, y: 1336 } };
+
 // Things to look at: tap `area`, he walks to `stand`, faces `face`, and the
 // screen switches to what he sees (ViewScene: well, pond, tractor or apple
 // tree). The apple trees are off the path, so he stands on the path nearby.
