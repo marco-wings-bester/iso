@@ -1,12 +1,13 @@
 import MapScene from './MapScene.js';
 import { beachGrid } from './WalkGrid.js';
 import { preloadSeaside, animateSeaside } from './seaside.js';
+import { placeVillagers, BEACH_VILLAGERS } from './villagers.js';
 
 // The beach (assets/seaside.jpg), down the left-hand road from the crossroads:
 // a little seaside village (houses, a bakery, the Cozy Seaside Cafe, a
 // souvenir shop) with its road winding down past them, and the sand, the
-// umbrellas and the jetty below; its people and boats move about
-// (src/seaside.js). Boer Johan comes in by the road at the top
+// umbrellas and the jetty below; its boats move about (src/seaside.js), and
+// its people are villagers (src/villagers.js). Boer Johan comes in by the road at the top
 // right; he can walk the road, the sand and out along the jetty. Off the
 // right-hand edge (either road) is back to the crossroads.
 
@@ -35,7 +36,23 @@ export default class BeachScene extends MapScene {
   create({ at } = {}) {
     this.place(at, 'crossroads');
     animateSeaside(this);
+    this.villagers = placeVillagers(this, BEACH_VILLAGERS, this.map.scale);
     if (!at) this.game.events.emit('location', { name: HERE });
+  }
+
+  // Tapping someone: Johan walks over to them (the nearest he can get), and
+  // they notice him.
+  tapThing(x, y) {
+    const v = this.villagers.find(o => o.contains(x, y));
+    if (!v) return false;
+    const side = this.player.x < v.x ? -1 : 1;
+    this.player.walkTo(v.x + side * 60, v.y, () => {
+      const dx = v.x - this.player.x;
+      const dy = v.y - this.player.y;
+      this.player.face(Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down'));
+      v.notice(this.player);
+    });
+    return true;
   }
 
   update(_time, delta) {

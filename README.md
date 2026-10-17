@@ -27,10 +27,14 @@ at the bottom of the farm and he walks down the road past the gate to the
 crossroads, **Level 2** (`src/RoadScene.js`; the map is
 `public/assets/crossroads.jpg`). Up goes back to the farm (or tap
 right at the top); left goes to **the beach**, a little seaside village with
-its cafe, the sand and a jetty (`src/BeachScene.js`), where boats rock and
-drift, villagers stroll, a fish jumps by the fisherman's float and coffee
-steams at the cafe (`src/seaside.js`; the moving people and boats are cut out
-of the picture, `art/beach-source.jpg`, by `scripts/cut-seaside.py`);
+its cafe, the sand and a jetty (`src/BeachScene.js`). Its people are real
+characters like Farmer Jones and Bob, drawn the same way, each with a name
+(`src/villagers.js`): Anika and Kobus stroll the village road, Oom Gert fishes
+off the jetty with Lientjie watching, three guests sit at the cafe and two
+sunbathers on the sand; tap one and Farmer Jones walks over. Boats rock and
+drift, a fish jumps now and then and coffee steams at the cafe
+(`src/seaside.js`; the boats are cut out of the picture, `art/beach-source.jpg`,
+and its people taken out, by `scripts/cut-seaside.py`);
 down to town and right to Bob's house are still to come. Both picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
