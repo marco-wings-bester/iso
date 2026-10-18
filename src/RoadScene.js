@@ -11,7 +11,8 @@ import { WEDNESDAY, choresLeft } from './chores.js';
 // right at the top). Left goes to the beach (BeachScene). Down goes to town
 // (TownScene), from Wednesday afternoon, once the farm work's done; till then
 // he turns back at the edge and it says so. Right goes to Pieter's farm
-// (PieterScene). (No name boards: the roads speak for themselves.)
+// (PieterScene), and the path off the bottom left to the river
+// (RiverScene). (No name boards: the roads speak for themselves.)
 
 const HERE = { af: 'Die kruispad', en: 'The crossroads' };
 
@@ -34,14 +35,15 @@ export default class RoadScene extends MapScene {
     this.exits = {
       farm: { side: 'top', near: 350, strip: true, to: 'Game', data: { from: 'road' } },
       beach: { side: 'left', near: 940, to: 'Beach' },
+      river: { side: 'left', near: 1420, to: 'River' },
       town: { side: 'bottom', near: 345, to: 'Town', soon: townClosed },
       pieter: { side: 'right', near: 955, to: 'Pieter' },
     };
   }
 
   // `at`: where he is, when redrawn for a new screen size; `from`: the road
-  // he comes in by (the farm, unless back from the beach, the town or
-  // Pieter's).
+  // he comes in by (the farm, unless back from the beach, the town,
+  // Pieter's or the river).
   create({ at, from = 'farm' } = {}) {
     this.place(at, from);
     if (at) return;

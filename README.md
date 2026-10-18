@@ -80,7 +80,10 @@ houses, a cafe and a restaurant to walk round (`src/TownScene.js`; the map is
 goes back to the crossroads. Right from the crossroads is **Bob's farm**
 (Pieter se plaas: `src/PieterScene.js`, `public/assets/pieter.jpg`): in by the
 road from the left, up to his farmhouse's stoep, and down the path to the
-braai with its fire going. The picture maps are
+braai with its fire going. Off the bottom left of the crossroads, a path
+leads to **the river** (`src/RiverScene.js`, `public/assets/river.jpg`): a gold
+diggers' camp with a tent, pans and a sluice, a rocker on the near sandbar and
+more pans on the far one, across a shallow ford. The picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it

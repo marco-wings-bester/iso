@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Build the walkable areas of the picture maps (the crossroads, the beach, the town, Pieter's farm):
+"""Build the walkable areas of the picture maps (the crossroads, the beach, the town, Pieter's farm, the river):
 
   public/assets/crossroads.jpg → src/roadMask.js   the four roads at the crossroads
   public/assets/seaside.jpg    → src/beachMask.js  the village road, the sand and the jetty
   public/assets/town.jpg       → src/townMask.js   the town's paths and its square
   public/assets/pieter.jpg     → src/pieterMask.js the paths on Pieter's farm, and his braai
+  public/assets/river.jpg      → src/riverMask.js  the open ground by the river, its sandbars and a ford
 
 Pixels are picked by colour (the pictures are shaded, and JPEGs), with extra
 boxes (the jetty's boards, a way down onto the sand), small holes (pebbles,
@@ -44,6 +45,16 @@ def light_path(R, G, B):
     return (R > G) & (G > B) & (R > 185) & (G > 155) & (B > 100) & (R - B > 40)
 
 
+def open_ground(R, G, B):
+    """Grass, sand and the road, where most of the ground round about is too
+    (the bushes, ferns and reeds are textured, open ground is smooth)."""
+    grass = (abs(R - 124) <= 12) & (abs(G - 165) <= 12) & (abs(B - 60) <= 14)
+    sandy = (R > 165) & (R > G) & (G > B) & (R - B > 45) & (G > 130)
+    road = (R > 180) & (R - G > 35) & (G - B > 45)
+    ground = Image.fromarray(((grass | sandy | road) * 255).astype(np.uint8))
+    return np.asarray(ground.filter(ImageFilter.BoxBlur(12))) > 204
+
+
 def planks(R, G, B):
     """The jetty's boards."""
     return (R >= 140) & (R <= 205) & (G >= 92) & (G <= 150) & (B >= 52) & (B <= 110) & (R - B >= 60)
@@ -57,8 +68,11 @@ MAPS = [
         'cell': 4,
         'start': (350, 830),  # the crossing
         'walk': lambda R, G, B: dirt(R, G, B) & ~((R > 215) & (G > 175) & (B < 100)),  # not the wheat
-        'boxes': [],
-        'exclude': [(0, 1120, 270, 384)],  # the path off to the bottom left
+        'boxes': [
+            ((190, 1236, 100, 64), None),     # the path off to the bottom left (to the river), joined to the road…
+            ((0, 1405, 60, 30), None), ((40, 1395, 60, 28), None), ((85, 1383, 55, 27), None),  # …and its paler end, off the edge
+        ],
+        'exclude': [],
     },
     {
         'image': 'public/assets/seaside.jpg',
@@ -108,6 +122,34 @@ MAPS = [
             (530, 300, 790, 450), (800, 750, 520, 170),  # the farmhouse and its stoep (the paths' colour), down to its steps
             (1093, 1000, 280, 280),  # the brick braai
             (927, 1287, 173, 106),  # the fire
+        ],
+    },
+    {
+        'image': 'public/assets/river.jpg',
+        'out': 'src/riverMask.js',
+        'what': 'the open ground by the river, its sandbars and a ford between them',
+        'cell': 8,
+        'close': 5,
+        'start': (1060, 300),  # on the road in
+        'walk': open_ground,
+        'boxes': [
+            ((800, 878, 300, 27), None),    # past the lanterns, below the crates: round to the bank downstream
+            ((1000, 1290, 160, 70), None),  # down the bank onto the near sandbar
+            ((620, 1440, 380, 115), None),  # the near sandbar's gravel
+            ((555, 1520, 120, 200), None),  # a ford: the shallows between the two sandbars
+            ((220, 1720, 60, 160), None),   # off the far sandbar onto its bank
+        ],
+        'exclude': [
+            # the camp: the tent, the crates, the bucket, the pans, a dirt pile, the sluice's top
+            (850, 640, 210, 130), (950, 770, 150, 108), (705, 730, 70, 70), (685, 835, 165, 43), (555, 760, 100, 70),
+            (745, 905, 130, 70),
+            # fences
+            (1045, 600, 235, 120), (300, 650, 230, 110), (0, 160, 210, 120), (0, 1245, 290, 150),
+            # the rocker, the gravel heap beside it
+            (775, 1285, 190, 130), (985, 1445, 120, 70),
+            # on the far sandbar: the barrel, the bucket, the pans, a dirt pile, the sieve, the sand pile
+            (355, 1650, 90, 110), (665, 1700, 80, 80), (565, 1735, 110, 50), (745, 1795, 110, 50),
+            (325, 1840, 150, 75), (805, 1860, 170, 90), (530, 2000, 140, 65),
         ],
     },
 ]
