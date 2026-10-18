@@ -3,7 +3,8 @@ import { think } from './bubble.js';
 import { line } from './hints.js';
 
 // Boer Johan's bicycle. It lives in the barn, on its stand (ROOMS.barn.bike);
-// tapping it there takes it out, and from then on he rides it everywhere he
+// once he's had the cafe's coffee (before that he's too busy), tapping it
+// there takes it out, and from then on he rides it everywhere he
 // would walk (the farm, the crossroads, the beach, and indoors too), only
 // faster: each scene picks his riding sprite and speed while `riding`. The
 // barn is the only place it's put away: riding in there, he leaves it on its

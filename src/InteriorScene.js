@@ -257,9 +257,14 @@ export default class InteriorScene extends Phaser.Scene {
     else this.think(line('bedEarly'));
   }
 
-  // His bike: out of the barn on it, riding (GameScene).
+  // His bike: out of the barn on it, riding (GameScene). Not before the
+  // cafe's coffee, though: there's too much to do.
   async takeBike() {
     this.player.face('right');
+    if (!hasFlag('coffee')) {
+      this.think({ af: 'Ek sou graag wou, maar ek het vandag ander goed om te doen.', en: "I'd love to, but I've got other things to do today." });
+      return;
+    }
     this.busy = true;
     await this.think(hasFlag('wired')
       ? { af: '’n Bietjie oefening… kom ek gaan fietsry!', en: 'A bit of exercise… time for a bike ride!' }
