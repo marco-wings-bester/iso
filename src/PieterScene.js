@@ -3,10 +3,11 @@ import { pieterGrid } from './WalkGrid.js';
 import { asset } from './asset.js';
 
 // Pieter's farm (assets/pieter.jpg), right from the crossroads: his
-// farmhouse with its long stoep, a water tower and a barn behind, and in
-// front a braai with a fire going, seats round it. Boer Johan comes in by
-// the road at the bottom, which winds up past the gate to the house; that's
-// the way back to the crossroads.
+// farmhouse with its long stoep and a water tower behind, cattle and sheep
+// about, and below it a braai with a fire going, logs to sit on round it.
+// Boer Johan comes in by the road from the left, which goes up to the stoep's
+// steps, a path off it down to the braai; that road's the way back to the
+// crossroads.
 
 const HERE = { af: 'Pieter se plaas', en: "Bob's farm" };
 
@@ -14,12 +15,12 @@ export default class PieterScene extends MapScene {
   constructor() {
     super({ key: 'Pieter' });
     this.map = {
-      key: 'pieter', file: asset('pieter.jpg'), w: 1536, h: 2752, grid: pieterGrid,
-      scale: 1.8, // as big as his fences and stoep want
-      home: { x: 560, y: 1100 }, // on the path below the stoep
+      key: 'pieter', file: asset('pieter.jpg'), w: 1408, h: 2550, grid: pieterGrid,
+      scale: 2.1, // as big as his stoep and fences want
+      home: { x: 300, y: 1040 }, // on the road in
     };
     this.exits = {
-      crossroads: { side: 'bottom', near: 1140, to: 'Road', data: { from: 'pieter' } },
+      crossroads: { side: 'left', near: 1080, to: 'Road', data: { from: 'pieter' } },
     };
   }
 

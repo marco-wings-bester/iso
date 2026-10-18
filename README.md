@@ -79,7 +79,7 @@ houses, a cafe and a restaurant to walk round (`src/TownScene.js`; the map is
 `src/townMask.js` by `scripts/build-masks.py`). The road out at the top right
 goes back to the crossroads. Right from the crossroads is **Bob's farm**
 (Pieter se plaas: `src/PieterScene.js`, `public/assets/pieter.jpg`): in by the
-road at the bottom, up past the gate to his farmhouse's stoep, and round the
+road from the left, up to his farmhouse's stoep, and down the path to the
 braai with its fire going. The picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech

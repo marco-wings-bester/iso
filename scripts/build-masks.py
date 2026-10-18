@@ -101,17 +101,13 @@ MAPS = [
         'what': "the paths on Pieter's farm, and the floor round his braai fire",
         'cell': 8,
         'close': 7,
-        'start': (300, 1200),  # on the path, by the gate
+        'start': (220, 1060),  # on the road in, below the farmhouse
         'walk': dirt,
-        'boxes': [
-            ((150, 1350, 170, 150), None),        # through the gate, where the path from the house meets the road
-            ((760, 1180, 600, 420), light_path),  # the sandy floor round the fire
-        ],
+        'boxes': [],
         'exclude': [
-            (270, 400, 970, 560),  # the farmhouse (its porch floor is the paths' colour), up to its steps
-            (1130, 1080, 270, 280),  # the brick braai
-            (976, 1340, 164, 110),  # the fire
-            (0, 0, 140, 2752), (1396, 0, 140, 2752),  # the sides, which the screen cuts off (the path out through the gate)
+            (530, 300, 790, 450), (800, 750, 520, 170),  # the farmhouse and its stoep (the paths' colour), down to its steps
+            (1093, 1000, 280, 280),  # the brick braai
+            (927, 1287, 173, 106),  # the fire
         ],
     },
 ]
