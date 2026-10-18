@@ -11,10 +11,15 @@ import { farmGrid } from './WalkGrid.js';
 import { BUILDINGS, ROAD, SPOTS, inRect, rectCenter } from './buildings.js';
 import { IMG_W, IMG_H, PLAYER_SPEED, DEBUG_PATH } from './constants.js';
 import { bike, pedal, SPEED as BIKE_SPEED } from './bike.js';
+import { today } from './days.js';
+import { WEDNESDAY, choresLeft } from './chores.js';
 import { asset } from './asset.js';
 import { UI } from './screen.js';
 
 const SPAWN = { x: 387, y: 1265 }; // farm gate, image px
+// the pail beside the red-roofed well: where the water shows once he's filled
+// it (Wednesday's work, src/chores.js)
+const PAIL = { x: 178, y: 611, depth: 629 };
 const FADE_MS = 250;
 
 // The farm. World coordinates are map image pixels; the camera zooms the map
@@ -53,6 +58,8 @@ export default class GameScene extends Phaser.Scene {
       markerScale: UI / zoom,
     });
     this.leaving = false;
+    this.pail = null;
+    this.fillPail();
 
     // After a read and a sleep, Bob is waiting at the gate (until he's been
     // given the pie: then he's in the farmhouse eating it).
@@ -175,10 +182,32 @@ export default class GameScene extends Phaser.Scene {
       this.events.once('resume', () => {
         this.leaving = false;
         cam.fadeIn(300);
+        this.fillPail();
+        this.workDone();
       });
-      this.scene.launch('View', { view: spot.view });
+      this.scene.launch('View', { view: spot.view, spot: spot.id });
       this.scene.pause();
     });
+  }
+
+  // Water in the pail by the red-roofed well, once he's filled it.
+  fillPail() {
+    if (this.pail || !hasFlag('wellTop')) return;
+    const { x, y, depth } = PAIL;
+    this.pail = this.add.graphics().setDepth(depth);
+    this.pail.fillStyle(0x3a86c8).fillEllipse(x, y, 14, 5);
+    this.pail.fillStyle(0xa8dcf8).fillEllipse(x - 3, y - 1, 5, 1.5);
+  }
+
+  // Wednesday's work all done (src/chores.js): tired out, ready for bed.
+  workDone() {
+    if (today() !== WEDNESDAY || choresLeft() || hasFlag('choresDone')) return;
+    setFlag('choresDone');
+    setFlag('tired');
+    this.time.delayedCall(400, () => think(this, this.player.sprite, {
+      af: 'So, dis klaar vir vandag. Nou is ek moeg! Môre kyk ek wat met die onderste put fout is.',
+      en: "There, that's today's work done. Now I'm tired! Tomorrow I'll see what's wrong with the bottom well.",
+    }));
   }
 
   // Close-up of the two of them talking (TalkScene), then back to the farm.

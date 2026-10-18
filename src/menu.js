@@ -27,6 +27,7 @@ import { getSetting, setSetting } from './settings.js';
 import { t } from './i18n.js';
 import { toast } from './toast.js';
 import { dayName } from './days.js';
+import { chores } from './chores.js';
 
 const isAndroid = /Android/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -389,6 +390,8 @@ export function setupMenu({ onNewGame, onLevel }) {
     close.onclick = closeMenu;
     const day = dayName();
     const today = el('p', { className: 'today', textContent: t({ af: `📅 Vandag is dit ${day.af}`, en: `📅 Today is ${day.en}` }) });
+    // the day's farm work, ticked off as it's done
+    chores().forEach(j => today.append(el('br'), `${j.done ? '✅' : '⬜'} ${t(j.text)}`));
     menu = overlay('menu', el('h2', { textContent: 'Farm Walk' }), today, el('div', { className: 'menu-buttons' }, installBtn, shareBtn, updateBtn, newBtn, language, hints, close));
   }
 

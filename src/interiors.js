@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { obj, rng } from './pixelArt.js';
+import { today } from './days.js';
+import { WEDNESDAY } from './chores.js';
 
 // Building interiors, drawn as pixel art in the map's style (dark outlines,
 // three-tone shading lit from the top-left). Units are sprite pixels, the same
@@ -270,6 +272,14 @@ function bookshelf(ctx, x, y, seed) {
     r(0, 32, 24, 2, C.woodDeep);
   });
   return drawn;
+}
+
+// The tractor's keys, left on the bookshelf: a steel key on a ring, its
+// green tag hanging over the edge of the middle shelf.
+function tractorKeys(ctx, x, y) {
+  obj(ctx, x, y, 4, 3, r => { r(0, 0, 4, 3, C.metal); r(1, 1, 2, 1, C.dark); r(0, 0, 4, 1, C.metalHi); });
+  obj(ctx, x + 4, y + 1, 4, 2, r => { r(0, 0, 4, 2, C.metal); r(0, 0, 4, 1, C.metalHi); r(3, 1, 1, 1, C.metalDk); });
+  obj(ctx, x + 1, y + 3, 3, 4, r => { r(0, 0, 3, 4, '#3a9a4a'); r(0, 0, 1, 4, '#6ac070'); });
 }
 
 function table(ctx, x, y) {
@@ -740,6 +750,15 @@ export const ROOMS = {
       read: {
         area: { x: 110, y: 14, w: 28, h: 40 }, // tap the bookshelf…
         stand: { x: 124, y: 57 },              // …to walk here and read the recipe book
+      },
+      // on Wednesday the tractor's keys are on the bookshelf (src/chores.js)
+      keys: {
+        area: { x: 110, y: 14, w: 28, h: 40 },
+        stand: { x: 124, y: 57 },
+        prop: { x: 126, y: 32, w: 10, h: 9, draw: ctx => tractorKeys(ctx, 1, 1) },
+        flag: 'tractorKeys',
+        found: 'tractorKeysFound',
+        when: () => today() >= WEDNESDAY,
       },
       hide: {
         area: { x: 110, y: 126, w: 26, h: 22 }, // tap the big chest in the corner…

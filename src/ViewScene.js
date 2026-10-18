@@ -29,15 +29,16 @@ export default class ViewScene extends Phaser.Scene {
     super({ key: 'View' });
   }
 
-  create({ view, from = 'Game' }) {
+  create({ view, from = 'Game', spot = null }) {
     const v = VIEWS[view];
+    this.spot = spot; // which one, of two alike (the wells)
     const { width: W, height: H } = this.scale;
     const s = Math.min(W, H) / ART;
     const w = Math.ceil(W / s);
     const h = Math.ceil(H / s);
     if (this.textures.exists('pov')) this.textures.remove('pov');
     const tex = this.textures.createCanvas('pov', w, h);
-    v.draw(tex.getContext(), w, h);
+    v.draw(tex.getContext(), w, h, { spot });
     tex.refresh();
     tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
     this.add.image(0, 0, 'pov').setOrigin(0);
