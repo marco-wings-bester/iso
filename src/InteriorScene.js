@@ -6,7 +6,9 @@ import { BUILDINGS, inRect } from './buildings.js';
 import { ROOMS, WALL, pieTexture } from './interiors.js';
 import { INTERIOR_SPEED } from './constants.js';
 import { UI } from './screen.js';
-import { hasFlag, setFlag } from './state.js';
+import { hasFlag, setFlag, clearFlag } from './state.js';
+import { nextDay } from './days.js';
+import { morning } from './morning.js';
 import { seatBob } from './bob.js';
 import { bakePie, eatHalf } from './baking.js';
 import { think } from './bubble.js';
@@ -246,12 +248,12 @@ export default class InteriorScene extends Phaser.Scene {
     else eatHalf(this);
   }
 
-  // Bed: only once he's had his pie; and after the cafe's coffee, not till
-  // he's tired himself out (a ride on his bike, src/bike.js).
+  // Bed: only when he's tired (after eating the pie, or a good long ride on
+  // his bike, src/bike.js); after the cafe's coffee he's wide awake till then.
   tryToSleep() {
     if (this.mustHideBob()) this.think(line('notNow'));
-    else if (hasFlag('coffee') && !hasFlag('exercised')) this.think(line('wideAwake'));
-    else if (hasFlag('ate')) this.sleep();
+    else if (hasFlag('tired')) this.sleep();
+    else if (hasFlag('wired')) this.think(line('wideAwake'));
     else this.think(line('bedEarly'));
   }
 
@@ -259,7 +261,7 @@ export default class InteriorScene extends Phaser.Scene {
   async takeBike() {
     this.player.face('right');
     this.busy = true;
-    await this.think(hasFlag('coffee') && !hasFlag('exercised')
+    await this.think(hasFlag('wired')
       ? { af: '’n Bietjie oefening… kom ek gaan fietsry!', en: 'A bit of exercise… time for a bike ride!' }
       : { af: 'Kom ek gaan ry ’n bietjie fiets!', en: "I'll go for a little bike ride!" });
     bike.riding = true;
@@ -325,28 +327,55 @@ export default class InteriorScene extends Phaser.Scene {
     }));
   }
 
-  // Climb into bed: the room darkens and z's float up until the next tap or key.
+  // Climb into bed: the room darkens to night and z's float up until the
+  // next tap or key; then the night passes.
   sleep() {
     const { player } = this;
     let zzz = null;
     const timer = this.time.delayedCall(300, () => {
       player.sprite.setVisible(false);
       this.sleeper.setVisible(true);
-      setFlag('slept');
       this.tweens.killTweensOf(this.night);
-      this.tweens.add({ targets: this.night, alpha: 0.45, duration: 900, onUpdate: () => this.dimBob() });
+      this.tweens.add({ targets: this.night, alpha: 0.6, duration: 900, onUpdate: () => this.dimBob() });
       zzz = this.time.addEvent({ delay: 1100, startAt: 900, loop: true, callback: () => this.puffZ() });
     });
     player.face('left');
     player.act(`${player.texture}-idle-left`, () => {
       timer.remove();
       zzz?.remove();
-      player.sprite.setVisible(true);
-      this.sleeper.setVisible(false);
-      this.tweens.killTweensOf(this.night);
-      this.tweens.add({ targets: this.night, alpha: 0, duration: 400, onUpdate: () => this.dimBob() });
-      player.face('down');
+      if (this.sleeper.visible) this.nightPasses();
+      else player.face('down'); // (changed his mind before he was in)
     });
+  }
+
+  // The night goes by: dark, then the sunrise and the new day's name
+  // (src/morning.js); then he's up beside the bed in the early light,
+  // rested (and, the night after the pie, Bob's at the gate).
+  async nightPasses() {
+    const { player } = this;
+    const cam = this.cameras.main;
+    this.leaving = true; // nothing moves meanwhile
+    await new Promise((r) => {
+      cam.fadeOut(900);
+      cam.once('camerafadeoutcomplete', r);
+    });
+    if (hasFlag('ate')) setFlag('slept');
+    clearFlag('tired');
+    clearFlag('wired');
+    bike.pedalled = 0;
+    nextDay();
+    await morning();
+    player.stop(); // (not off to wherever the tap that ended the night was)
+    player.sprite.setVisible(true);
+    this.sleeper.setVisible(false);
+    this.tweens.killTweensOf(this.night);
+    this.night.setAlpha(0);
+    this.dimBob();
+    const sunrise = this.add.rectangle(0, 0, this.room.w, this.room.h, 0xffb060).setOrigin(0).setDepth(0.5).setAlpha(0.35);
+    this.tweens.add({ targets: sunrise, alpha: 0, duration: 3000, onComplete: () => sunrise.destroy() });
+    player.face('down');
+    cam.fadeIn(900);
+    this.leaving = false;
   }
 
   puffZ() {

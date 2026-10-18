@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { FRAME_H, FEET_Y } from './constants.js';
-import { hasFlag, setFlag } from './state.js';
+import { hasFlag, setFlag, clearFlag } from './state.js';
+import { bike } from './bike.js';
 import { converse } from './dialog.js';
 import { createVillager } from './CharacterSprite.js';
 import { obj } from './pixelArt.js';
@@ -96,6 +97,9 @@ async function makeCoffee(scene) {
   const { room, sannie, player } = scene;
   const wait = ms => new Promise(r => scene.time.delayedCall(ms, r));
   setFlag('coffee');
+  setFlag('wired'); // wide awake now, however tired he was
+  clearFlag('tired');
+  bike.pedalled = 0;
   sannie.play('sannie-px-idle-left');
   const hiss = scene.time.addEvent({ delay: 90, loop: true, callback: () => wisp(scene, room.steam.x, room.steam.y, room.counter.depth + 1) });
   await wait(1600);

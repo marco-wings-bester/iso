@@ -156,6 +156,7 @@ export async function eatHalf(scene) {
     jones = eatAtTable(scene, 'player-px', scene.pie, { from: 8, to: 4, bitesPerColumn: 1, sitDown: true, onFull: resolve });
   });
   setFlag('ate');
+  setFlag('tired'); // full of pie: sleepy
   await new Promise(r => scene.time.delayedCall(1200, r));
   await think(scene, jones, line('full'));
   jones.destroy();

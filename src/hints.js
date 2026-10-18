@@ -48,14 +48,18 @@ const LINES = {
         en: 'I need an apple. Get the apple picker from the tool shed, then pick one from an apple tree.',
       }),
   },
+  // bed when he isn't tired: before the pie, or (after it) without a good
+  // long bike ride
   bedEarly: {
     none: { af: 'Ek is nog nie vaak nie.', en: "I'm not sleepy yet." },
     subtle: () => {
+      if (hasFlag('ate')) return { af: 'Ek is nog nie vaak nie. Ek sal my eers bietjie moeg moet maak.', en: "I'm not sleepy yet. I'll have to tire myself out first." };
       if (!hasFlag('read')) return { af: 'Ek is nog nie vaak nie. Miskien lees ek ’n boek.', en: "I'm not sleepy yet. Maybe I'll read a book." };
       if (!hasFlag('baked')) return { af: 'Ek is nog nie vaak nie. Ek is lus om iets te bak.', en: "I'm not sleepy yet. I fancy baking something." };
       return { af: 'Ek is nog nie vaak nie. Daai tert ruik lekker…', en: "I'm not sleepy yet. That pie smells good…" };
     },
     explicit: () => {
+      if (hasFlag('ate')) return { af: 'Nog nie vaak nie. ’n Lang fietsrit sal my moeg maak: my fiets is in die skuur.', en: 'Not sleepy yet. A long bike ride will tire me out: my bike is in the barn.' };
       if (!hasFlag('read')) return { af: 'Nog nie vaak nie. Lees eers die resepteboek op die boekrak.', en: 'Not sleepy yet. First, read the recipe book on the bookshelf.' };
       if (!hasFlag('apple')) return { af: 'Nog nie vaak nie. Eers het ek ’n appel vir die tert nodig.', en: 'Not sleepy yet. First I need an apple for the pie.' };
       if (!hasFlag('baked')) return { af: 'Nog nie vaak nie. Bak eers die tert by die kombuiskas.', en: 'Not sleepy yet. Bake the pie at the kitchen cupboard first.' };

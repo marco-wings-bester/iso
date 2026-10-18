@@ -16,6 +16,7 @@
 // - Hints: how much Farmer Jones lets on about what to do next (None /
 //   Subtle / Explicit; src/settings.js, src/hints.js).
 // All of it in the chosen language: each text is { af, en }.
+// - Which day of the week it is in the story (src/days.js).
 // - New game: after a confirm, forget the story so far and start again at the
 //   gate (so Bob isn't there yet); `onNewGame` does the restart (main.js).
 // And, not in the menu: the level select (`showLevels`, opened by a secret
@@ -25,6 +26,7 @@ import { updateNow } from './updates.js';
 import { getSetting, setSetting } from './settings.js';
 import { t } from './i18n.js';
 import { toast } from './toast.js';
+import { dayName } from './days.js';
 
 const isAndroid = /Android/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -385,7 +387,9 @@ export function setupMenu({ onNewGame, onLevel }) {
     ]);
     const close = el('button', { type: 'button', className: 'btn secondary', textContent: t({ af: 'Maak toe', en: 'Close' }) });
     close.onclick = closeMenu;
-    menu = overlay('menu', el('h2', { textContent: 'Farm Walk' }), el('div', { className: 'menu-buttons' }, installBtn, shareBtn, updateBtn, newBtn, language, hints, close));
+    const day = dayName();
+    const today = el('p', { className: 'today', textContent: t({ af: `📅 Vandag is dit ${day.af}`, en: `📅 Today is ${day.en}` }) });
+    menu = overlay('menu', el('h2', { textContent: 'Farm Walk' }), today, el('div', { className: 'menu-buttons' }, installBtn, shareBtn, updateBtn, newBtn, language, hints, close));
   }
 
   button.onclick = () => {
