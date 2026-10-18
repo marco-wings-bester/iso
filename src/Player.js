@@ -62,6 +62,7 @@ export default class Player {
     this.sprite.play(animKey);
   }
 
+  // A frame of `dt` seconds; returns whether he moved.
   update(dt) {
     const k = this.keys;
     let vx = 0;
@@ -69,7 +70,7 @@ export default class Player {
 
     const kbActive = !this.locked && [k.left, k.right, k.up, k.down, k.a, k.d, k.w, k.s].some(key => key.isDown);
     if (this.action) {
-      if (!kbActive) return;
+      if (!kbActive) return false;
       this._endAction();
     }
     if (kbActive) {
@@ -127,6 +128,7 @@ export default class Player {
 
     this.sprite.setPosition(this.x, this.y).setDepth(this.y);
     if (arrived) this._arrive();
+    return moved;
   }
 
   _arrive() {

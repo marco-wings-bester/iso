@@ -44,11 +44,12 @@ back when he has some. Derik, fishing off the jetty, lends him R15 (tap him;
 `src/derik.js`): "Bring dit sommer oormore aand as jy by ons kom braai." Back
 at the counter Johan pays, Sannie makes his coffee, and he carries it about,
 steaming. Back home that coffee keeps him up: in bed he's not tired enough,
-and needs some exercise first. His **bicycle** is in the barn (tap it): he
-rides about the farm just as he walks, only faster (`src/bike.js`; the sprite
-is drawn in `src/CharacterSprite.js`), and leaves it standing at the door of
-whatever he goes into (ride into the barn to put it away; tap it to get back
-on). A good long ride tires him out, and then he can sleep. Down to town and right to Bob's house are still to come. Both picture maps are
+and needs some exercise first. His **bicycle** is in the barn (tap it): from
+then on he rides it everywhere he'd walk, only faster: the farm, the
+crossroads, the beach, and indoors too (`src/bike.js`; the sprite is drawn in
+`src/CharacterSprite.js`). The barn is the only place it's put away: ride in
+there and he leaves it on its stand. A good long ride tires him out, and
+then he can sleep. Down to town and right to Bob's house are still to come. Both picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it

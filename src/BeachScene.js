@@ -84,7 +84,7 @@ export default class BeachScene extends MapScene {
 
   update(_time, delta) {
     if (this.leaving) return;
-    this.player.update(delta / 1000);
+    this.move(delta);
     this.edges();
   }
 }

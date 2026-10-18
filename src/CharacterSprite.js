@@ -676,11 +676,11 @@ export function createBob(scene) {
 }
 
 // ── The bicycle (src/bike.js) ─────────────────────────────────────────────
-// Farmer Jones riding it: 'player-bike', frames BIKE_W wide (the same height
-// and feet row as his walking ones), with `player-bike-walk-${dir}`
-// (pedalling, the wheels turning) and `player-bike-idle-${dir}`. And the
-// bike on its own, parked on its stand: 'bike' (the farm) and 'bike-px'
-// (crisp, the barn). Side views are drawn facing left, 'right' mirrored.
+// Farmer Jones riding it: 'player-bike' (outdoors) and 'player-bike-px'
+// (crisp, indoors), frames BIKE_W wide (the same height and feet row as his
+// walking ones), with `${key}-walk-${dir}` (pedalling, the wheels turning)
+// and `${key}-idle-${dir}`. And the bike on its own on its stand in the
+// barn, 'bike-px'. Side views are drawn facing left, 'right' mirrored.
 export const BIKE_W = 24;
 const BIKE_COLOURS = {
   G: '#3a9a4a', g: '#2a6a34', // frame
@@ -808,11 +808,10 @@ function drawBikeFrame(ctx, ox, oy, pixels, p, shadow) {
 
 export function createBike(scene) {
   look = { ...FARMER, palette: { ...FARMER_PALETTE, ...BIKE_COLOURS } };
-  const p = ART_PX;
-  const fw = BIKE_W * p;
-  const fh = FRAME_H * p;
-  if (!scene.textures.exists('player-bike')) {
-    const key = 'player-bike';
+  [['player-bike', ART_PX], ['player-bike-px', 1]].forEach(([key, p]) => {
+    if (scene.textures.exists(key)) return;
+    const fw = BIKE_W * p;
+    const fh = FRAME_H * p;
     const tex = scene.textures.createCanvas(key, fw * 4, fh * DIRECTIONS.length);
     const ctx = tex.getContext();
     DIRECTIONS.forEach((dir, row) => {
@@ -825,13 +824,13 @@ export function createBike(scene) {
       scene.anims.create({ key: `${key}-idle-${dir}`, frames: [{ key, frame: row * 4 }], frameRate: 1, repeat: -1 });
     });
     tex.refresh();
-  }
-  [['bike', ART_PX], ['bike-px', 1]].forEach(([key, q]) => {
-    if (scene.textures.exists(key)) return;
-    const tex = scene.textures.createCanvas(key, BIKE_W * q, FRAME_H * q);
-    drawBikeFrame(tex.getContext(), 0, 0, buildParkedBike(), q, BIKE_SHADOW.side);
-    tex.refresh();
-    if (q === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   });
+  if (!scene.textures.exists('bike-px')) {
+    const tex = scene.textures.createCanvas('bike-px', BIKE_W, FRAME_H);
+    drawBikeFrame(tex.getContext(), 0, 0, buildParkedBike(), 1, BIKE_SHADOW.side);
+    tex.refresh();
+    tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }
   look = FARMER;
 }
