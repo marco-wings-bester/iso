@@ -53,12 +53,14 @@ const LINES = {
   bedEarly: {
     none: { af: 'Ek is nog nie vaak nie.', en: "I'm not sleepy yet." },
     subtle: () => {
+      if (hasFlag('ate') && !hasFlag('coffee')) return { af: 'Ek is nog nie vaak nie. Daar is nog baie om vandag te doen.', en: "I'm not sleepy yet. There's still lots to do today." };
       if (hasFlag('ate')) return { af: 'Ek is nog nie vaak nie. Ek sal my eers bietjie moeg moet maak.', en: "I'm not sleepy yet. I'll have to tire myself out first." };
       if (!hasFlag('read')) return { af: 'Ek is nog nie vaak nie. Miskien lees ek ’n boek.', en: "I'm not sleepy yet. Maybe I'll read a book." };
       if (!hasFlag('baked')) return { af: 'Ek is nog nie vaak nie. Ek is lus om iets te bak.', en: "I'm not sleepy yet. I fancy baking something." };
       return { af: 'Ek is nog nie vaak nie. Daai tert ruik lekker…', en: "I'm not sleepy yet. That pie smells good…" };
     },
     explicit: () => {
+      if (hasFlag('ate') && !hasFlag('coffee')) return { af: 'Nog nie vaak nie. Daar is nog baie om vandag te doen.', en: "Not sleepy yet. There's still lots to do today." };
       if (hasFlag('ate')) return { af: 'Nog nie vaak nie. ’n Lang fietsrit sal my moeg maak: my fiets is in die skuur.', en: 'Not sleepy yet. A long bike ride will tire me out: my bike is in the barn.' };
       if (!hasFlag('read')) return { af: 'Nog nie vaak nie. Lees eers die resepteboek op die boekrak.', en: 'Not sleepy yet. First, read the recipe book on the bookshelf.' };
       if (!hasFlag('apple')) return { af: 'Nog nie vaak nie. Eers het ek ’n appel vir die tert nodig.', en: 'Not sleepy yet. First I need an apple for the pie.' };

@@ -44,7 +44,8 @@ back when he has some. Derik, fishing off the jetty, lends him R15 (tap him;
 `src/derik.js`): "Bring dit sommer oormore aand as jy by ons kom braai." Back
 at the counter Johan pays, Sannie makes his coffee, and he carries it about,
 steaming. Back home that coffee keeps him up: in bed he's not tired enough,
-and needs some exercise first. His **bicycle** is in the barn (tap it): from
+and needs some exercise first. His **bicycle** is in the barn (tap it; before
+the coffee he'd love to, but he's got other things to do today): from
 then on he rides it everywhere he'd walk, only faster: the farm, the
 crossroads, the beach, and indoors too (`src/bike.js`; the sprite is drawn in
 `src/CharacterSprite.js`). The barn is the only place it's put away: ride in
