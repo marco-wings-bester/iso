@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Build the walkable areas of the picture maps (the crossroads, the beach, the town):
+"""Build the walkable areas of the picture maps (the crossroads, the beach, the town, Pieter's farm):
 
   public/assets/crossroads.jpg → src/roadMask.js   the four roads at the crossroads
   public/assets/seaside.jpg    → src/beachMask.js  the village road, the sand and the jetty
   public/assets/town.jpg       → src/townMask.js   the town's paths and its square
+  public/assets/pieter.jpg     → src/pieterMask.js the paths on Pieter's farm, and his braai
 
 Pixels are picked by colour (the pictures are shaded, and JPEGs), with extra
 boxes (the jetty's boards, a way down onto the sand), small holes (pebbles,
@@ -92,6 +93,25 @@ MAPS = [
             (130, 1870, 480, 420), (1020, 1980, 400, 400), (655, 1270, 230, 205),
             # paths off the sides, which the screen cuts off: only the road out at the top right leaves
             (0, 0, 140, 2752), (1396, 300, 140, 2452),
+        ],
+    },
+    {
+        'image': 'public/assets/pieter.jpg',
+        'out': 'src/pieterMask.js',
+        'what': "the paths on Pieter's farm, and the floor round his braai fire",
+        'cell': 8,
+        'close': 7,
+        'start': (300, 1200),  # on the path, by the gate
+        'walk': dirt,
+        'boxes': [
+            ((150, 1350, 170, 150), None),        # through the gate, where the path from the house meets the road
+            ((760, 1180, 600, 420), light_path),  # the sandy floor round the fire
+        ],
+        'exclude': [
+            (270, 400, 970, 560),  # the farmhouse (its porch floor is the paths' colour), up to its steps
+            (1130, 1080, 270, 280),  # the brick braai
+            (976, 1340, 164, 110),  # the fire
+            (0, 0, 140, 2752), (1396, 0, 140, 2752),  # the sides, which the screen cuts off (the path out through the gate)
         ],
     },
 ]
