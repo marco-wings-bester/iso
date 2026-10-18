@@ -1,3 +1,9 @@
+// Played in a browser (not installed): a welcome card each time it's opened,
+// on how to install it (step by step, for the phone and browser it's in, or
+// Chrome's own install prompt in one tap when it offers one) and where the
+// menu is; closing it points out the menu button. And, until it's installed,
+// an "Install" button beside the menu button.
+//
 // Menu button (bottom-left) opening a small settings card:
 // - Install app: Chrome's real install prompt when available; otherwise how
 //   to install (and, on Android, a button to open the game in Chrome, since
@@ -23,6 +29,12 @@ import { toast } from './toast.js';
 const isAndroid = /Android/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
   || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+// an app's own browser (a link opened in Facebook, Instagram…), which can't
+// install; on an iPhone, any without Safari's name in it
+const inAppBrowser = /FBAN|FBAV|FB_IAB|Instagram|Line\/|Snapchat|Twitter|TikTok/i.test(navigator.userAgent)
+  || (isIOS && !/Safari\//.test(navigator.userAgent));
+const iosOtherBrowser = isIOS && /CriOS|FxiOS|EdgiOS/.test(navigator.userAgent); // Chrome, Firefox, Edge
+const ICON = `${import.meta.env.BASE_URL}icons/icon-192.png`;
 const GAME_URL = `${location.origin}${import.meta.env.BASE_URL}`;
 const share = () => ({
   title: 'Farm Walk',
@@ -41,6 +53,14 @@ function el(tag, props = {}, ...children) {
   return node;
 }
 
+// The share button as iPhones draw it: a box with an arrow out of the top.
+function shareIcon() {
+  return el('span', {
+    className: 'ico',
+    innerHTML: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2a6fd6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9H6v11h12V9h-2"/><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/></svg>',
+  });
+}
+
 // A dimmed overlay with a card; tapping outside the card closes it.
 function overlay(id, ...content) {
   const o = el('div', { id, className: 'overlay' }, el('div', { className: 'card' }, ...content));
@@ -54,15 +74,23 @@ export function setupMenu({ onNewGame, onLevel }) {
   let prompt = window.farmWalkInstallPrompt || null;
   window.addEventListener('farmwalk-installable', () => { prompt = window.farmWalkInstallPrompt; });
   let installed = runningAsApp();
-  window.addEventListener('appinstalled', () => { installed = true; });
 
   const button = el('button', { id: 'menu-btn', type: 'button', textContent: '☰' });
+  // until it's installed: an Install button beside the menu button
+  const pill = el('button', { id: 'install-pill', type: 'button' });
+  pill.onclick = () => install();
   const showLang = () => {
     document.documentElement.lang = getSetting('lang') === 'en' ? 'en' : 'af';
     button.setAttribute('aria-label', t({ af: 'Kieslys', en: 'Menu' }));
+    pill.textContent = t({ af: '⬇ Installeer', en: '⬇ Install' });
   };
   showLang();
   document.body.append(button);
+  if (!installed) document.body.append(pill);
+  window.addEventListener('appinstalled', () => {
+    installed = true;
+    pill.remove();
+  });
 
   let menu = null;
   const closeMenu = () => {
@@ -76,11 +104,15 @@ export function setupMenu({ onNewGame, onLevel }) {
       showInstallHelp();
       return;
     }
+    document.getElementById('install-help')?.remove();
     prompt.prompt();
     const { outcome } = await prompt.userChoice;
     prompt = null; // a prompt can only be used once
     window.farmWalkInstallPrompt = null;
-    if (outcome === 'accepted') installed = true;
+    if (outcome === 'accepted') {
+      installed = true;
+      pill.remove();
+    }
   }
 
   async function shareGame() {
@@ -150,47 +182,164 @@ export function setupMenu({ onNewGame, onLevel }) {
     };
   }
 
-  function showInstallHelp() {
+  // How to install it, for the phone and browser it's open in: `body` (the
+  // steps) and `buttons`. Chrome's and Safari's own menus are named as the
+  // phone shows them.
+  function installHow() {
     const b = text => el('b', { textContent: text });
-    const steps = el('p');
-    const actions = el('div', { className: 'actions' });
-    // (Chrome's and Safari's own menus are named as the phone shows them)
-    if (isAndroid) {
-      const openIn = t({ af: 'Maak oop in Chrome', en: 'Open in Chrome' });
-      steps.append(...t({
-        af: [
-          'Installeer werk net in Chrome. As jy dit uit ’n ander app oopgemaak het, tik ', b(openIn), ', maak dan die ',
-          b('☰ kieslys'), ' oop en tik weer ', b('Installeer app'), '.', el('br'), el('br'),
-          'Reeds in Chrome? Tik ', b('⋮'), ' (regs bo) → ', b('Install app'), ' of ', b('Add to Home screen'), '.',
-        ],
-        en: [
-          'Installing only works in Chrome. If you opened this from another app, tap ', b(openIn), ', then open the ',
-          b('☰ menu'), ' and tap ', b('Install app'), ' again.', el('br'), el('br'),
-          'Already in Chrome? Tap ', b('⋮'), ' (top right) → ', b('Install app'), ' or ', b('Add to Home screen'), '.',
-        ],
-      }));
+    const key = text => el('span', { className: 'key', textContent: text });
+    const steps = (...items) => el('ol', { className: 'steps' }, ...items.map(item => el('li', {}, ...item)));
+    const body = [];
+    const buttons = [];
+    if (prompt) {
+      // Chrome offers its own install: one tap
+      body.push(el('p', { textContent: t({ af: 'Een tik, en Farm Walk is op jou tuisskerm.', en: "One tap, and Farm Walk is on your home screen." }) }));
+      const now = el('button', { type: 'button', className: 'btn primary big', textContent: t({ af: '⬇ Installeer nou', en: '⬇ Install now' }) });
+      now.onclick = () => install();
+      buttons.push(now);
+    } else if (isAndroid) {
+      body.push(steps(...t({
+        af: [['Tik ', key('⋮'), ' regs bo in Chrome.'], ['Tik ', b('Install app'), ' of ', b('Add to Home screen'), '.'], ['Tik ', b('Install'), '.']],
+        en: [['Tap ', key('⋮'), ' at the top right in Chrome.'], ['Tap ', b('Install app'), ' or ', b('Add to Home screen'), '.'], ['Tap ', b('Install'), '.']],
+      })));
+      body.push(el('p', { className: 'note', textContent: t({
+        af: 'Oopgemaak uit WhatsApp of ’n ander app? Dit installeer net in Chrome: maak dit eers daar oop.',
+        en: 'Opened from WhatsApp or another app? It only installs in Chrome: open it there first.',
+      }) }));
       const url = `${location.host}${location.pathname}`;
       const fallback = encodeURIComponent(`https://${url}`);
-      actions.append(el('a', {
+      buttons.push(el('a', {
         className: 'btn primary',
         href: `intent://${url}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${fallback};end`,
-        textContent: openIn,
+        textContent: t({ af: 'Maak oop in Chrome', en: 'Open in Chrome' }),
       }));
+    } else if (isIOS && inAppBrowser) {
+      body.push(el('p', { textContent: t({
+        af: 'Hierdie app se blaaier kan dit nie installeer nie. Maak dit in Safari oop:',
+        en: "This app's browser can't install it. Open it in Safari:",
+      }) }));
+      body.push(steps(...t({
+        af: [['Tik ', key('···'), ' of ', key('🧭'), ' en kies ', b('Open in Safari'), ' (of kopieer die skakel en plak dit in Safari).'],
+          ['Tik dan die deel-knoppie ', shareIcon(), ' en ', b('Add to Home Screen'), '.']],
+        en: [['Tap ', key('···'), ' or ', key('🧭'), ' and choose ', b('Open in Safari'), ' (or copy the link and paste it into Safari).'],
+          ['Then tap the share button ', shareIcon(), ' and ', b('Add to Home Screen'), '.']],
+      })));
+      buttons.push(copyLink());
     } else if (isIOS) {
-      steps.append(...t({
-        af: ['Tik in Safari op die ', b('Share'), '-knoppie, dan op ', b('Add to Home Screen'), '.'],
-        en: ['In Safari, tap the ', b('Share'), ' button, then ', b('Add to Home Screen'), '.'],
-      }));
+      body.push(steps(...t({
+        af: [
+          iosOtherBrowser
+            ? ['Tik die deel-knoppie ', shareIcon(), ' by die adresbalk.']
+            : ['Tik die deel-knoppie ', shareIcon(), ' onder aan die skerm (op nuwer iPhones eers ', key('···'), ').'],
+          ['Rol af en tik ', b('Add to Home Screen'), '.'],
+          ['Tik ', b('Add'), '.'],
+        ],
+        en: [
+          iosOtherBrowser
+            ? ['Tap the share button ', shareIcon(), ' by the address bar.']
+            : ['Tap the share button ', shareIcon(), ' at the bottom of the screen (on newer iPhones, ', key('···'), ' first).'],
+          ['Scroll down and tap ', b('Add to Home Screen'), '.'],
+          ['Tap ', b('Add'), '.'],
+        ],
+      })));
     } else {
-      steps.append(...t({
-        af: ['Maak hierdie bladsy in Chrome op jou foon oop, en tik dan ', b('⋮'), ' → ', b('Install app'), '.'],
-        en: ['Open this page in Chrome on your phone, then tap ', b('⋮'), ' → ', b('Install app'), '.'],
-      }));
+      // a computer
+      body.push(el('p', {}, ...t({
+        af: ['Op jou foon: maak hierdie skakel daar oop en installeer dit. Op ’n rekenaar: klik die installeer-ikoon regs in die adresbalk, of ', key('⋮'), ' → ', b('Install Farm Walk'), '.'],
+        en: ['On your phone: open this link there and install it. On a computer: click the install icon at the right of the address bar, or ', key('⋮'), ' → ', b('Install Farm Walk'), '.'],
+      })));
+      buttons.push(copyLink());
     }
+    return { body, buttons };
+  }
+
+  // A button copying the game's link (to paste into another browser).
+  function copyLink() {
+    const btn = el('button', { type: 'button', className: 'btn share', textContent: t({ af: '📋 Kopieer die skakel', en: '📋 Copy the link' }) });
+    btn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(GAME_URL);
+        btn.textContent = t({ af: '✓ Gekopieer', en: '✓ Copied' });
+      } catch {
+        showLink();
+      }
+    };
+    return btn;
+  }
+
+  function showInstallHelp() {
+    document.getElementById('install-help')?.remove();
+    const { body, buttons } = installHow();
     const close = el('button', { type: 'button', className: 'btn secondary', textContent: t({ af: 'Maak toe', en: 'Close' }) });
-    actions.append(close);
-    const o = overlay('install-help', el('h2', { textContent: t({ af: 'Installeer Farm Walk', en: 'Install Farm Walk' }) }), steps, actions);
+    const o = overlay('install-help',
+      el('h2', { textContent: t({ af: '📲 Installeer Farm Walk', en: '📲 Install Farm Walk' }) }),
+      el('p', { className: 'perks', textContent: t({ af: 'Gratis · speel sonder internet · begin met een tik van jou tuisskerm af', en: 'Free · plays offline · starts with one tap from your home screen' }) }),
+      ...body,
+      el('div', { className: 'menu-buttons' }, ...buttons, close));
     close.onclick = () => o.remove();
+  }
+
+  // Each time it's opened in a browser: welcome, how to install it, and
+  // where the menu is. (Its language can be picked right here.)
+  let welcomeCard = null;
+  function welcome() {
+    if (installed) return;
+    const render = () => {
+      welcomeCard?.remove();
+      const { body, buttons } = installHow();
+      const play = el('button', { type: 'button', className: 'btn secondary', textContent: t({ af: '▶ Speel eers in die blaaier', en: '▶ Play in the browser for now' }) });
+      const language = setting('🌐', 'lang', [['af', 'Afrikaans'], ['en', 'English']], () => {
+        showLang();
+        render();
+      });
+      welcomeCard = overlay('welcome',
+        el('div', { className: 'welcome-head' },
+          el('img', { src: ICON, alt: '' }),
+          el('h2', { textContent: t({ af: 'Welkom by Farm Walk!', en: 'Welcome to Farm Walk!' }) })),
+        language,
+        el('p', { textContent: t({ af: 'Tik op die skerm om Boer Johan te laat loop, en tik op goed om dit te gebruik.', en: 'Tap the screen to walk Farmer Jones about, and tap things to use them.' }) }),
+        el('div', { className: 'section install' },
+          el('h3', { textContent: t({ af: '📲 Installeer dit as ’n app', en: '📲 Install it as an app' }) }),
+          el('p', { className: 'perks', textContent: t({ af: 'Gratis · speel sonder internet · begin met een tik van jou tuisskerm af', en: 'Free · plays offline · starts with one tap from your home screen' }) }),
+          ...body,
+          el('div', { className: 'menu-buttons' }, ...buttons)),
+        el('div', { className: 'section' },
+          el('h3', {}, el('span', { className: 'menu-icon', textContent: '☰' }), ' ', t({ af: 'Die kieslys', en: 'The menu' })),
+          el('p', { textContent: t({
+            af: 'Links onder op die skerm: installeer, deel die speletjie, taal, wenke en ’n nuwe speletjie. Tot dit geïnstalleer is, is daar ook ’n geel Installeer-knoppie langsaan.',
+            en: "At the bottom left of the screen: install, share the game, language, hints and a new game. Until it's installed, there's a yellow Install button beside it too.",
+          }) })),
+        el('div', { className: 'menu-buttons' }, play));
+      const close = () => {
+        welcomeCard.remove();
+        welcomeCard = null;
+        pointToMenu();
+      };
+      play.onclick = close;
+      welcomeCard.onclick = (e) => { if (e.target === welcomeCard) close(); };
+    };
+    render();
+    // Chrome may offer its install prompt a moment later: then it's one tap
+    window.addEventListener('farmwalk-installable', () => { if (welcomeCard?.isConnected) render(); });
+  }
+
+  // The menu button, pulsing, with a note pointing at it, until the next tap.
+  function pointToMenu() {
+    document.getElementById('menu-tip')?.remove();
+    const tip = el('div', { id: 'menu-tip', className: 'tip', textContent: t({ af: '☰ Die kieslys: installeer, deel, taal en meer', en: '☰ The menu: install, share, language and more' }) });
+    document.body.append(tip);
+    button.classList.add('pulse');
+    const done = () => {
+      tip.remove();
+      button.classList.remove('pulse');
+      removeEventListener('pointerdown', done, true);
+      removeEventListener('keydown', done, true);
+    };
+    setTimeout(() => {
+      addEventListener('pointerdown', done, true);
+      addEventListener('keydown', done, true);
+    });
+    setTimeout(done, 10000);
   }
 
   // A row of the menu choosing a setting: a label, then buttons side by side
@@ -269,5 +418,5 @@ export function setupMenu({ onNewGame, onLevel }) {
     cancel.onclick = () => o.remove();
   }
 
-  return { showLevels };
+  return { showLevels, welcome };
 }
