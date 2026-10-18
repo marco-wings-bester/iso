@@ -192,6 +192,8 @@ export default class MapScene extends Phaser.Scene {
     player.stop();
     const cam = this.cameras.main;
     cam.fadeOut(FADE_MS);
-    cam.once('camerafadeoutcomplete', () => this.scene.start(exit.to, exit.data));
+    // (always with data: started without any, a scene gets what it was given
+    // last time, and he'd turn up wherever that was)
+    cam.once('camerafadeoutcomplete', () => this.scene.start(exit.to, exit.data ?? { fresh: true }));
   }
 }

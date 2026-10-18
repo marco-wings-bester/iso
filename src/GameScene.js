@@ -169,7 +169,7 @@ export default class GameScene extends Phaser.Scene {
     }
     this.leaving = true;
     this.cameras.main.fadeOut(FADE_MS);
-    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Road'));
+    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Road', { from: 'farm' }));
   }
 
   // Switch to his eyes: down the well, over the pond, or from the tractor seat.
