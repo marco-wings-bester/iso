@@ -53,7 +53,7 @@ there and he leaves it on its stand. A good long ride tires him out, and
 then he can sleep.
 
 **Days.** The story starts on a **Monday**, and each night is a new day
-(`src/days.js`; the menu says which day it is). Farmer Jones only goes to
+(`src/days.js`; the day is always shown at the top of the screen, and in the menu). Farmer Jones only goes to
 sleep when he's tired: after eating the pie, or after a good long bike ride
 (coffee wakes him up again). Then the room goes dark, and a sunrise screen
 shows the next morning and its day (`src/morning.js`); he's up in the early

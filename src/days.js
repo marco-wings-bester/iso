@@ -18,8 +18,10 @@ export function dayName(n = today()) {
   return { af: NAMES.af[n % 7], en: NAMES.en[n % 7] };
 }
 
+// (the badge at the top of the screen follows it: src/menu.js)
 export function nextDay() {
   setValue('day', today() + 1);
+  window.dispatchEvent(new Event('farmwalk-day'));
 }
 
 // Derik's braai, the evening of the day after tomorrow from when he lent

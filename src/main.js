@@ -51,12 +51,14 @@ const menu = setupMenu({
   onNewGame() {
     resetFlags();
     resetBike();
+    window.dispatchEvent(new Event('farmwalk-day')); // Monday again
     scenes.forEach(key => game.scene.stop(key));
     game.scene.start('Game');
   },
   onLevel(n) {
     resetFlags();
     resetBike();
+    window.dispatchEvent(new Event('farmwalk-day'));
     scenes.forEach(key => game.scene.stop(key));
     if (n === 1) {
       game.scene.start('Game');
@@ -64,6 +66,7 @@ const menu = setupMenu({
     }
     LEVEL2_STORY.forEach(setFlag);
     setValue('day', 1); // Tuesday: the night after the pie, Bob came by
+    window.dispatchEvent(new Event('farmwalk-day'));
     game.scene.stop('Game');
     game.scene.start('Road');
   },
