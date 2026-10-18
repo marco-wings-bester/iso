@@ -54,14 +54,17 @@ then he can sleep.
 
 **Days.** The game is a week long: the story starts on a **Monday**, each
 night is a new day, and after Sunday night the week, and the game, is done
-(a "the week is done!" screen, then a new week). Each night is a new day
+(under the stars, "the week is done!", then a new week). Each night is a new day
 (`src/days.js`; the day is always shown at the top of the screen, and in the menu). Farmer Jones only goes to
 sleep when he's tired: after eating the pie, or after a good long bike ride
-(coffee wakes him up again). Then the room goes dark, and a sunrise screen
-shows the next morning and its day (`src/morning.js`); he's up in the early
-light. So: Monday he bakes and eats the pie and sleeps; Tuesday Bob comes by,
+(coffee wakes him up again). Then the room goes dark, and the night passes
+over the farm as a pixel-art animation (`src/night.js`): the sun setting in
+gold and pink, dusk, stars and the moon going down behind the hills (a
+shooting star, the farmhouse's windows lit), first light and the sun coming
+up; the day at the top changes with the dawn. He's up in the early light,
+thinking of what the day holds (`src/morning.js`). So: Monday he bakes and eats the pie and sleeps; Tuesday Bob comes by,
 and so on. Derik's braai is the evening of the day after tomorrow from when
-he lent the R15: he and the morning screen remind Johan as it comes up, and
+he lent the R15: Derik, and Johan's first thought of the day, remind him as it comes up, and
 it can't be before then. (The braai itself is still to come.)
 
 **Wednesday** there's farm work before bed (`src/chores.js`; the morning

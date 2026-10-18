@@ -45,7 +45,7 @@ game.events.once('ready', () => {
   try { sessionStorage.removeItem('farm-walk-recovered'); } catch (e) { /* private mode */ }
 });
 
-// New game (menu, or the week done: src/morning.js): forget the story and
+// New game (menu, or the week done: src/night.js): forget the story and
 // start again on Monday at the farm gate, from wherever he is (a building, or
 // out on the farm). The secret day select (two pine cones under the big pine,
 // src/views/pine.js) starts on the day chosen the same way, with the story
