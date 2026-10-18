@@ -21,14 +21,14 @@
 // - Which day of the week it is in the story (src/days.js).
 // - New game: after a confirm, forget the story so far and start again at the
 //   gate (so Bob isn't there yet); `onNewGame` does the restart (main.js).
-// And, not in the menu: the level select (`showLevels`, opened by a secret
-// under the big pine), jumping to Level 1 or 2; `onLevel` does it (main.js).
+// And, not in the menu: the day select (`showDays`, opened by a secret under
+// the big pine), starting on any day of the week; `onDay` does it (main.js).
 
 import { updateNow } from './updates.js';
 import { getSetting, setSetting } from './settings.js';
 import { t } from './i18n.js';
 import { toast } from './toast.js';
-import { dayName } from './days.js';
+import { dayName, today } from './days.js';
 import { chores } from './chores.js';
 
 const isAndroid = /Android/i.test(navigator.userAgent);
@@ -74,7 +74,7 @@ function overlay(id, ...content) {
   return o;
 }
 
-export function setupMenu({ onNewGame, onLevel }) {
+export function setupMenu({ onNewGame, onDay }) {
   // index.html captures the browser's install prompt as early as possible.
   let prompt = window.farmWalkInstallPrompt || null;
   window.addEventListener('farmwalk-installable', () => { prompt = window.farmWalkInstallPrompt; });
@@ -86,7 +86,7 @@ export function setupMenu({ onNewGame, onLevel }) {
   pill.onclick = () => install();
   // the day of the week, at the top (a new day, a new game, another language)
   const day = el('div', { id: 'day' });
-  const showDay = () => { day.textContent = `📅 ${t(dayName())}`; };
+  const showDay = () => { day.textContent = t(dayName()); };
   window.addEventListener('farmwalk-day', showDay);
   const showLang = () => {
     document.documentElement.lang = getSetting('lang') === 'en' ? 'en' : 'af';
@@ -396,7 +396,7 @@ export function setupMenu({ onNewGame, onLevel }) {
     const close = el('button', { type: 'button', className: 'btn secondary', textContent: t({ af: 'Maak toe', en: 'Close' }) });
     close.onclick = closeMenu;
     const day = dayName();
-    const today = el('p', { className: 'today', textContent: t({ af: `📅 Vandag is dit ${day.af}`, en: `📅 Today is ${day.en}` }) });
+    const today = el('p', { className: 'today', textContent: t({ af: `Vandag is dit ${day.af}`, en: `Today is ${day.en}` }) });
     // the day's farm work, ticked off as it's done
     chores().forEach(j => today.append(el('br'), `${j.done ? '✅' : '⬜'} ${t(j.text)}`));
     menu = overlay('menu', el('h2', { textContent: 'Farm Walk' }), today, el('div', { className: 'menu-buttons' }, installBtn, shareBtn, updateBtn, newBtn, language, hints, close));
@@ -407,30 +407,30 @@ export function setupMenu({ onNewGame, onLevel }) {
     else openMenu();
   };
 
-  // The secret level select: a card with a button per level.
-  function showLevels() {
+  // The secret day select: a button for each day of the week (today's
+  // pressed); the game starts again on the one chosen.
+  function showDays() {
     closeMenu();
-    document.getElementById('levels')?.remove();
-    const levels = [
-      [1, t({ af: '🌾 Vlak 1 · Die plaas', en: '🌾 Level 1 · The farm' }), t({ af: 'Die storie van voor af', en: 'The story from the start' })],
-      [2, t({ af: '🧭 Vlak 2 · Die kruispad', en: '🧭 Level 2 · The crossroads' }), t({ af: 'Ná Pieter huis toe is', en: 'After Bob has gone home' })],
-    ];
+    document.getElementById('days')?.remove();
+    const now = today();
     const cancel = el('button', { type: 'button', className: 'btn secondary', textContent: t({ af: 'Kanselleer', en: 'Cancel' }) });
-    const buttons = levels.map(([n, name, about]) => {
-      const b = el('button', { type: 'button', className: `btn level${n === 1 ? ' new' : ' update'}` }, el('span', { textContent: name }), el('small', { textContent: about }));
+    const buttons = [0, 1, 2, 3, 4, 5, 6].map((n) => {
+      const name = t(dayName(n));
+      const b = el('button', { type: 'button', className: `btn ${n === now ? 'update' : 'new'}`, textContent: name });
       b.onclick = () => {
         o.remove();
-        onLevel(n);
+        onDay(n);
         toast(name);
       };
       return b;
     });
-    const o = overlay('levels',
-      el('h2', { textContent: t({ af: '🌲 Kies ’n vlak', en: '🌲 Choose a level' }) }),
+    const o = overlay('days',
+      el('h2', { textContent: t({ af: '🌲 Kies ’n dag', en: '🌲 Choose a day' }) }),
       el('p', { textContent: t({ af: 'Jy het die geheim van die dennebolle gevind!', en: 'You found the secret of the pine cones!' }) }),
-      el('div', { className: 'menu-buttons' }, ...buttons, cancel));
+      el('div', { className: 'day-grid' }, ...buttons),
+      el('div', { className: 'menu-buttons' }, cancel));
     cancel.onclick = () => o.remove();
   }
 
-  return { showLevels, welcome };
+  return { showDays, welcome };
 }

@@ -2,6 +2,8 @@ import { t } from './i18n.js';
 import { today, dayName, daysToBraai } from './days.js';
 import { chores } from './chores.js';
 
+// The game is a week long, Monday to Sunday (src/days.js).
+//
 // The night has passed: a sunrise over the hills, the new day's name ("the
 // next morning… Tuesday"), the day's farm work if there is any (src/chores.js)
 // and, if Derik's braai is coming up, a reminder.
@@ -47,5 +49,32 @@ export function morning() {
       addEventListener('pointerdown', go, true);
       addEventListener('keydown', go, true);
     }, 1200);
+  });
+}
+
+// Sunday night: the week, and the game, is done. A starry night over the
+// hills, well done, and a button to start a new week (resolves when tapped).
+export function weekOver() {
+  const div = (className, text = '') => Object.assign(document.createElement('div'), { className, textContent: text });
+  const card = div('end');
+  card.id = 'morning';
+  const words = div('words');
+  const again = Object.assign(document.createElement('button'), { type: 'button', className: 'btn new', textContent: t({ af: 'Begin ’n nuwe week', en: 'Start a new week' }) });
+  words.append(
+    div('sub', t({ af: 'Sondagaand…', en: 'Sunday night…' })),
+    div('day', t({ af: 'Die week is klaar!', en: 'The week is done!' })),
+    div('note', t({ af: 'Boer Johan het sy hele week op die plaas deurgemaak. Baie geluk!', en: 'Farmer Jones has made it through his whole week on the farm. Well done!' })),
+    again,
+  );
+  card.append(div('sky'), div('moon'), div('hills'), words);
+  document.body.append(card);
+  return new Promise((resolve) => {
+    again.onclick = () => {
+      card.classList.add('done');
+      setTimeout(() => {
+        card.remove();
+        resolve();
+      }, 500);
+    };
   });
 }

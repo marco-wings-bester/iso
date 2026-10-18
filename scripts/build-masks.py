@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the walkable areas of the picture maps (Level 2):
+"""Build the walkable areas of the picture maps (the crossroads, the beach):
 
   public/assets/crossroads.jpg → src/roadMask.js   the four roads at the crossroads
   public/assets/seaside.jpg    → src/beachMask.js  the village road, the sand and the jetty

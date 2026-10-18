@@ -134,7 +134,7 @@ export default class WalkGrid {
 
 // The farm: walkable = the dirt path, baked from the map by scripts/build-walkmask.py.
 export const farmGrid = WalkGrid.fromMask(farmMask);
-// Level 2's picture maps, baked by scripts/build-masks.py: the crossroads'
+// The picture maps, baked by scripts/build-masks.py: the crossroads'
 // four roads, and the beach's road, sand and jetty.
 export const roadGrid = WalkGrid.fromMask(roadMask);
 export const beachGrid = WalkGrid.fromMask(beachMask);

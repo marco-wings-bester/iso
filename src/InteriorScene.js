@@ -7,8 +7,8 @@ import { ROOMS, WALL, pieTexture } from './interiors.js';
 import { INTERIOR_SPEED } from './constants.js';
 import { UI } from './screen.js';
 import { hasFlag, setFlag, clearFlag } from './state.js';
-import { nextDay } from './days.js';
-import { morning } from './morning.js';
+import { nextDay, today, SUNDAY } from './days.js';
+import { morning, weekOver } from './morning.js';
 import { choresLeft, notYet } from './chores.js';
 import { seatBob } from './bob.js';
 import { bakePie, eatHalf } from './baking.js';
@@ -368,7 +368,8 @@ export default class InteriorScene extends Phaser.Scene {
 
   // The night goes by: dark, then the sunrise and the new day's name
   // (src/morning.js); then he's up beside the bed in the early light,
-  // rested (and, the night after the pie, Bob's at the gate).
+  // rested (and, the night after the pie, Bob's at the gate). Sunday night
+  // is the end of the week, and of the game.
   async nightPasses() {
     const { player } = this;
     const cam = this.cameras.main;
@@ -377,6 +378,12 @@ export default class InteriorScene extends Phaser.Scene {
       cam.fadeOut(900);
       cam.once('camerafadeoutcomplete', r);
     });
+    if (today() === SUNDAY) {
+      // the end of the week, and of the game: then a new week (main.js)
+      await weekOver();
+      window.dispatchEvent(new Event('farmwalk-newgame'));
+      return;
+    }
     if (hasFlag('ate')) setFlag('slept');
     clearFlag('tired');
     clearFlag('wired');

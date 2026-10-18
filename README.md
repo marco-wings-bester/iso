@@ -8,7 +8,7 @@ out over the pond from the end of the jetty, or from the tractor's seat. In
 the farmhouse, tap the fireplace to look into the fire (`src/views/`). Tap the
 big pine at the bottom right of the farm to stand under it among its pine cones
 (a secret: tap the bottom right cone, then the top right one, to choose a
-level).
+day of the week to start on, with the story done up to then).
 
 The story: the farmhouse is locked, so first find the house key (Farmer Jones
 left it in the tractor: tap the tractor, then the key); read the recipe book
@@ -24,7 +24,7 @@ leaves). Either way the
 chest is stuck: the crowbar in the tool shed prises it open, and Bob goes
 home, with Louise or alone. Then Farmer Jones wants to go to town: tap right
 at the bottom of the farm and he walks down the road past the gate to the
-crossroads, **Level 2** (`src/RoadScene.js`; the map is
+crossroads (`src/RoadScene.js`; the map is
 `public/assets/crossroads.jpg`). Up goes back to the farm (or tap
 right at the top); left goes to **the beach**, a little seaside village with
 its cafe, the sand and a jetty (`src/BeachScene.js`). Its people are real
@@ -52,7 +52,9 @@ crossroads, the beach, and indoors too (`src/bike.js`; the sprite is drawn in
 there and he leaves it on its stand. A good long ride tires him out, and
 then he can sleep.
 
-**Days.** The story starts on a **Monday**, and each night is a new day
+**Days.** The game is a week long: the story starts on a **Monday**, each
+night is a new day, and after Sunday night the week, and the game, is done
+(a "the week is done!" screen, then a new week). Each night is a new day
 (`src/days.js`; the day is always shown at the top of the screen, and in the menu). Farmer Jones only goes to
 sleep when he's tired: after eating the pie, or after a good long bike ride
 (coffee wakes him up again). Then the room goes dark, and a sunrise screen

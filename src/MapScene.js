@@ -5,7 +5,7 @@ import { PLAYER_SPEED } from './constants.js';
 import { UI } from './screen.js';
 import { bike, pedal, SPEED as BIKE_SPEED } from './bike.js';
 
-// A place drawn as one picture (Level 2: the crossroads, the beach). The
+// A place drawn as one picture (the crossroads, the beach). The
 // picture covers the screen like the farm's map, centred, and he walks where
 // its baked mask says (scripts/build-masks.py), drawn as big as the people in
 // it. Roads leave it at the edges of the screen: each `exit` names a side,

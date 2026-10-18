@@ -6,7 +6,7 @@ import { hash, mix, band, pixels, rgb, GRASS } from './art.js';
 // tiers of drooping boughs from above his view down to its trunk, needles
 // under it, and pine cones lying about. Tapping a cone gives it a little
 // hop. A secret: the bottom right cone, then the top right one, opens the
-// level select (`scene.close` then the game event 'levels', src/menu.js).
+// day select (`scene.close` then the game event 'days', src/menu.js).
 // Anything else looks away.
 
 const SKY = [[118, 176, 228], [140, 192, 236], [170, 210, 242], [204, 228, 246]];
@@ -154,7 +154,7 @@ function animate(scene, w, h) {
 }
 
 // Tapping a cone: it hops; the bottom right one and then the top right one
-// open the level select. Anything else isn't ours: the view closes.
+// open the day select. Anything else isn't ours: the view closes.
 function tap(scene, x, y) {
   const { k } = geometry(scene.pov.w, scene.pov.h);
   const cone = scene.cones.find(c => Math.hypot(c.x - x, c.y - (c.big ? 5 : 3.5) * k - y) < (c.big ? 9 : 7) * k);
@@ -166,7 +166,7 @@ function tap(scene, x, y) {
     scene.coneCode = null;
     scene.busy = true; // no looking away meanwhile
     sparkle(scene, cone, k);
-    scene.time.delayedCall(450, () => scene.close(() => scene.game.events.emit('levels')));
+    scene.time.delayedCall(450, () => scene.close(() => scene.game.events.emit('days')));
   } else {
     scene.coneCode = cone.id === 'br' ? 'br' : null;
   }

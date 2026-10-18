@@ -155,7 +155,7 @@ export default class GameScene extends Phaser.Scene {
     think(this, this.player.sprite, line('doorLocked'));
   }
 
-  // Down the road past the gate to the crossroads (Level 2), once Pieter has
+  // Down the road past the gate to the crossroads, once Pieter has
   // gone home and Johan's off to town; until then he turns back.
   offTheFarm() {
     const { player } = this;
