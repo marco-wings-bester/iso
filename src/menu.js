@@ -4,6 +4,8 @@
 // menu is; closing it points out the menu button. And, until it's installed,
 // an "Install" button beside the menu button.
 //
+// The day of the week, always at the top of the screen (src/days.js).
+//
 // Menu button (bottom-left) opening a small settings card:
 // - Install app: Chrome's real install prompt when available; otherwise how
 //   to install (and, on Android, a button to open the game in Chrome, since
@@ -82,13 +84,18 @@ export function setupMenu({ onNewGame, onLevel }) {
   // until it's installed: an Install button beside the menu button
   const pill = el('button', { id: 'install-pill', type: 'button' });
   pill.onclick = () => install();
+  // the day of the week, at the top (a new day, a new game, another language)
+  const day = el('div', { id: 'day' });
+  const showDay = () => { day.textContent = `📅 ${t(dayName())}`; };
+  window.addEventListener('farmwalk-day', showDay);
   const showLang = () => {
     document.documentElement.lang = getSetting('lang') === 'en' ? 'en' : 'af';
     button.setAttribute('aria-label', t({ af: 'Kieslys', en: 'Menu' }));
     pill.textContent = t({ af: '⬇ Installeer', en: '⬇ Install' });
+    showDay();
   };
   showLang();
-  document.body.append(button);
+  document.body.append(day, button);
   if (!installed) document.body.append(pill);
   window.addEventListener('appinstalled', () => {
     installed = true;
