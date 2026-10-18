@@ -881,6 +881,15 @@ export const ROOMS = {
   barn: {
     w: 160, h: 176, wallH: 46,
     door: { x: 64, w: 32 },
+    spots: {
+      bike: {
+        area: { x: 108, y: 74, w: 34, h: 28 }, // tap his bike on its stand…
+        stand: { x: 103, y: 94 },              // …to walk up to it and take it out for a ride
+      },
+    },
+    // his bike (src/bike.js), on its stand by the hay, when it's in here:
+    // the picture's top left, and the floor it takes up
+    bike: { x: 112, y: 72, solid: { x: 113, y: 92, w: 22, h: 6 } },
     solid: [
       { x: 8, y: 40, w: 86, h: 56 },   // stalls
       { x: 112, y: 40, w: 42, h: 30 }, // hay bales

@@ -126,6 +126,17 @@ const LINES = {
     subtle: { af: 'Miskien sal iemand by die strand vir my ’n paar rand leen…', en: 'Maybe someone at the beach would lend me a few rand…' },
     explicit: { af: 'Derik visvang op die pier: dalk sal hy vir my R15 leen.', en: "Derek's fishing on the jetty: maybe he'll lend me R15." },
   },
+  // bed, after the cafe's coffee, before a ride on his bike (src/bike.js)
+  wideAwake: {
+    none: { af: 'Ek is nie moeg genoeg nie. Daai koffie het my wakker! Ek sal eers bietjie oefening moet doen.', en: "I'm not tired enough. That coffee's woken me right up! I'll have to get some exercise first." },
+    subtle: { af: 'Ek is nie moeg genoeg nie. Daai koffie het my wakker! Ek sal eers bietjie oefening moet doen. Waar is my fiets nou weer…?', en: "I'm not tired enough. That coffee's woken me right up! I'll have to get some exercise first. Now where's my bike…?" },
+    explicit: { af: 'Ek is nie moeg genoeg nie. Daai koffie het my wakker! Ek sal eers bietjie oefening moet doen: my fiets is in die skuur.', en: "I'm not tired enough. That coffee's woken me right up! I'll have to get some exercise first: my bike's in the barn." },
+  },
+  // a good long ride on it
+  tired: {
+    none: { af: 'Pff! Dit was lekker oefening. Nou is ek moeg.', en: "Phew! That was good exercise. Now I'm tired." },
+    explicit: { af: 'Pff! Dit was lekker oefening. Nou is ek moeg genoeg om te gaan slaap.', en: "Phew! That was good exercise. Now I'm tired enough to go to bed." },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },

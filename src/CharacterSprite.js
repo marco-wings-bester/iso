@@ -256,7 +256,7 @@ const LEG = ['OOo', 'OOo', 'ooo', 'BBd', 'BBd', 'ddd'];
 const LEG_TOP = 20;
 
 function put(grid, x, y, ch) {
-  if (ch === '.' || y < 0 || y >= FRAME_H || x < 0 || x >= FRAME_W) return;
+  if (ch === '.' || y < 0 || y >= grid.length || x < 0 || x >= grid[0].length) return;
   grid[y][x] = look.palette[ch];
 }
 
@@ -671,6 +671,167 @@ export function createBob(scene) {
 
     tex.refresh();
     if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  });
+  look = FARMER;
+}
+
+// ── The bicycle (src/bike.js) ─────────────────────────────────────────────
+// Farmer Jones riding it: 'player-bike', frames BIKE_W wide (the same height
+// and feet row as his walking ones), with `player-bike-walk-${dir}`
+// (pedalling, the wheels turning) and `player-bike-idle-${dir}`. And the
+// bike on its own, parked on its stand: 'bike' (the farm) and 'bike-px'
+// (crisp, the barn). Side views are drawn facing left, 'right' mirrored.
+export const BIKE_W = 24;
+const BIKE_COLOURS = {
+  G: '#3a9a4a', g: '#2a6a34', // frame
+  T: '#3a3430',               // tyres
+  W: '#d8dce0', w: '#7a7e84', // rims and spokes, and between them
+  M: '#a8b0b8', L: '#3a2618', // metal; saddle and grips
+};
+const WHEEL_Y = 22;
+const SIDE = { front: 5, back: 19, crank: 12, seat: { x: 15, y: 19 }, head: { x: 7, y: 17 } };
+
+function line(g, x0, y0, x1, y1, ch) {
+  const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1);
+  for (let i = 0; i <= n; i++) put(g, Math.round(x0 + ((x1 - x0) * i) / n), Math.round(y0 + ((y1 - y0) * i) / n), ch);
+}
+
+// A wheel side on, centred (cx, WHEEL_Y): tyre, rim, and spokes turned by `turn`.
+function wheel(g, cx, turn) {
+  for (let y = WHEEL_Y - 4; y <= WHEEL_Y + 4; y++) {
+    for (let x = cx - 4; x <= cx + 4; x++) {
+      const dx = x - cx;
+      const dy = y - WHEEL_Y;
+      const d = Math.hypot(dx, dy);
+      if (d > 3.6) continue;
+      if (d > 2.6) put(g, x, y, 'T');
+      else if (d > 1.9) put(g, x, y, 'W');
+      else if (d < 0.5) put(g, x, y, 'M');
+      else {
+        const a = Math.atan2(dy, dx) - turn;
+        put(g, x, y, Math.abs(Math.sin(2 * a)) < 0.5 ? 'W' : 'w');
+      }
+    }
+  }
+}
+
+// The bike side on, pedals at angle `crank` (and the wheels turned with them).
+function bikeSide(g, crank, rider) {
+  const { front, back, seat, head } = SIDE;
+  const c = SIDE.crank;
+  wheel(g, back, crank / 2);
+  wheel(g, front, crank / 2);
+  line(g, c, WHEEL_Y, back, WHEEL_Y, 'g');        // chain stay
+  line(g, back, WHEEL_Y, seat.x, seat.y + 1, 'g'); // seat stay
+  line(g, c, WHEEL_Y, seat.x, seat.y, 'G');        // seat tube
+  line(g, c, WHEEL_Y, head.x, head.y + 2, 'G');    // down tube
+  line(g, seat.x, seat.y, head.x, head.y + 1, 'G'); // top tube
+  line(g, head.x, head.y, head.x - 1, head.y + 2, 'G');
+  line(g, head.x - 1, head.y + 2, front, WHEEL_Y, 'g'); // fork
+  line(g, head.x, head.y - 1, head.x - 2, head.y - 1, 'M'); // handlebar
+  put(g, head.x - 2, head.y - 1, 'L');
+  if (!rider) stamp(g, ['LLL'], seat.x - 1, seat.y - 1); // saddle (under him, when riding)
+}
+
+// A pedal and its crank arm at angle `a` (0 = straight back), and the foot
+// on it: returns where the foot is.
+function pedal(g, a, ch) {
+  const x = Math.round(SIDE.crank + 2 * Math.cos(a));
+  const y = Math.round(WHEEL_Y + 2 * Math.sin(a));
+  line(g, SIDE.crank, WHEEL_Y, x, y, 'M');
+  put(g, x, y, ch);
+  return { x, y };
+}
+
+// A leg from the hip to the foot on its pedal, the knee bent up and forward.
+function bikeLeg(g, hip, foot, far) {
+  const knee = { x: Math.round((hip.x + foot.x) / 2) - 2, y: Math.round((hip.y + foot.y) / 2) - 1 };
+  const [O, B] = far ? ['o', 'd'] : ['O', 'B'];
+  line(g, hip.x, hip.y, knee.x, knee.y, O);
+  line(g, hip.x + 1, hip.y, knee.x + 1, knee.y, O);
+  line(g, knee.x, knee.y, foot.x, foot.y - 1, O);
+  line(g, knee.x + 1, knee.y, foot.x + 1, foot.y - 1, O);
+  stamp(g, [B + B + B], foot.x - 1, foot.y - 1);
+}
+
+function buildBikeFrame(dir, frame) {
+  const g = grid(BIKE_W, FRAME_H);
+  if (dir === 'left' || dir === 'right') {
+    const a = (frame * Math.PI) / 2;
+    const hip = { x: 14, y: 18 };
+    bikeLeg(g, hip, pedal(g, a + Math.PI, 'M'), true); // the far leg, behind the bike
+    bikeSide(g, a, true);
+    bikeLeg(g, hip, pedal(g, a, 'M'), false);
+    const upper = look.upper.left;
+    stamp(g, upper.slice(0, 12), 6, 0);   // head, leaning into it
+    stamp(g, upper.slice(12), 7, 12);     // body over the saddle
+    line(g, 13, 13, 8, 16, 'C');          // arm out to the handlebar
+    line(g, 13, 14, 9, 16, 'c');
+    stamp(g, ['SS'], 6, 16);
+  } else {
+    // end on: the front (or back) wheel, the handlebar across, his legs
+    // either side going up and down
+    const up = ['OOo', 'OOo', 'BBd', 'ddd'];
+    const mid = ['OOo', 'OOo', 'ooo', 'BBd', 'ddd'];
+    const down = ['OOo', 'OOo', 'OOo', 'ooo', 'BBd', 'ddd'];
+    const legs = [[up, down], [mid, mid], [down, up], [mid, mid]][frame];
+    stamp(g, legs[0], 8, 19);
+    stamp(g, legs[1], 13, 19);
+    const back = dir === 'up';
+    if (back) stamp(g, ['LMMMMMMMMMMMML'], 5, 16);
+    stamp(g, look.upper[dir], 4, 0);
+    for (let y = 18; y <= 25; y++) stamp(g, [y === 19 + ((frame * 2) % 6) ? 'WT' : 'TT'], 11, y);
+    if (back) stamp(g, ['bb'], 11, 18); // the reflector
+    else stamp(g, ['LMMMMMMMMMML', '.....gg.....'], 6, 17);
+    arm(g, ARM_L, 6, 13);
+    arm(g, ARM_R, 16, 13);
+  }
+  const done = outline(g);
+  return dir === 'right' ? done.map(row => row.slice().reverse()) : done;
+}
+
+function buildParkedBike() {
+  const g = grid(BIKE_W, FRAME_H);
+  bikeSide(g, Math.PI / 4, false);
+  pedal(g, Math.PI / 4, 'd');
+  line(g, SIDE.crank, WHEEL_Y, SIDE.crank + 2, WHEEL_Y + 3, 'M'); // the stand
+  return outline(g);
+}
+
+const BIKE_SHADOW = { side: [[3, 18], [1, 22], [3, 18]], end: [[8, 8], [7, 10], [8, 8]] };
+
+function drawBikeFrame(ctx, ox, oy, pixels, p, shadow) {
+  ctx.fillStyle = SHADOW;
+  shadow.forEach(([x, w], r) => ctx.fillRect(ox + x * p, oy + (25 + r) * p, w * p, p));
+  blit(ctx, pixels, ox, oy, p);
+}
+
+export function createBike(scene) {
+  look = { ...FARMER, palette: { ...FARMER_PALETTE, ...BIKE_COLOURS } };
+  const p = ART_PX;
+  const fw = BIKE_W * p;
+  const fh = FRAME_H * p;
+  if (!scene.textures.exists('player-bike')) {
+    const key = 'player-bike';
+    const tex = scene.textures.createCanvas(key, fw * 4, fh * DIRECTIONS.length);
+    const ctx = tex.getContext();
+    DIRECTIONS.forEach((dir, row) => {
+      const side = dir === 'left' || dir === 'right';
+      for (let f = 0; f < 4; f++) {
+        drawBikeFrame(ctx, f * fw, row * fh, buildBikeFrame(dir, f), p, BIKE_SHADOW[side ? 'side' : 'end']);
+        tex.add(row * 4 + f, 0, f * fw, row * fh, fw, fh);
+      }
+      scene.anims.create({ key: `${key}-walk-${dir}`, frames: [0, 1, 2, 3].map(f => ({ key, frame: row * 4 + f })), frameRate: 10, repeat: -1 });
+      scene.anims.create({ key: `${key}-idle-${dir}`, frames: [{ key, frame: row * 4 }], frameRate: 1, repeat: -1 });
+    });
+    tex.refresh();
+  }
+  [['bike', ART_PX], ['bike-px', 1]].forEach(([key, q]) => {
+    if (scene.textures.exists(key)) return;
+    const tex = scene.textures.createCanvas(key, BIKE_W * q, FRAME_H * q);
+    drawBikeFrame(tex.getContext(), 0, 0, buildParkedBike(), q, BIKE_SHADOW.side);
+    tex.refresh();
+    if (q === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   });
   look = FARMER;
 }

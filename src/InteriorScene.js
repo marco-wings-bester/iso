@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { createCharacter } from './CharacterSprite.js';
+import { createCharacter, createBike } from './CharacterSprite.js';
 import Player from './Player.js';
 import WalkGrid from './WalkGrid.js';
 import { BUILDINGS, inRect } from './buildings.js';
@@ -13,13 +13,15 @@ import { think } from './bubble.js';
 import { line } from './hints.js';
 import { knock, hideBob, bobWaiting, bobInChest, sarahVisits, sarahWaiting, openChest } from './sarah.js';
 import { setUpCafe, atCounter } from './cafe.js';
+import { bike } from './bike.js';
 
 const FADE_MS = 250;
 const BODY = 5; // half the farmer's width in sprite px: keeps him off walls and furniture
 
-// Feet-position walkability inside a room (room px = sprite px).
-function walkable(room, x, y) {
-  const { w, h, wallH, door, solid } = room;
+// Feet-position walkability inside a room (room px = sprite px), around
+// `solid` things.
+function walkable(room, x, y, solid) {
+  const { w, h, wallH, door } = room;
   const inDoorway = x >= door.x + BODY && x <= door.x + door.w - BODY && y >= h - WALL - 2 && y < h;
   const onFloor = x >= WALL + BODY && x <= w - WALL - BODY && y >= wallH + 3 && y <= h - WALL - 1;
   if (!onFloor && !inDoorway) return false;
@@ -65,8 +67,15 @@ export default class InteriorScene extends Phaser.Scene {
     this.add.image(0, 0, key).setOrigin(0).setDepth(0);
     room.animate?.(this);
     createCharacter(this);
+    // his bike, if it's here on its stand (and not out on the farm)
+    this.bikeHere = !!room.bike && bike.at === 'barn';
+    if (this.bikeHere) {
+      createBike(this);
+      this.bikeImage = this.add.image(room.bike.x, room.bike.y, 'bike-px').setOrigin(0).setDepth(room.bike.y + 26);
+    }
 
-    const grid = WalkGrid.fromFn(room.w, room.h, 2, (x, y) => walkable(room, x, y));
+    const solid = this.bikeHere ? [...room.solid, room.bike.solid] : room.solid;
+    const grid = WalkGrid.fromFn(room.w, room.h, 2, (x, y) => walkable(room, x, y, solid));
     const doorX = room.door.x + room.door.w / 2;
     this.player = new Player(this, {
       x: doorX,
@@ -136,12 +145,12 @@ export default class InteriorScene extends Phaser.Scene {
         return;
       }
       if (this.leaving || this.busy) return;
-      const spot = Object.entries(spots).find(([, s]) => inRect(x, y, s.area));
+      const spot = Object.entries(spots).find(([id, s]) => inRect(x, y, s.area) && (id !== 'bike' || this.bikeHere));
       if (spot) {
         const [id, s] = spot;
         const use = s.prop ? () => this.take(id) : {
           read: () => this.read(), cook: () => this.useCupboard(), eat: () => this.eatPie(), sleep: () => this.tryToSleep(),
-          fire: () => this.lookAtFire(), hide: () => this.useChest(), counter: () => atCounter(this),
+          fire: () => this.lookAtFire(), hide: () => this.useChest(), counter: () => atCounter(this), bike: () => this.takeBike(),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
@@ -237,11 +246,28 @@ export default class InteriorScene extends Phaser.Scene {
     else eatHalf(this);
   }
 
-  // Bed: only once he's had his pie.
+  // Bed: only once he's had his pie; and after the cafe's coffee, not till
+  // he's tired himself out (a ride on his bike, src/bike.js).
   tryToSleep() {
     if (this.mustHideBob()) this.think(line('notNow'));
+    else if (hasFlag('coffee') && !hasFlag('exercised')) this.think(line('wideAwake'));
     else if (hasFlag('ate')) this.sleep();
     else this.think(line('bedEarly'));
+  }
+
+  // His bike: out of the barn on it, riding (GameScene).
+  async takeBike() {
+    this.player.face('right');
+    this.busy = true;
+    await this.think(hasFlag('coffee') && !hasFlag('exercised')
+      ? { af: '’n Bietjie oefening… kom ek gaan fietsry!', en: 'A bit of exercise… time for a bike ride!' }
+      : { af: 'Kom ek gaan ry ’n bietjie fiets!', en: "I'll go for a little bike ride!" });
+    Object.assign(bike, { at: 'riding', riding: true });
+    this.bikeImage.setVisible(false);
+    this.leaving = true;
+    this.player.stop();
+    this.cameras.main.fadeOut(FADE_MS);
+    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Game', { from: this.building }));
   }
 
   // Take something lying about (the apple picker, the crowbar).
