@@ -1,12 +1,15 @@
 import { getValue, setValue } from './state.js';
 
 // The days of the week: the story starts on a Monday, and each night Boer
-// Johan sleeps it's the next day (src/InteriorScene.js, src/morning.js).
+// Johan sleeps it's the next day (src/InteriorScene.js, src/morning.js), till
+// Sunday night: the end of the week, and of the game.
 
 const NAMES = {
   af: ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrydag', 'Saterdag', 'Sondag'],
   en: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
 };
+
+export const SUNDAY = 6;
 
 // Days since the story started (0: Monday).
 export function today() {

@@ -10,7 +10,7 @@
 // either owns up ('toldSarah', she waits) or not (she leaves); the chest is
 // stuck ('chestStuck') → the crowbar from the tool shed ('crowbar') prises
 // it open and Bob goes home, with Sarah or alone ('bobHome') → Jones wants to
-// go to town: down the road past the gate to the crossroads, Level 2
+// go to town: down the road past the gate to the crossroads
 // ('level2') → at the beach, into the cafe for a coffee: no cash ('noCash') →
 // Derik, fishing off the jetty, lends him R15 ('loan'; to pay back at his
 // braai) → he buys his coffee ('coffee') → home, he's too wide awake to
@@ -40,11 +40,22 @@ try {
   flags = {};
 }
 
-// Level 2 (the crossroads) begins with the story up to Bob going home.
-export const LEVEL2_STORY = [
-  'key', 'read', 'picker', 'apple', 'baked', 'ate', 'slept', 'metBob', 'gavePie', 'bobSat',
-  'pieEaten', 'sarahKnocked', 'bobHidden', 'sarahVisited', 'chestStuck', 'crowbar', 'bobHome',
-];
+// The story done by the start of each day, for the day select (src/menu.js):
+// Tuesday begins the morning after the pie (Bob at the gate); Wednesday after
+// Tuesday's trip to the beach (Derik's loan, the coffee, a bike ride);
+// Thursday and on after Wednesday's farm work.
+const MONDAY = ['key', 'read', 'picker', 'apple', 'baked', 'ate', 'slept'];
+const TUESDAY = [...MONDAY, 'metBob', 'gavePie', 'bobSat', 'pieEaten', 'sarahKnocked', 'bobHidden', 'sarahVisited',
+  'chestStuck', 'crowbar', 'bobHome', 'level2', 'noCash', 'loan', 'coffee', 'exercised'];
+const WEDNESDAY = [...TUESDAY, 'tractorKeys', 'plowed', 'wellTop', 'wellBottom', 'choresDone'];
+
+// Start again on day `n` (0: Monday), with the story done up to then.
+export function startDay(n) {
+  resetFlags();
+  ([[], MONDAY, TUESDAY][n] ?? WEDNESDAY).forEach(setFlag);
+  if (n >= 2) setValue('loanDay', 1); // Derik lent him the R15 on Tuesday
+  setValue('day', n);
+}
 
 export function hasFlag(name) {
   return !!flags[name];
