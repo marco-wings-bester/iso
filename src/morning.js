@@ -1,80 +1,28 @@
-import { t } from './i18n.js';
-import { today, dayName, daysToBraai } from './days.js';
-import { chores } from './chores.js';
+import { daysToBraai } from './days.js';
+import { choresLeft } from './chores.js';
 
-// The game is a week long, Monday to Sunday (src/days.js).
-//
-// The night has passed: a sunrise over the hills, the new day's name ("the
-// next morning… Tuesday"), the day's farm work if there is any (src/chores.js)
-// and, if Derik's braai is coming up, a reminder.
-// Stays until a tap or key (after a moment, so a tap meant for the night
-// doesn't skip it); resolves once it has faded away.
-export function morning() {
-  const braai = daysToBraai();
-  const note = braai === 1 ? { af: 'Môreaand is Derik se braai.', en: "Tomorrow evening is Derek's braai." }
-    : braai === 0 ? { af: 'Vanaand is Derik se braai!', en: "Tonight is Derek's braai!" }
-      : null;
-  const div = (className, text = '') => Object.assign(document.createElement('div'), { className, textContent: text });
-  const card = div('');
-  card.id = 'morning';
-  const words = div('words');
-  words.append(
-    div('sub', t({ af: 'Die volgende oggend…', en: 'The next morning…' })),
-    div('day', t(dayName(today()))),
-  );
-  const jobs = chores();
-  if (jobs.length) {
-    const list = div('jobs');
-    list.append(div('jobs-title', t({ af: 'Vandag se werk:', en: "Today's work:" })), ...jobs.map(j => div('job', `• ${t(j.text)}`)));
-    words.append(list);
+// The game is a week long, Monday to Sunday (src/days.js). Each night passes
+// as an animation over the farm (src/night.js); then, up in the morning,
+// Boer Johan thinks of what the day holds: its farm work (src/chores.js),
+// Derik's braai coming up, or just what a lovely morning it is.
+export function wakeThought() {
+  const af = [];
+  const en = [];
+  if (choresLeft()) {
+    af.push('Vandag moet ek die land ploeg en die putte nagaan.');
+    en.push('Today I have to plough the land and check the wells.');
   }
-  if (note) words.append(div('note', t(note)));
-  words.append(div('tap', t({ af: 'Tik om aan te gaan ▼', en: 'Tap to carry on ▼' })));
-  card.append(div('sky'), div('sun'), div('hills'), div('night'), words);
-  document.body.append(card);
-
-  return new Promise((resolve) => {
-    const go = (e) => {
-      if (e.repeat) return;
-      e.preventDefault?.();
-      removeEventListener('pointerdown', go, true);
-      removeEventListener('keydown', go, true);
-      card.classList.add('done');
-      setTimeout(() => {
-        card.remove();
-        resolve();
-      }, 500);
-    };
-    setTimeout(() => {
-      addEventListener('pointerdown', go, true);
-      addEventListener('keydown', go, true);
-    }, 1200);
-  });
-}
-
-// Sunday night: the week, and the game, is done. A starry night over the
-// hills, well done, and a button to start a new week (resolves when tapped).
-export function weekOver() {
-  const div = (className, text = '') => Object.assign(document.createElement('div'), { className, textContent: text });
-  const card = div('end');
-  card.id = 'morning';
-  const words = div('words');
-  const again = Object.assign(document.createElement('button'), { type: 'button', className: 'btn new', textContent: t({ af: 'Begin ’n nuwe week', en: 'Start a new week' }) });
-  words.append(
-    div('sub', t({ af: 'Sondagaand…', en: 'Sunday night…' })),
-    div('day', t({ af: 'Die week is klaar!', en: 'The week is done!' })),
-    div('note', t({ af: 'Boer Johan het sy hele week op die plaas deurgemaak. Baie geluk!', en: 'Farmer Jones has made it through his whole week on the farm. Well done!' })),
-    again,
-  );
-  card.append(div('sky'), div('moon'), div('hills'), words);
-  document.body.append(card);
-  return new Promise((resolve) => {
-    again.onclick = () => {
-      card.classList.add('done');
-      setTimeout(() => {
-        card.remove();
-        resolve();
-      }, 500);
-    };
-  });
+  const braai = daysToBraai();
+  if (braai === 1) {
+    af.push('Môreaand is Derik se braai.');
+    en.push("Tomorrow evening is Derek's braai.");
+  } else if (braai === 0) {
+    af.push('Vanaand is Derik se braai!');
+    en.push("Tonight is Derek's braai!");
+  }
+  if (!af.length) {
+    af.push('Goeiemôre! Wat ’n pragtige oggend.');
+    en.push('Good morning! What a lovely morning.');
+  }
+  return { af: af.join(' '), en: en.join(' ') };
 }

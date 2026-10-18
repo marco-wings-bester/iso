@@ -8,7 +8,8 @@ import { INTERIOR_SPEED } from './constants.js';
 import { UI } from './screen.js';
 import { hasFlag, setFlag, clearFlag } from './state.js';
 import { nextDay, today, SUNDAY } from './days.js';
-import { morning, weekOver } from './morning.js';
+import { wakeThought } from './morning.js';
+import { night, lastNight } from './night.js';
 import { choresLeft, notYet } from './chores.js';
 import { seatBob } from './bob.js';
 import { bakePie, eatHalf } from './baking.js';
@@ -366,8 +367,8 @@ export default class InteriorScene extends Phaser.Scene {
     });
   }
 
-  // The night goes by: dark, then the sunrise and the new day's name
-  // (src/morning.js); then he's up beside the bed in the early light,
+  // The night goes by over the farm, sunset to sunrise (src/night.js; the new
+  // day comes with the dawn); then he's up beside the bed in the early light,
   // rested (and, the night after the pie, Bob's at the gate). Sunday night
   // is the end of the week, and of the game.
   async nightPasses() {
@@ -378,9 +379,10 @@ export default class InteriorScene extends Phaser.Scene {
       cam.fadeOut(900);
       cam.once('camerafadeoutcomplete', r);
     });
+    const map = this.textures.get('map').getSourceImage(); // the farm (GameScene's)
     if (today() === SUNDAY) {
       // the end of the week, and of the game: then a new week (main.js)
-      await weekOver();
+      await lastNight(map);
       window.dispatchEvent(new Event('farmwalk-newgame'));
       return;
     }
@@ -388,8 +390,7 @@ export default class InteriorScene extends Phaser.Scene {
     clearFlag('tired');
     clearFlag('wired');
     bike.pedalled = 0;
-    nextDay();
-    await morning();
+    await night(map, () => nextDay());
     this.placeProps(); // (a new day: something may be lying about now)
     player.stop(); // (not off to wherever the tap that ended the night was)
     player.sprite.setVisible(true);
@@ -402,6 +403,7 @@ export default class InteriorScene extends Phaser.Scene {
     player.face('down');
     cam.fadeIn(900);
     this.leaving = false;
+    this.time.delayedCall(1100, () => { if (!this.thought && !this.busy) this.think(wakeThought()); });
   }
 
   puffZ() {

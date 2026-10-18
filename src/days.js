@@ -1,7 +1,7 @@
 import { getValue, setValue } from './state.js';
 
 // The days of the week: the story starts on a Monday, and each night Boer
-// Johan sleeps it's the next day (src/InteriorScene.js, src/morning.js), till
+// Johan sleeps it's the next day (src/InteriorScene.js, src/night.js), till
 // Sunday night: the end of the week, and of the game.
 
 const NAMES = {
