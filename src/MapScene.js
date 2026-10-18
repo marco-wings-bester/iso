@@ -4,15 +4,15 @@ import Player from './Player.js';
 import { PLAYER_SPEED } from './constants.js';
 import { UI } from './screen.js';
 import { bike, pedal, SPEED as BIKE_SPEED } from './bike.js';
+import { think } from './bubble.js';
 
 // A place drawn as one picture (the crossroads, the beach). The
 // picture covers the screen like the farm's map, centred, and he walks where
 // its baked mask says (scripts/build-masks.py), drawn as big as the people in
 // it. Roads leave it at the edges of the screen: each `exit` names a side,
 // roughly where along it the road runs (`near`), and what happens there:
-// `to` another scene (with `data`), or `soon` (he steps back, turns round
-// and a label says it's coming; or not yet: `soon` can be a function, giving
-// that label while it's closed, and nothing once it's open). A tap near the end of a road walks all the
+// `to` another scene (with `data`); while `closed()` gives words of his
+// (not today, say), he steps back, turns round and thinks them instead. A tap near the end of a road walks all the
 // way to it. Turning the phone fits the picture again, keeping him where he
 // is (or, if that's off the screen now, at `home`). On his bike (src/bike.js)
 // he rides here too.
@@ -177,15 +177,15 @@ export default class MapScene extends Phaser.Scene {
   leave(name) {
     const exit = this.exits[name];
     const { player } = this;
-    const soon = typeof exit.soon === 'function' ? exit.soon() : exit.soon;
-    if (soon) {
-      // not there yet: a step back, turn round, and say so
+    const closed = exit.closed?.();
+    if (closed) {
+      // not now: a step back, turn round, and why not
       const { x, y } = this.backs[name];
       player.stop();
       Object.assign(player, { x, y });
       player.sprite.setPosition(x, y).setDepth(y);
       player.face(TURN[exit.side]);
-      this.game.events.emit('location', { name: soon });
+      think(this, player.sprite, closed);
       return;
     }
     this.leaving = true;

@@ -22,11 +22,13 @@ needs hiding (tap the big chest; `src/sarah.js`). Then she comes in for a
 chat: Jones can own up that Bob's in the chest (she waits) or keep mum (she
 leaves). Either way the
 chest is stuck: the crowbar in the tool shed prises it open, and Bob goes
-home, with Louise or alone. Then Farmer Jones wants to go to town: tap right
-at the bottom of the farm and he walks down the road past the gate to the
-crossroads (`src/RoadScene.js`; the map is
-`public/assets/crossroads.jpg`). Up goes back to the farm (or tap
-right at the top); left goes to **the beach**, a little seaside village with
+home, with Louise or alone. Then Farmer Jones wants to go to the beach: tap
+right at the bottom of the farm and he walks down the road past the gate to
+the crossroads (`src/RoadScene.js`; the map is
+`public/assets/crossroads.jpg`). On Tuesday the beach is the only way on
+from there: down to town, right to Bob's farm and off to the river he turns
+back, saying why ("the town can wait; today I'm off to the beach"). Up goes
+back to the farm (or tap right at the top); left goes to **the beach**, a little seaside village with
 its cafe, the sand and a jetty (`src/BeachScene.js`). Its people are real
 characters like Farmer Jones and Bob, drawn the same way, each with a name
 (`src/villagers.js`): Anika and Kobus stroll the village road, Derik fishes

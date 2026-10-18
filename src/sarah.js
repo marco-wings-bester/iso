@@ -14,8 +14,8 @@ import { createBob, createSarah } from './CharacterSprite.js';
 // seen Bob, Jones can keep mum (she goes off to keep looking) or own up (she
 // waits). Either way the chest is stuck fast: the crowbar from the tool shed
 // prises it open, Bob climbs out, and home he goes, with her or alone. Lines
-// move along with a tap. Then Johan wants to go to town (the crossroads,
-// src/RoadScene.js). (In Afrikaans, the default, Jones is Boer Johan and
+// move along with a tap. Then Johan wants to go to the beach (past the
+// crossroads, src/RoadScene.js). (In Afrikaans, the default, Jones is Boer Johan and
 // Bob is Pieter: every line is { af, en }, src/i18n.js.)
 
 const SPEED = 40; // room px/s, walking about
@@ -357,8 +357,9 @@ export async function openChest(scene) {
   scene.sarah = null;
   setFlag('bobHome');
   lock(scene, false);
-  // and now he's off to town (down the road past the farm gate: the crossroads)
-  await think(scene, player.sprite, { af: 'Wat ’n dag! Nou wil ek dorp toe gaan.', en: 'What a day! Now I want to go to town.' });
-  const hint = line('toTown');
+  // and now he's off to the beach (down the road past the farm gate, left at
+  // the crossroads)
+  await think(scene, player.sprite, { af: 'Wat ’n dag! Nou wil ek strand toe gaan.', en: 'What a day! Now I want to go to the beach.' });
+  const hint = line('toBeach');
   if (hint && scene.sys.isActive()) think(scene, player.sprite, hint);
 }
