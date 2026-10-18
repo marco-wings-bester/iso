@@ -1,11 +1,13 @@
-import { hasFlag, setFlag } from './state.js';
+import { hasFlag, setFlag, setValue } from './state.js';
+import { today, daysToBraai } from './days.js';
 import { converse } from './dialog.js';
 
 // Derik, fishing off the end of the jetty at the beach (src/villagers.js).
 // Once Boer Johan has found he can't pay for his coffee ('noCash',
-// src/cafe.js), Derik lends him R15 ('loan'): bring it back the day after
-// tomorrow, in the evening, when he comes over for a braai. Before that he
-// just says hello; after, he reminds Johan of the braai.
+// src/cafe.js), Derik lends him R15 ('loan', on `loanDay`): bring it back
+// the day after tomorrow, in the evening, when he comes over for a braai.
+// Before that he just says hello; after, he reminds Johan of the braai:
+// the day after tomorrow, tomorrow, tonight (src/days.js).
 
 // Where Johan stands to talk to him: beside him on the jetty, behind Lientjie.
 export const BY_DERIK = { x: 346, y: 2466 };
@@ -18,7 +20,10 @@ export async function talkToDerik(scene, derik) {
   scene.player.face('left');
   await scene.talk(async () => {
     if (hasFlag('loan')) {
-      await converse(scene, cast, [['derik', { af: 'Onthou, oormore aand braai ons!', en: "Remember, it's a braai at ours the day after tomorrow!" }]]);
+      const days = daysToBraai();
+      await converse(scene, cast, [['derik', days >= 2 ? { af: 'Onthou, oormore aand braai ons!', en: "Remember, it's a braai at ours the day after tomorrow!" }
+        : days === 1 ? { af: 'Onthou, môreaand braai ons!', en: "Remember, it's a braai at ours tomorrow evening!" }
+          : { af: 'Vanaand braai ons by my huis in die dorpie! Sien jou daar.', en: "Tonight's the braai at my house in the village! See you there." }]]);
       return;
     }
     if (!hasFlag('noCash')) {
@@ -33,7 +38,10 @@ export async function talkToDerik(scene, derik) {
       ] },
       ['derik', { af: 'Ag, is dit al? Hier, ek leen vir jou R15.', en: "Oh, is that all? Here, I'll lend you R15." }],
       () => coins(scene, derik.sprite, scene.player.sprite),
-      async () => setFlag('loan'),
+      async () => {
+        setFlag('loan');
+        setValue('loanDay', today());
+      },
       ['derik', { af: 'Bring dit sommer oormore aand as jy by ons kom braai.', en: 'Just bring it back the day after tomorrow, in the evening, when you come over to ours for a braai.' }],
       { choose: [
         { say: { af: 'Baie dankie, Derik! Ek sal dit bring.', en: "Thanks so much, Derek! I'll bring it." } },

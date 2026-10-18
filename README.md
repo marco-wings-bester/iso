@@ -49,7 +49,17 @@ then on he rides it everywhere he'd walk, only faster: the farm, the
 crossroads, the beach, and indoors too (`src/bike.js`; the sprite is drawn in
 `src/CharacterSprite.js`). The barn is the only place it's put away: ride in
 there and he leaves it on its stand. A good long ride tires him out, and
-then he can sleep. Down to town and right to Bob's house are still to come. Both picture maps are
+then he can sleep.
+
+**Days.** The story starts on a **Monday**, and each night is a new day
+(`src/days.js`; the menu says which day it is). Farmer Jones only goes to
+sleep when he's tired: after eating the pie, or after a good long bike ride
+(coffee wakes him up again). Then the room goes dark, and a sunrise screen
+shows the next morning and its day (`src/morning.js`); he's up in the early
+light. So: Monday he bakes and eats the pie and sleeps; Tuesday Bob comes by,
+and so on. Derik's braai is the evening of the day after tomorrow from when
+he lent the R15: he and the morning screen remind Johan as it comes up, and
+it can't be before then. (The braai itself is still to come.) Down to town and right to Bob's house are still to come. Both picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it

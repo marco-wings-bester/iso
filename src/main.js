@@ -7,7 +7,7 @@ import TalkScene from './TalkScene.js';
 import RoadScene from './RoadScene.js';
 import BeachScene from './BeachScene.js';
 import { setupMenu } from './menu.js';
-import { resetFlags, setFlag, LEVEL2_STORY } from './state.js';
+import { resetFlags, setFlag, setValue, LEVEL2_STORY } from './state.js';
 import { resetBike } from './bike.js';
 import { watchForUpdates } from './updates.js';
 import { UI } from './screen.js';
@@ -63,6 +63,7 @@ const menu = setupMenu({
       return;
     }
     LEVEL2_STORY.forEach(setFlag);
+    setValue('day', 1); // Tuesday: the night after the pie, Bob came by
     game.scene.stop('Game');
     game.scene.start('Road');
   },
