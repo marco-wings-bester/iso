@@ -12,8 +12,11 @@ import { line } from './hints.js';
 // in wanting a coffee; at the counter he orders one, checks his wallet (his
 // view of it, ViewScene 'wallet') and finds he hasn't a cent in cash
 // ('noCash'). Sannie doesn't mind: come back when he has some. Once Derik
-// has lent him R15 ('loan', src/derik.js), he pays, she makes it, and off he
-// goes with his steaming cup ('coffee').
+// has lent him R15 ('loan', src/derik.js), he pays, she makes it, and he
+// carries his steaming cup about ('coffee'): he can sit down at a table with
+// it, sipping, or look out of the window at the garden behind the cafe
+// (ViewScene 'garden'). Out of the door, it's finished ('coffeeDone'), and
+// at the beach he says how wide awake he is (BeachScene).
 
 const SANNIE = { name: { af: 'Sannie', en: 'Sally' }, color: '#2a7ab0' };
 const LOOK = {
@@ -109,15 +112,61 @@ async function makeCoffee(scene) {
   scene.coffee = cup(scene, player.x, 59).setDepth(room.counter.depth + 1);
 }
 
-// He picks it up and turns round with it; he carries it about, steaming.
+// He picks it up and turns round with it; he carries it about, steaming
+// (and it steams on the table, when he's sitting).
 function takeCoffee(scene) {
   const c = scene.coffee;
   scene.carry = c;
   scene.player.face('down');
   scene.time.addEvent({
     delay: 450, loop: true,
-    callback: () => { if (scene.carry === c) wisp(scene, c.x, c.y - 6, c.depth + 0.01); },
+    callback: () => { if (c.active) wisp(scene, c.x, c.y - 6, c.depth + 0.01); },
   });
+}
+
+// A table: with his coffee, he sits down at it (on its chair, facing it),
+// puts his cup down and sips it now and then, till the next tap gets him up
+// again, cup in hand.
+export function atTable(scene, id) {
+  const { player, room } = scene;
+  const cupNow = scene.coffee;
+  if (!cupNow || scene.carry !== cupNow) {
+    scene.think(hasFlag('coffee')
+      ? { af: 'Lekker plekkie. Ek sal weer kom sit as ek weer ’n koffie het.', en: "Lovely spot. I'll sit here again when I've another coffee." }
+      : { af: 'Eers ’n koffie, dan sit ek.', en: "A coffee first, then I'll sit." });
+    return;
+  }
+  const { stand, seat } = room.spots[id];
+  scene.carry = null;
+  Object.assign(player, { x: seat.x, y: seat.y });
+  player.sprite.setPosition(seat.x, seat.y).setDepth(seat.y);
+  cupNow.setPosition(seat.cup.x, seat.cup.y).setDepth(seat.y + 1);
+  const mouth = { x: seat.x + (seat.face === 'left' ? -4 : 4), y: seat.y - 15 };
+  const sips = scene.time.addEvent({
+    delay: 3200, startAt: 1600, loop: true,
+    callback: () => scene.tweens.add({
+      targets: cupNow, x: mouth.x, y: mouth.y, duration: 450, yoyo: true, hold: 700, ease: 'Sine.easeInOut',
+      onYoyo: () => cupNow.setDepth(seat.y + 2),
+      onComplete: () => cupNow.setPosition(seat.cup.x, seat.cup.y).setDepth(seat.y + 1),
+    }),
+  });
+  player.act(`player-px-sit-${seat.face}`, () => {
+    sips.remove();
+    scene.tweens.killTweensOf(cupNow);
+    Object.assign(player, { x: stand.x, y: stand.y });
+    player.sprite.setPosition(stand.x, stand.y).setDepth(stand.y);
+    scene.carry = cupNow;
+  });
+  scene.time.delayedCall(400, () => {
+    if (!scene.thought) scene.think({ af: 'Aah… niks klop ’n koppie koffie nie.', en: 'Aah… nothing beats a cup of coffee.' });
+  });
+}
+
+// The window at the back: he looks out at the garden behind the cafe
+// (sipping his coffee, if he has it).
+export function atWindow(scene) {
+  scene.player.face('up');
+  scene.look('garden', scene.coffee && scene.carry === scene.coffee ? 'coffee' : null);
 }
 
 // At the counter: order a coffee, and find out he can't pay for it.
@@ -145,7 +194,7 @@ export async function atCounter(scene) {
       () => makeCoffee(scene),
       ['sannie', { af: 'Hier is jou koffie. Geniet dit!', en: "Here's your coffee. Enjoy!" }],
       async () => takeCoffee(scene),
-      () => scene.think({ af: 'Mmm! Die lekkerste koffie aan die kus.', en: 'Mmm! The best coffee on the coast.' }),
+      () => scene.think({ af: 'Mmm! Die lekkerste koffie aan die kus. Kom ek gaan sit.', en: "Mmm! The best coffee on the coast. Let's find a seat." }),
     ]);
     lock(scene, false);
     return;

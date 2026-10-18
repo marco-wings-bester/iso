@@ -132,6 +132,12 @@ const LINES = {
     subtle: { af: 'Miskien sal iemand by die strand vir my ’n paar rand leen…', en: 'Maybe someone at the beach would lend me a few rand…' },
     explicit: { af: 'Derik visvang op die pier: dalk sal hy vir my R15 leen.', en: "Derek's fishing on the jetty: maybe he'll lend me R15." },
   },
+  // out of the cafe, his coffee finished (the bike only in the hints)
+  afterCoffee: {
+    none: { af: 'Sjoe, daai koffie was sterk! Ek is wawyd wakker… en reg vir ’n bietjie oefening.', en: "Wow, that coffee was strong! I'm wide awake… and ready for some exercise." },
+    subtle: { af: 'Sjoe, daai koffie was sterk! Ek is wawyd wakker… en reg vir ’n bietjie oefening. Iets met twee wiele, dalk…', en: "Wow, that coffee was strong! I'm wide awake… and ready for some exercise. Something with two wheels, maybe…" },
+    explicit: { af: 'Sjoe, daai koffie was sterk! Ek is wawyd wakker… en reg vir ’n bietjie oefening. My fiets staan in die skuur!', en: "Wow, that coffee was strong! I'm wide awake… and ready for some exercise. My bike's in the barn!" },
+  },
   // bed, after the cafe's coffee, before a ride on his bike (src/bike.js)
   wideAwake: {
     none: { af: 'Ek is nie moeg genoeg nie. Daai koffie het my wakker! Ek sal eers bietjie oefening moet doen.', en: "I'm not tired enough. That coffee's woken me right up! I'll have to get some exercise first." },

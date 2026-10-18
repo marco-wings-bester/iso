@@ -16,7 +16,7 @@ import { bakePie, eatHalf } from './baking.js';
 import { think } from './bubble.js';
 import { line } from './hints.js';
 import { knock, hideBob, bobWaiting, bobInChest, sarahVisits, sarahWaiting, openChest } from './sarah.js';
-import { setUpCafe, atCounter } from './cafe.js';
+import { setUpCafe, atCounter, atTable, atWindow } from './cafe.js';
 import { bike, pedal, SPEED as BIKE_SPEED, BODY as BIKE_BODY } from './bike.js';
 
 const FADE_MS = 250;
@@ -156,6 +156,7 @@ export default class InteriorScene extends Phaser.Scene {
         const use = s.prop ? () => this.take(id) : {
           read: () => this.read(), cook: () => this.useCupboard(), eat: () => this.eatPie(), sleep: () => this.tryToSleep(),
           fire: () => this.lookAtFire(), hide: () => this.useChest(), counter: () => atCounter(this), bike: () => this.takeBike(),
+          tableA: () => atTable(this, 'tableA'), tableB: () => atTable(this, 'tableB'), window: () => atWindow(this),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
@@ -330,8 +331,9 @@ export default class InteriorScene extends Phaser.Scene {
     return this.look('wallet');
   }
 
-  // His view of something (ViewScene `view`), then back in the room.
-  look(view) {
+  // His view of something (ViewScene `view`, which one: `spot`), then back
+  // in the room.
+  look(view, spot = null) {
     this.leaving = true;
     const cam = this.cameras.main;
     cam.fadeOut(300);
@@ -341,7 +343,7 @@ export default class InteriorScene extends Phaser.Scene {
         cam.fadeIn(300);
         done();
       });
-      this.scene.launch('View', { view, from: 'Interior' });
+      this.scene.launch('View', { view, from: 'Interior', spot });
       this.scene.pause();
     }));
   }
@@ -435,6 +437,7 @@ export default class InteriorScene extends Phaser.Scene {
   }
 
   leave() {
+    if (this.coffee) setFlag('coffeeDone'); // out of the cafe with it: it's finished
     this.leaving = true;
     this.player.stop();
     this.cameras.main.fadeOut(FADE_MS);

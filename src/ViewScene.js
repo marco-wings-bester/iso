@@ -6,13 +6,15 @@ import fire from './views/fire.js';
 import apple from './views/apple.js';
 import pine from './views/pine.js';
 import wallet from './views/wallet.js';
+import garden from './views/garden.js';
 import { t } from './i18n.js';
 import { UI } from './screen.js';
 import { FONT } from './bubble.js';
 
 // First-person views: what Farmer Jones sees down a well, out over the pond
 // from the jetty, from the tractor's seat, into the fire at home, up into
-// an apple tree, under the big pine, or into his wallet. Each view draws a pixel-art
+// an apple tree, under the big pine, into his wallet, or out of the cafe's
+// back window at its garden. Each view draws a pixel-art
 // picture (160px on the short side, scaled up crisp) and may animate it.
 // Tap or any key returns to the scene it came from (`from`: the farm, or the
 // farmhouse for the fire, the cafe for the wallet). A view can take taps itself (`tap` returns true,
@@ -20,7 +22,7 @@ import { FONT } from './bubble.js';
 // thoughts along the bottom with `scene.say(text, then)`, and look away itself
 // with `scene.close(after)`: a thought stays up until a tap or key moves it
 // along (and that's all that tap does, but for `then`).
-const VIEWS = { well, pond, tractor, fire, apple, pine, wallet };
+const VIEWS = { well, pond, tractor, fire, apple, pine, wallet, garden };
 const ART = 160;
 const FADE_MS = 300;
 

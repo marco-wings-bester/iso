@@ -456,8 +456,8 @@ function directionRows(scene, key, ctx, fw, fh, p, cols) {
 // Farmer Jones. Two copies of the sheet: 'player' at map resolution
 // (smooth-scaled on the farm, like the map) and 'player-px' at 1 texel per
 // sprite pixel, kept crisp when shown big. Animations: `${key}-walk-${dir}`,
-// `${key}-idle-${dir}`, `${key}-read`, and seated at the table `${key}-eat`
-// and `${key}-full`.
+// `${key}-idle-${dir}`, `${key}-read`, seated at the table `${key}-eat` and
+// `${key}-full`, and sitting on a chair `${key}-sit-${dir}`.
 export function createCharacter(scene) {
   look = FARMER;
   [['player', ART_PX], ['player-px', 1]].forEach(([key, p]) => {
@@ -465,7 +465,7 @@ export function createCharacter(scene) {
     const cols = 4; // walk frames
     const fw = FRAME_W * p;
     const fh = FRAME_H * p;
-    const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 3));
+    const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 4));
     const ctx = tex.getContext();
     directionRows(scene, key, ctx, fw, fh, p, cols);
 
@@ -483,6 +483,14 @@ export function createCharacter(scene) {
       repeat: -1,
     });
     seatRows(scene, key, tex, ctx, readRow + 1, fw, fh, p, cols);
+
+    // sitting on a chair, facing each way
+    const sitRow = readRow + 3;
+    DIRECTIONS.forEach((dir, i) => {
+      drawFrame(ctx, i * fw, sitRow * fh, buildSitFrame(dir), p);
+      tex.add(`sit-${dir}`, 0, i * fw, sitRow * fh, fw, fh);
+      scene.anims.create({ key: `${key}-sit-${dir}`, frames: [{ key, frame: `sit-${dir}` }], frameRate: 1, repeat: -1 });
+    });
 
     tex.refresh();
     if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
