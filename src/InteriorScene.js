@@ -13,19 +13,19 @@ import { think } from './bubble.js';
 import { line } from './hints.js';
 import { knock, hideBob, bobWaiting, bobInChest, sarahVisits, sarahWaiting, openChest } from './sarah.js';
 import { setUpCafe, atCounter } from './cafe.js';
-import { bike } from './bike.js';
+import { bike, pedal, SPEED as BIKE_SPEED, BODY as BIKE_BODY } from './bike.js';
 
 const FADE_MS = 250;
 const BODY = 5; // half the farmer's width in sprite px: keeps him off walls and furniture
 
 // Feet-position walkability inside a room (room px = sprite px), around
-// `solid` things.
-function walkable(room, x, y, solid) {
+// `solid` things, for someone `body` px either side of his feet.
+function walkable(room, x, y, solid, body) {
   const { w, h, wallH, door } = room;
-  const inDoorway = x >= door.x + BODY && x <= door.x + door.w - BODY && y >= h - WALL - 2 && y < h;
-  const onFloor = x >= WALL + BODY && x <= w - WALL - BODY && y >= wallH + 3 && y <= h - WALL - 1;
+  const inDoorway = x >= door.x + body && x <= door.x + door.w - body && y >= h - WALL - 2 && y < h;
+  const onFloor = x >= WALL + body && x <= w - WALL - body && y >= wallH + 3 && y <= h - WALL - 1;
   if (!onFloor && !inDoorway) return false;
-  return !solid.some(r => x > r.x - BODY && x < r.x + r.w + BODY && y > r.y - 2 && y < r.y + r.h + 3);
+  return !solid.some(r => x > r.x - body && x < r.x + r.w + body && y > r.y - 2 && y < r.y + r.h + 3);
 }
 
 // Pixel-art "z" for sleeping, white with the usual dark outline.
@@ -67,22 +67,22 @@ export default class InteriorScene extends Phaser.Scene {
     this.add.image(0, 0, key).setOrigin(0).setDepth(0);
     room.animate?.(this);
     createCharacter(this);
-    // his bike, if it's here on its stand (and not out on the farm)
-    this.bikeHere = !!room.bike && bike.at === 'barn';
-    if (this.bikeHere) {
-      createBike(this);
-      this.bikeImage = this.add.image(room.bike.x, room.bike.y, 'bike-px').setOrigin(0).setDepth(room.bike.y + 26);
-    }
+    createBike(this);
+    // his bike, if it's here on its stand (and not out with him)
+    this.bikeHere = !!room.bike && !bike.riding;
+    if (this.bikeHere) this.bikeImage = this.add.image(room.bike.x, room.bike.y, 'bike-px').setOrigin(0).setDepth(room.bike.y + 26);
 
+    // (on his bike, he's wider: the wheels stay off the walls and furniture)
     const solid = this.bikeHere ? [...room.solid, room.bike.solid] : room.solid;
-    const grid = WalkGrid.fromFn(room.w, room.h, 2, (x, y) => walkable(room, x, y, solid));
+    const body = bike.riding ? BIKE_BODY : BODY;
+    const grid = WalkGrid.fromFn(room.w, room.h, 2, (x, y) => walkable(room, x, y, solid, body));
     const doorX = room.door.x + room.door.w / 2;
     this.player = new Player(this, {
       x: doorX,
       y: room.h - WALL - 8,
       dir: 'up',
-      texture: 'player-px',
-      speed: INTERIOR_SPEED,
+      texture: bike.riding ? 'player-bike-px' : 'player-px',
+      speed: INTERIOR_SPEED * (bike.riding ? BIKE_SPEED : 1),
       grid,
     });
     this.exitY = room.h - 3;
@@ -262,7 +262,7 @@ export default class InteriorScene extends Phaser.Scene {
     await this.think(hasFlag('coffee') && !hasFlag('exercised')
       ? { af: '’n Bietjie oefening… kom ek gaan fietsry!', en: 'A bit of exercise… time for a bike ride!' }
       : { af: 'Kom ek gaan ry ’n bietjie fiets!', en: "I'll go for a little bike ride!" });
-    Object.assign(bike, { at: 'riding', riding: true });
+    bike.riding = true;
     this.bikeImage.setVisible(false);
     this.leaving = true;
     this.player.stop();
@@ -291,7 +291,7 @@ export default class InteriorScene extends Phaser.Scene {
       this.player.sprite.play('player-px-read');
     });
     this.player.face('up');
-    this.player.act('player-px-idle-up', () => {
+    this.player.act(`${this.player.texture}-idle-up`, () => {
       timer.remove();
       this.bookGap.setVisible(false);
       if (firstTime && hasFlag('read')) this.think(line('idea'));
@@ -338,7 +338,7 @@ export default class InteriorScene extends Phaser.Scene {
       zzz = this.time.addEvent({ delay: 1100, startAt: 900, loop: true, callback: () => this.puffZ() });
     });
     player.face('left');
-    player.act('player-px-idle-left', () => {
+    player.act(`${player.texture}-idle-left`, () => {
       timer.remove();
       zzz?.remove();
       player.sprite.setVisible(true);
@@ -360,7 +360,7 @@ export default class InteriorScene extends Phaser.Scene {
 
   update(_time, delta) {
     if (this.leaving) return;
-    this.player.update(delta / 1000);
+    pedal(this, this.player.update(delta / 1000), delta / 1000);
     const { x, y, dir } = this.player;
     // what he carries is in his hands: in front of him, or hidden behind him facing away
     const side = { left: -4, right: 4 }[dir] ?? 0;

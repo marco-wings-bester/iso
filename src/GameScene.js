@@ -9,8 +9,8 @@ import { line } from './hints.js';
 import Player from './Player.js';
 import { farmGrid } from './WalkGrid.js';
 import { BUILDINGS, ROAD, SPOTS, inRect, rectCenter } from './buildings.js';
-import { IMG_W, IMG_H, PLAYER_SPEED, DEBUG_PATH, FRAME_H, FEET_Y } from './constants.js';
-import { bike, SPEED as BIKE_SPEED, TIRING } from './bike.js';
+import { IMG_W, IMG_H, PLAYER_SPEED, DEBUG_PATH } from './constants.js';
+import { bike, pedal, SPEED as BIKE_SPEED } from './bike.js';
 import { asset } from './asset.js';
 import { UI } from './screen.js';
 
@@ -53,8 +53,6 @@ export default class GameScene extends Phaser.Scene {
       markerScale: UI / zoom,
     });
     this.leaving = false;
-    this.parked = null; // his bike, standing where he left it
-    if (typeof bike.at === 'object') this.parkBike();
 
     // After a read and a sleep, Bob is waiting at the gate (until he's been
     // given the pie: then he's in the farmhouse eating it).
@@ -78,8 +76,7 @@ export default class GameScene extends Phaser.Scene {
 
     // Tap to walk; tapping a building walks to its door; tapping a well, the
     // pond or a tractor walks there and shows what he sees; tapping right at
-    // the bottom walks down the road off the farm; tapping his bike, standing
-    // where he left it, gets him back on. A thought of his
+    // the bottom walks down the road off the farm. A thought of his
     // stays up until a tap (or Space/Enter) moves it along, and that's all
     // that tap does.
     this.input.keyboard.on('keydown', (e) => {
@@ -92,11 +89,6 @@ export default class GameScene extends Phaser.Scene {
         return;
       }
       const { worldX: x, worldY: y } = pointer;
-      if (this.parked && this.parked.getBounds().contains(x, y)) {
-        const { x: bx, y: by } = this.parked;
-        this.player.walkTo(bx, by, () => this.getOnBike());
-        return;
-      }
       if (this.bob && inRect(x, y, BOB_AREA)) {
         this.player.walkTo(BOB_STAND.x, BOB_STAND.y, () => this.talkToBob());
         return;
@@ -133,9 +125,7 @@ export default class GameScene extends Phaser.Scene {
 
   update(_time, delta) {
     if (this.leaving) return;
-    const { x: x0, y: y0 } = this.player;
-    this.player.update(delta / 1000);
-    if (bike.riding && (this.player.x !== x0 || this.player.y !== y0)) this.pedal(delta / 1000);
+    pedal(this, this.player.update(delta / 1000), delta / 1000);
 
     const { x, y } = this.player;
     if (y >= ROAD.edge) {
@@ -170,7 +160,6 @@ export default class GameScene extends Phaser.Scene {
       think(this, player.sprite, { af: 'Nog nie; daar is nog werk op die plaas.', en: "Not yet; there's still work to do on the farm." });
       return;
     }
-    if (bike.riding) this.ride(false, ROAD.bike); // he walks on from the gate
     this.leaving = true;
     this.cameras.main.fadeOut(FADE_MS);
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Road'));
@@ -225,42 +214,8 @@ export default class GameScene extends Phaser.Scene {
     this.game.events.emit('location', { name: { af: 'Pieter is op pad na sy tert!', en: "Bob's off for his pie!" } });
   }
 
-  // His bike standing where he left it (bike.at).
-  parkBike() {
-    const { x, y } = bike.at;
-    this.parked = this.add.image(x, y, 'bike').setOrigin(0.5, FEET_Y / FRAME_H).setDepth(y);
-  }
-
-  // On his bike, or off it (leaving it at `at`, or in the barn).
-  ride(on, at = null) {
-    bike.riding = on;
-    bike.at = on ? 'riding' : at ?? 'barn';
-    const { player } = this;
-    player.texture = on ? 'player-bike' : 'player';
-    player.speed = PLAYER_SPEED * UI / this.cameras.main.zoom * (on ? BIKE_SPEED : 1);
-    player.face(player.dir);
-  }
-
-  getOnBike() {
-    const { x, y } = this.parked;
-    if (farmGrid.isWalkable(x, y)) Object.assign(this.player, { x, y });
-    this.player.sprite.setPosition(this.player.x, this.player.y);
-    this.parked.destroy();
-    this.parked = null;
-    this.ride(true);
-  }
-
-  // Pedalling: after the cafe's coffee, a good long ride tires him out.
-  pedal(dt) {
-    if (!hasFlag('coffee') || hasFlag('exercised')) return;
-    bike.pedalled += dt;
-    if (bike.pedalled < TIRING) return;
-    setFlag('exercised');
-    think(this, this.player.sprite, line('tired'));
-  }
-
   enter(id) {
-    if (bike.riding) this.ride(false, BUILDINGS[id].bike); // the barn's: put away inside
+    if (id === 'barn') bike.riding = false; // his bike, back on its stand
     this.leaving = true;
     this.player.stop();
     this.cameras.main.fadeOut(FADE_MS);

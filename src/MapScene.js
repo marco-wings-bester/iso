@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { createCharacter } from './CharacterSprite.js';
+import { createCharacter, createBike } from './CharacterSprite.js';
 import Player from './Player.js';
 import { PLAYER_SPEED } from './constants.js';
 import { UI } from './screen.js';
+import { bike, pedal, SPEED as BIKE_SPEED } from './bike.js';
 
 // A place drawn as one picture (Level 2: the crossroads, the beach). The
 // picture covers the screen like the farm's map, centred, and he walks where
@@ -12,10 +13,12 @@ import { UI } from './screen.js';
 // `to` another scene (with `data`), or `soon` (he steps back, turns round
 // and a label says it's coming). A tap near the end of a road walks all the
 // way to it. Turning the phone fits the picture again, keeping him where he
-// is (or, if that's off the screen now, at `home`).
+// is (or, if that's off the screen now, at `home`). On his bike (src/bike.js)
+// he rides here too.
 //
 // A scene extends this with `map` = { key, file, w, h, grid, scale, home }
-// and `exits`, calls `place(at)` in create and `edges()` in update. Someone
+// and `exits`, calls `place(at)` in create and `move(delta)` and `edges()` in
+// update. Someone
 // can talk to him there (`talk`: src/dialog.js); taps meanwhile only move the
 // talk along.
 //
@@ -64,13 +67,14 @@ export default class MapScene extends Phaser.Scene {
     });
 
     createCharacter(this);
+    createBike(this);
     const onScreen = p => p.x > view.left + 20 && p.x < view.right - 20 && p.y > view.top + 20 && p.y < view.bottom - 20;
     const start = at ? (onScreen(at) ? at : home) : road(from, 14) ?? home;
     this.player = new Player(this, {
       ...start,
       dir: from ? TURN[this.exits[from].side] : 'down',
-      texture: 'player',
-      speed: PLAYER_SPEED * UI / z,
+      texture: bike.riding ? 'player-bike' : 'player',
+      speed: PLAYER_SPEED * UI / z * (bike.riding ? BIKE_SPEED : 1),
       grid,
       markerScale: UI / z,
     });
@@ -150,6 +154,11 @@ export default class MapScene extends Phaser.Scene {
     ctx.drawImage(src, 0, 0, w, h);
     tex.refresh();
     return { key: fitKey, tex, sx: src.width / w, sy: src.height / h };
+  }
+
+  // A frame of `delta` ms: he walks (or rides) on.
+  move(delta) {
+    pedal(this, this.player.update(delta / 1000), delta / 1000);
   }
 
   // At the edge of the screen: off along that road.

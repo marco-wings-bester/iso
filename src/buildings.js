@@ -1,15 +1,12 @@
 // Enterable buildings, in farm image px. Tapping anywhere on `area` walks to
 // the door; stepping into `door` goes inside; leaving puts you back at `exit`.
-// `name` is shown as you go in ({ af, en }: src/i18n.js). Riding up on his
-// bike, he leaves it standing at `bike` (src/bike.js; the barn's is put away
-// inside).
+// `name` is shown as you go in ({ af, en }: src/i18n.js).
 export const BUILDINGS = {
   house: {
     name: { af: 'Plaashuis', en: 'Farmhouse' },
     area: { x: 105, y: 150, w: 200, h: 170 },
     door: { x: 244, y: 322, w: 24, h: 10 },
     exit: { x: 262, y: 344 },
-    bike: { x: 300, y: 350 },
   },
   barn: {
     name: { af: 'Skuur', en: 'Barn' },
@@ -22,15 +19,14 @@ export const BUILDINGS = {
     area: { x: 600, y: 680, w: 110, h: 108 },
     door: { x: 612, y: 788, w: 26, h: 10 },
     exit: { x: 624, y: 806 },
-    bike: { x: 586, y: 808 },
   },
 };
 
 // The road off the farm, down past the gate: a tap anywhere along the bottom
 // (below `tap`) walks down it, and once his feet cross `edge` he's off the
 // farm, to the crossroads (Level 2, src/RoadScene.js); coming back up, he
-// stands at `back`. On his bike, he leaves it at `bike` and walks on.
-export const ROAD = { tap: 1300, edge: 1362, back: { x: 384, y: 1336 }, bike: { x: 344, y: 1330 } };
+// stands at `back`.
+export const ROAD = { tap: 1300, edge: 1362, back: { x: 384, y: 1336 } };
 
 // Things to look at: tap `area`, he walks to `stand`, faces `face`, and the
 // screen switches to what he sees (ViewScene: well, pond, tractor, apple
