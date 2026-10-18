@@ -7,6 +7,7 @@ import TalkScene from './TalkScene.js';
 import RoadScene from './RoadScene.js';
 import BeachScene from './BeachScene.js';
 import TownScene from './TownScene.js';
+import PieterScene from './PieterScene.js';
 import { setupMenu } from './menu.js';
 import { resetFlags, startDay } from './state.js';
 import { resetBike } from './bike.js';
@@ -29,7 +30,7 @@ const game = new Phaser.Game({
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   render: { pixelArt: false, antialias: true },
-  scene: [GameScene, InteriorScene, ViewScene, TalkScene, RoadScene, BeachScene, TownScene, UIScene],
+  scene: [GameScene, InteriorScene, ViewScene, TalkScene, RoadScene, BeachScene, TownScene, PieterScene, UIScene],
 });
 window.addEventListener('resize', () => {
   const [w, h] = pageSize();
@@ -48,7 +49,7 @@ game.events.once('ready', () => {
 // out on the farm). The secret day select (two pine cones under the big pine,
 // src/views/pine.js) starts on the day chosen the same way, with the story
 // done up to then (src/state.js).
-const scenes = ['Interior', 'View', 'Talk', 'Road', 'Beach', 'Town'];
+const scenes = ['Interior', 'View', 'Talk', 'Road', 'Beach', 'Town', 'Pieter'];
 function startOn(day) {
   if (day) startDay(day);
   else resetFlags();

@@ -77,7 +77,10 @@ he turns back: "not today", or "farm work first"), a square with a fountain,
 houses, a cafe and a restaurant to walk round (`src/TownScene.js`; the map is
 `public/assets/town.jpg`, from `art/town-source.jpg`, its paths baked into
 `src/townMask.js` by `scripts/build-masks.py`). The road out at the top right
-goes back to the crossroads. Right to Bob's house is still to come. The picture maps are
+goes back to the crossroads. Right from the crossroads is **Bob's farm**
+(Pieter se plaas: `src/PieterScene.js`, `public/assets/pieter.jpg`): in by the
+road at the bottom, up past the gate to his farmhouse's stoep, and round the
+braai with its fire going. The picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it
