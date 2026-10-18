@@ -8,6 +8,7 @@ import RoadScene from './RoadScene.js';
 import BeachScene from './BeachScene.js';
 import { setupMenu } from './menu.js';
 import { resetFlags, setFlag, LEVEL2_STORY } from './state.js';
+import { resetBike } from './bike.js';
 import { watchForUpdates } from './updates.js';
 import { UI } from './screen.js';
 
@@ -49,11 +50,13 @@ const scenes = ['Interior', 'View', 'Talk', 'Road', 'Beach'];
 const menu = setupMenu({
   onNewGame() {
     resetFlags();
+    resetBike();
     scenes.forEach(key => game.scene.stop(key));
     game.scene.start('Game');
   },
   onLevel(n) {
     resetFlags();
+    resetBike();
     scenes.forEach(key => game.scene.stop(key));
     if (n === 1) {
       game.scene.start('Game');

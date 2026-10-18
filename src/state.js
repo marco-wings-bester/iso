@@ -13,7 +13,8 @@
 // go to town: down the road past the gate to the crossroads, Level 2
 // ('level2') → at the beach, into the cafe for a coffee: no cash ('noCash') →
 // Derik, fishing off the jetty, lends him R15 ('loan'; to pay back at his
-// braai) → he buys his coffee ('coffee').
+// braai) → he buys his coffee ('coffee') → home, he's too wide awake to
+// sleep: a good long ride on his bike from the barn ('exercised') → bed.
 // (v2: progress saved under the old order — read, sleep, Bob — is dropped.)
 const KEY = 'farm-walk-story-v2';
 let flags = {};
