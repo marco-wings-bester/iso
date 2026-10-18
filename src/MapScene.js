@@ -162,13 +162,15 @@ export default class MapScene extends Phaser.Scene {
     pedal(this, this.player.update(delta / 1000), delta / 1000);
   }
 
-  // At the edge of the screen: off along that road.
+  // At the edge of the screen: off along that road (of those on that side,
+  // the one nearest to where he is).
   edges() {
     if (this.leaving) return;
     const { x, y } = this.player;
     const v = this.view;
     const past = { top: y <= v.top + 6, bottom: y >= v.bottom - 10, left: x <= v.left + 10, right: x >= v.right - 10 };
-    const name = Object.keys(this.exits).find(n => past[this.exits[n].side]);
+    const off = n => Math.abs(this.exits[n].near - (['top', 'bottom'].includes(this.exits[n].side) ? x : y));
+    const [name] = Object.keys(this.exits).filter(n => past[this.exits[n].side]).sort((a, b) => off(a) - off(b));
     if (name) this.leave(name);
   }
 
