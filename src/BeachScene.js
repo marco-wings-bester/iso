@@ -4,6 +4,9 @@ import { preloadSeaside, animateSeaside } from './seaside.js';
 import { placeVillagers, BEACH_VILLAGERS } from './villagers.js';
 import { asset } from './asset.js';
 import { talkToDerik, BY_DERIK } from './derik.js';
+import { hasFlag, setFlag } from './state.js';
+import { think } from './bubble.js';
+import { line } from './hints.js';
 
 // The beach (assets/seaside.jpg), down the left-hand road from the crossroads:
 // a little seaside village (houses, a bakery, the Cozy Seaside Cafe, a
@@ -47,6 +50,11 @@ export default class BeachScene extends MapScene {
     animateSeaside(this);
     this.villagers = placeVillagers(this, BEACH_VILLAGERS, this.map.scale);
     if (!at || out) this.game.events.emit('location', { name: HERE });
+    // out of the cafe, his coffee finished: wide awake now
+    if (out && hasFlag('coffeeDone') && !hasFlag('awake')) {
+      setFlag('awake');
+      this.time.delayedCall(900, () => { if (!this.thought) think(this, this.player.sprite, line('afterCoffee')); });
+    }
   }
 
   // Tapping someone: Johan walks over to them (the nearest he can get), and

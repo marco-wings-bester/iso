@@ -45,7 +45,10 @@ English) at the counter, checks his wallet (his view of it,
 back when he has some. Derik, fishing off the jetty, lends him R15 (tap him;
 `src/derik.js`): "Bring dit sommer oormore aand as jy by ons kom braai." Back
 at the counter Johan pays, Sannie makes his coffee, and he carries it about,
-steaming. Back home that coffee keeps him up: in bed he's not tired enough,
+steaming: tap a table and he sits down with it, sipping, or tap the window at
+the back to look out at the garden behind the cafe (`src/views/garden.js`)
+over his cup. Out of the door it's finished, and he says how wide awake he
+is, and ready for some exercise (the hints name the bike). Back home that coffee keeps him up: in bed he's not tired enough,
 and needs some exercise first. His **bicycle** is in the barn (tap it; before
 the coffee he'd love to, but he's got other things to do today): from
 then on he rides it everywhere he'd walk, only faster: the farm, the

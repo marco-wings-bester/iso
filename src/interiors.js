@@ -862,6 +862,23 @@ export const ROOMS = {
         area: { x: 40, y: 20, w: 98, h: 52 }, // tap the counter…
         stand: { x: 84, y: 84 },              // …to walk up to it
       },
+      // tap a table: sit down at it (on the chair nearer the room) and drink
+      // his coffee (src/cafe.js): where he sits, facing it, and where his cup goes
+      tableA: {
+        area: { x: 12, y: 94, w: 46, h: 30 },
+        stand: { x: 50, y: 125 },
+        seat: { x: 50, y: 117, face: 'left', cup: { x: 40, y: 107 } },
+      },
+      tableB: {
+        area: { x: 88, y: 118, w: 46, h: 30 },
+        stand: { x: 98, y: 149 },
+        seat: { x: 98, y: 141, face: 'right', cup: { x: 108, y: 131 } },
+      },
+      // tap the window at the back: look out at the garden behind the cafe
+      window: {
+        area: { x: 4, y: 4, w: 34, h: 32 },
+        stand: { x: 21, y: 52 },
+      },
     },
     // the counter (with what's on it) drawn over Sannie behind it, so she
     // shows from the waist up; steam curls up off the coffee machine
