@@ -58,7 +58,7 @@ function startOn(day) {
   window.dispatchEvent(new Event('farmwalk-day'));
   scenes.forEach(key => game.scene.stop(key));
   game.scene.stop('Game');
-  game.scene.start('Game');
+  game.scene.start('Game', { fresh: true }); // (data, or it'd be the last trip's)
 }
 const menu = setupMenu({ onNewGame: () => startOn(0), onDay: startOn });
 game.events.on('days', () => menu.showDays());
