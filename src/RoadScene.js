@@ -2,15 +2,26 @@ import MapScene from './MapScene.js';
 import { roadGrid } from './WalkGrid.js';
 import { setFlag } from './state.js';
 import { asset } from './asset.js';
+import { today } from './days.js';
+import { WEDNESDAY, choresLeft } from './chores.js';
 
 // The crossroads past the farm gate (assets/crossroads.jpg), where
 // Boer Johan comes on his way to town once Pieter has gone home. He comes in
 // from the farm at the top, and the road back up goes there (so does a tap
-// right at the top). Left goes to the beach (BeachScene). Down to town and
-// right to Pieter's house aren't there yet: at the edge he turns back and it
-// says so. (No name boards: the roads speak for themselves.)
+// right at the top). Left goes to the beach (BeachScene). Down goes to town
+// (TownScene), from Wednesday afternoon, once the farm work's done; till then
+// he turns back at the edge and it says so. Right to Pieter's house isn't
+// there yet. (No name boards: the roads speak for themselves.)
 
 const HERE = { af: 'Die kruispad', en: 'The crossroads' };
+
+// The road to town: not before Wednesday, and then not till the farm work's
+// done (src/chores.js).
+function townClosed() {
+  if (today() < WEDNESDAY) return { af: 'Die dorp\nnie vandag nie', en: 'The town\nnot today' };
+  if (choresLeft()) return { af: 'Die dorp\neers die werk op die plaas', en: 'The town\nfarm work first' };
+  return null;
+}
 
 export default class RoadScene extends MapScene {
   constructor() {
@@ -23,13 +34,13 @@ export default class RoadScene extends MapScene {
     this.exits = {
       farm: { side: 'top', near: 350, strip: true, to: 'Game', data: { from: 'road' } },
       beach: { side: 'left', near: 940, to: 'Beach' },
-      town: { side: 'bottom', near: 345, soon: { af: 'Die dorp\nkom binnekort', en: 'Town\ncoming soon' } },
+      town: { side: 'bottom', near: 345, to: 'Town', soon: townClosed },
       pieter: { side: 'right', near: 955, soon: { af: 'Pieter se huis\nkom binnekort', en: "Bob's house\ncoming soon" } },
     };
   }
 
   // `at`: where he is, when redrawn for a new screen size; `from`: the road
-  // he comes in by (the farm, unless back from the beach).
+  // he comes in by (the farm, unless back from the beach or the town).
   create({ at, from = 'farm' } = {}) {
     this.place(at, from);
     if (at) return;

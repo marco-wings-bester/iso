@@ -1,6 +1,7 @@
 import * as farmMask from './walkMask.js';
 import * as roadMask from './roadMask.js';
 import * as beachMask from './beachMask.js';
+import * as townMask from './townMask.js';
 
 // A grid of walkable cells over a scene, in world pixels. Movement only checks
 // the player's feet against it; tap-to-walk routes along it.
@@ -135,6 +136,7 @@ export default class WalkGrid {
 // The farm: walkable = the dirt path, baked from the map by scripts/build-walkmask.py.
 export const farmGrid = WalkGrid.fromMask(farmMask);
 // The picture maps, baked by scripts/build-masks.py: the crossroads'
-// four roads, and the beach's road, sand and jetty.
+// four roads, the beach's road, sand and jetty, and the town's paths.
 export const roadGrid = WalkGrid.fromMask(roadMask);
 export const beachGrid = WalkGrid.fromMask(beachMask);
+export const townGrid = WalkGrid.fromMask(townMask);
