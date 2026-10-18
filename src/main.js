@@ -68,6 +68,9 @@ const menu = setupMenu({
   },
 });
 game.events.on('levels', () => menu.showLevels());
+// opened in a browser: how to install it, and where the menu is
+if (window.farmWalkStarted) menu.welcome();
+else game.events.once('ready', () => menu.welcome());
 watchForUpdates();
 
 // Register the service worker so the game can be installed and played offline.

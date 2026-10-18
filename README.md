@@ -73,6 +73,13 @@ thoughts, captions and replies are a sturdy bold monospace (`FONT` in
 
 **Play: https://marco-wings-bester.github.io/iso/**
 
+Opened in a browser (a shared link, say), the game greets you each time
+with a **welcome card**: how to install it, step by step for the phone and
+browser it's open in (or, when Chrome offers it, a one-tap **Install now**;
+from an iPhone app's own browser, how to get it into Safari), and where the
+menu is. Closing it points at the menu button; until it's installed, a
+yellow **⬇ Install** button sits beside it (`src/menu.js`).
+
 Open the **☰ menu** (bottom-left) to **Install app**, **Share game** (sends
 the link through the phone's share sheet), **Update game** (load the newest
 version now), start a **New game** (back to the farm gate with the story
