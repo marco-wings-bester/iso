@@ -17,7 +17,10 @@
 // sleep: a good long ride on his bike from the barn ('exercised') → bed.
 // He sleeps only when he's tired ('tired': after eating the pie, or a good
 // long bike ride), not just after coffee ('wired'); each night is a new day
-// (`day` below).
+// (`day` below). Wednesday's farm work before bed (src/chores.js): the
+// tractor's keys on the bookshelf ('tractorKeys'), ploughing ('plowed'), a
+// bucket from each well ('wellTop'; 'wellBottom', which is dry); all done
+// ('choresDone').
 // Numbers kept with them: `day`, the day of the week (0 = Monday, the day
 // the story starts; one on each night he sleeps: src/days.js), and
 // `loanDay`, the day Derik lent him the R15 (his braai is two days later).

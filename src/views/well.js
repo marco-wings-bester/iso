@@ -1,10 +1,21 @@
+import Phaser from 'phaser';
 import { hash, smooth, shade, GRASS, GRASS_HI, FLOWERS } from './art.js';
+import { hasFlag, setFlag } from '../state.js';
+import { today } from '../days.js';
+import { WEDNESDAY } from '../chores.js';
 
 // Farmer Jones's view straight down a well: the underside of his hat brim at
 // the top, the stone rim, the shaft's stone courses vanishing into
 // darkness, the rope hanging down, and far below black water reflecting the
 // small bright opening with his own silhouette in it. Drawn as pixel art in
 // perspective: a pixel's distance from the centre maps to depth down the shaft.
+// From Wednesday he checks the wells (src/chores.js): down goes the bucket and
+// up it comes, full from the top well ('wellTop'), empty from the bottom one
+// by the orchard ('wellBottom'), which has run dry: no water down there, just
+// cracked mud.
+
+// The bottom well, from Wednesday (until he's put it right): dry.
+const isDry = spot => spot === 'wellBottom' && today() >= WEDNESDAY && !hasFlag('wellFixed');
 
 const STONES = [[128, 122, 110], [110, 106, 96], [140, 132, 118], [100, 98, 90]];
 const RIM_STONES = [[184, 178, 164], [168, 162, 148], [196, 190, 174]];
@@ -22,8 +33,9 @@ function wellGeometry(w, h) {
   return { M, cx, cy, R, RIM, WATER, rWater: R / (1 + WATER), rSky: R / (1 + 2 * WATER) };
 }
 
-function draw(ctx, w, h) {
+function draw(ctx, w, h, { spot } = {}) {
   const g = wellGeometry(w, h);
+  const dry = isDry(spot);
   const { M, cx, cy, R, RIM, WATER, rWater, rSky } = g;
   const ROW = 0.17;   // depth of one stone course
   const N = 20;       // stones per course
@@ -38,7 +50,12 @@ function draw(ctx, w, h) {
       const a = (Math.atan2(dy, dx) / (2 * Math.PI) + 1) % 1; // 0 = right, 0.25 = down
       let c;
 
-      if (r < rWater) {
+      if (r < rWater && dry) {
+        // Dry: cracked mud and a few stones at the bottom, in the gloom.
+        const crack = Math.abs(Math.sin(dx * 0.9 + Math.sin(dy * 0.7) * 2)) < 0.12 || Math.abs(Math.sin(dy * 1.1 + dx * 0.3)) < 0.1;
+        const stone = hash(Math.floor(x / 2), Math.floor(y / 2)) > 0.9;
+        c = shade(crack ? [30, 22, 14] : stone ? [96, 92, 84] : [92, 70, 44], 0.32 - 0.12 * (r / rWater), x, y);
+      } else if (r < rWater) {
         // Water: black, with the bright opening reflected small in the middle
         // and his silhouette (hat brim seen from below, shoulders) inside it.
         const u = dx / rSky;
@@ -150,9 +167,92 @@ function drawHatBrim(ctx, w, { M }) {
   }
 }
 
-// Now and then a drip sends a ripple across the water.
+// The well's bucket seen from above: wooden staves, an iron band, and inside
+// it water (full) or nothing (empty).
+function bucketTexture(scene, full) {
+  const key = full ? 'pov-bucket-full' : 'pov-bucket';
+  if (scene.textures.exists(key)) return key;
+  const S = 30;
+  const tex = scene.textures.createCanvas(key, S, S);
+  const ctx = tex.getContext();
+  const c = S / 2;
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const d = Math.hypot(x + 0.5 - c, y + 0.5 - c);
+      if (d > 14.5) continue;
+      const a = Math.atan2(y + 0.5 - c, x + 0.5 - c);
+      let col;
+      if (d > 13.5) col = '#2e1d0c';
+      else if (d > 11) col = Math.abs(Math.sin(a * 9)) < 0.15 ? '#6a4020' : a < 0 ? '#c08850' : '#9a6a3a'; // staves
+      else if (d > 10) col = '#4a4e56'; // iron band
+      else if (full) col = d < 4 && x < c && y < c ? '#bfe4f8' : d > 8.5 ? '#2a6aa0' : '#3a86c8';
+      else col = d > 8.5 ? '#3a2614' : '#5a3a1e';
+      ctx.fillStyle = col;
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  tex.refresh();
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  return key;
+}
+
+// Lowering the bucket down the shaft (it shrinks into the dark), a splash or
+// a dull thud at the bottom, and winding it back up: full, or not.
+function drawWater(scene, g, dry) {
+  scene.busy = true;
+  const { cx, cy, R, rWater } = g;
+  const bucket = scene.add.image(cx + 1, cy, bucketTexture(scene, false)).setDepth(3);
+  const top = (R * 0.55) / 15;    // its scale at the top of the shaft
+  const bottom = (rWater * 0.8) / 15;
+  bucket.setScale(top);
+  const dim = (s) => { // darker the deeper it goes
+    const b = Math.round(255 * Math.min(1, 0.25 + 0.75 * (s - bottom) / (top - bottom)));
+    bucket.setTint(Phaser.Display.Color.GetColor(b, b, b));
+  };
+  const rings = scene.add.graphics().setDepth(2);
+  scene.tweens.add({
+    targets: bucket, scale: bottom, duration: 1600, ease: 'Quad.easeIn', onUpdate: () => dim(bucket.scale),
+    onComplete: () => {
+      if (dry) {
+        // thud: a puff of dust
+        const dust = scene.add.circle(cx, cy, 3, 0x9a8a70, 0.6).setDepth(2);
+        scene.tweens.add({ targets: dust, scale: 3, alpha: 0, duration: 700, onComplete: () => dust.destroy() });
+      } else {
+        bucket.setTexture(bucketTexture(scene, true));
+        const ring = { r: 2, alpha: 0.7 };
+        scene.tweens.add({
+          targets: ring, r: rWater * 0.9, alpha: 0, duration: 900,
+          onUpdate: () => rings.clear().lineStyle(1, 0x8fb0c8, ring.alpha).strokeCircle(cx, cy, ring.r),
+          onComplete: () => rings.clear(),
+        });
+      }
+      scene.tweens.add({
+        targets: bucket, scale: top * 1.1, duration: 1800, delay: 700, ease: 'Quad.easeOut', onUpdate: () => dim(bucket.scale),
+        onComplete: () => {
+          setFlag(dry ? 'wellBottom' : 'wellTop');
+          scene.busy = false;
+          scene.say(dry
+            ? { af: 'Leeg?! Daar is geen water in hierdie put nie. Iets is fout…', en: "Empty?! There's no water in this well. Something's wrong…" }
+            : { af: '’n Volle emmer! Hierdie put werk goed. Ek sit dit langs die put neer.', en: "A full bucket! This well works fine. I'll leave it beside the well." },
+          () => scene.close());
+        },
+      });
+    },
+  });
+}
+
+// Now and then a drip sends a ripple across the water (not when it's dry).
+// And, from Wednesday, if he hasn't yet: a bucket of water from it.
 function animate(scene, w, h) {
   const g = wellGeometry(w, h);
+  const dry = isDry(scene.spot);
+  const flag = scene.spot === 'wellBottom' ? 'wellBottom' : 'wellTop';
+  if (today() >= WEDNESDAY && !hasFlag(flag)) {
+    scene.time.delayedCall(900, () => {
+      if (!scene.caption) scene.say({ af: 'Kom ek kyk of die put werk: ’n emmer water.', en: "Let's see that the well works: a bucket of water." }, () => drawWater(scene, g, dry));
+    });
+  }
+  if (dry) return;
   const ripples = scene.add.graphics();
   const drip = () => {
     const ox = (Math.random() - 0.5) * g.rWater * 0.5;

@@ -60,7 +60,16 @@ shows the next morning and its day (`src/morning.js`); he's up in the early
 light. So: Monday he bakes and eats the pie and sleeps; Tuesday Bob comes by,
 and so on. Derik's braai is the evening of the day after tomorrow from when
 he lent the R15: he and the morning screen remind Johan as it comes up, and
-it can't be before then. (The braai itself is still to come.) Down to town and right to Bob's house are still to come. Both picture maps are
+it can't be before then. (The braai itself is still to come.)
+
+**Wednesday** there's farm work before bed (`src/chores.js`; the morning
+screen and the menu list it, ticked off as it's done). Plough the land: in
+the tractor the keys are gone again, the engine silent; they're on the
+bookshelf in the farmhouse, and with them the engine starts and off he goes,
+clods rolling past. And see that the wells work: a bucket from each. The top
+one comes up full (and the pail beside that well has water in it after); the
+bottom one, by the orchard, comes up empty: that well has run dry (to put
+right on Thursday). Both done, he's tired out and can go to bed. Down to town and right to Bob's house are still to come. Both picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it

@@ -1,8 +1,10 @@
 import { t } from './i18n.js';
 import { today, dayName, daysToBraai } from './days.js';
+import { chores } from './chores.js';
 
 // The night has passed: a sunrise over the hills, the new day's name ("the
-// next morning… Tuesday") and, if Derik's braai is coming up, a reminder.
+// next morning… Tuesday"), the day's farm work if there is any (src/chores.js)
+// and, if Derik's braai is coming up, a reminder.
 // Stays until a tap or key (after a moment, so a tap meant for the night
 // doesn't skip it); resolves once it has faded away.
 export function morning() {
@@ -18,6 +20,12 @@ export function morning() {
     div('sub', t({ af: 'Die volgende oggend…', en: 'The next morning…' })),
     div('day', t(dayName(today()))),
   );
+  const jobs = chores();
+  if (jobs.length) {
+    const list = div('jobs');
+    list.append(div('jobs-title', t({ af: 'Vandag se werk:', en: "Today's work:" })), ...jobs.map(j => div('job', `• ${t(j.text)}`)));
+    words.append(list);
+  }
   if (note) words.append(div('note', t(note)));
   words.append(div('tap', t({ af: 'Tik om aan te gaan ▼', en: 'Tap to carry on ▼' })));
   card.append(div('sky'), div('sun'), div('hills'), div('night'), words);

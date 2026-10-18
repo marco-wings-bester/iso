@@ -143,6 +143,16 @@ const LINES = {
     none: { af: 'Pff! Dit was lekker oefening. Nou is ek moeg.', en: "Phew! That was good exercise. Now I'm tired." },
     explicit: { af: 'Pff! Dit was lekker oefening. Nou is ek moeg genoeg om te gaan slaap.', en: "Phew! That was good exercise. Now I'm tired enough to go to bed." },
   },
+  // Wednesday, in the tractor: its keys are gone (src/chores.js)
+  tractorKeysLost: {
+    none: { af: 'O nee, die trekker se sleutels is weg! Ek het hulle seker weer in die huis gelos…', en: "Oh no, the tractor's keys are gone! I must have left them in the house again…" },
+    subtle: { af: 'O nee, die trekker se sleutels is weg! Ek het hulle seker in die huis gelos… dalk by my boeke?', en: "Oh no, the tractor's keys are gone! I must have left them in the house… maybe by my books?" },
+    explicit: { af: 'O nee, die trekker se sleutels is weg! Ek dink hulle lê op die boekrak in die huis.', en: "Oh no, the tractor's keys are gone! I think they're on the bookshelf in the house." },
+  },
+  tractorKeysFound: {
+    none: { af: 'Die trekker se sleutels! Op die boekrak, nogal.', en: 'The tractor keys! On the bookshelf, of all places.' },
+    explicit: { af: 'Die trekker se sleutels! Nou kan ek gaan ploeg: tik op die trekker.', en: 'The tractor keys! Now I can go ploughing: tap the tractor.' },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },

@@ -9,6 +9,7 @@ import { UI } from './screen.js';
 import { hasFlag, setFlag, clearFlag } from './state.js';
 import { nextDay } from './days.js';
 import { morning } from './morning.js';
+import { choresLeft, notYet } from './chores.js';
 import { seatBob } from './bob.js';
 import { bakePie, eatHalf } from './baking.js';
 import { think } from './bubble.js';
@@ -117,11 +118,10 @@ export default class InteriorScene extends Phaser.Scene {
       const b = spots.read.book;
       this.bookGap = this.add.rectangle(b.x, b.y, b.w, b.h, 0x4a2a14).setOrigin(0).setDepth(1).setVisible(false);
     }
-    // things lying about to take (the apple picker, the crowbar)
+    // things lying about to take (the apple picker, the crowbar, the
+    // tractor's keys), from when they're there (`when`) till they're taken
     this.props = {};
-    Object.entries(spots).forEach(([id, s]) => {
-      if (s.prop && !hasFlag(s.flag)) this.props[id] = this.roomImage(`${id}-${building}`, s.prop);
-    });
+    this.placeProps();
     if (spots.sleep) {
       // Him asleep in bed, and the room dimming to night (the fire stays bright).
       this.sleeper = this.roomImage(`sleeper-${building}`, spots.sleep.overlay).setDepth(0.4).setVisible(false);
@@ -147,7 +147,9 @@ export default class InteriorScene extends Phaser.Scene {
         return;
       }
       if (this.leaving || this.busy) return;
-      const spot = Object.entries(spots).find(([id, s]) => inRect(x, y, s.area) && (id !== 'bike' || this.bikeHere));
+      // (something lying there to take comes first: the keys on the bookshelf)
+      const here = ([id, s]) => inRect(x, y, s.area) && (id !== 'bike' || this.bikeHere) && (!s.prop || this.props[id]);
+      const spot = Object.entries(spots).filter(here).sort(([, a], [, b]) => !!b.prop - !!a.prop)[0];
       if (spot) {
         const [id, s] = spot;
         const use = s.prop ? () => this.take(id) : {
@@ -200,6 +202,14 @@ export default class InteriorScene extends Phaser.Scene {
     this.bob.setTint(Phaser.Display.Color.GetColor(255 * (1 - a), 255 * (1 - a), 255 * (1 - a * 0.8)));
   }
 
+  // The things lying about that are there now and not yet taken.
+  placeProps() {
+    Object.entries(this.room.spots ?? {}).forEach(([id, s]) => {
+      if (!s.prop || this.props[id] || hasFlag(s.flag) || !(s.when?.() ?? true)) return;
+      this.props[id] = this.roomImage(`${id}-${this.building}`, s.prop).setDepth(1);
+    });
+  }
+
   // An image from a room's {x, y, w, h, draw} (drawn once into a texture).
   roomImage(key, o) {
     if (!this.textures.exists(key)) {
@@ -250,8 +260,10 @@ export default class InteriorScene extends Phaser.Scene {
 
   // Bed: only when he's tired (after eating the pie, or a good long ride on
   // his bike, src/bike.js); after the cafe's coffee he's wide awake till then.
+  // And not before the day's farm work is done (Wednesday: src/chores.js).
   tryToSleep() {
     if (this.mustHideBob()) this.think(line('notNow'));
+    else if (choresLeft()) this.think(notYet()); // the day's farm work first (src/chores.js)
     else if (hasFlag('tired')) this.sleep();
     else if (hasFlag('wired')) this.think(line('wideAwake'));
     else this.think(line('bedEarly'));
@@ -283,6 +295,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.player.face('up');
     if (hasFlag(s.flag)) return;
     this.props[id].destroy();
+    delete this.props[id];
     setFlag(s.flag);
     this.think(line(s.found));
   }
@@ -370,6 +383,7 @@ export default class InteriorScene extends Phaser.Scene {
     bike.pedalled = 0;
     nextDay();
     await morning();
+    this.placeProps(); // (a new day: something may be lying about now)
     player.stop(); // (not off to wherever the tap that ended the night was)
     player.sprite.setVisible(true);
     this.sleeper.setVisible(false);

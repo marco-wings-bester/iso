@@ -3,12 +3,18 @@ import { obj } from '../pixelArt.js';
 import { hash, mix, band, pixels, ellipse, rgb, limb, OUTLINE } from './art.js';
 import { hasFlag, setFlag } from '../state.js';
 import { line } from '../hints.js';
+import { today } from '../days.js';
+import { WEDNESDAY } from '../chores.js';
 
 // Farmer Jones in the tractor's seat: through the windshield the green hood
 // with its exhaust stack, ploughed furrows running to the horizon, hills and
 // sky; in front of him the dashboard gauges, the steering wheel and the gear
 // lever. His house key is still in the ignition at the start (the farmhouse
-// is locked without it): tap it to take it.
+// is locked without it): tap it to take it. On Wednesday there's ploughing
+// to do (src/chores.js), and the tractor's own keys are gone, the engine
+// silent: they're on the bookshelf in the house ('tractorKeys'). With them,
+// in goes the key, the engine starts, and off he goes, ploughing the land,
+// the clods rolling past ('plowed').
 
 const SKY = [[110, 172, 226], [128, 186, 234], [152, 202, 238], [178, 218, 242], [204, 230, 246]];
 const FURROWS = [[132, 86, 48], [108, 68, 38]];
@@ -214,9 +220,27 @@ function gearLever(ctx, w, h, { k, dashBot }) {
   ellipse(ctx, x1, y1, 5 * k, 5 * k, (u, v) => (Math.hypot(u, v) > 0.8 ? OUTLINE : u < -0.2 && v < -0.2 ? [252, 228, 120] : [232, 192, 64]));
 }
 
-// Gauge needles flickering with the engine, and puffs from the exhaust.
+// The tractor's own keys: a steel key on a ring with a green tag.
+function tractorKeyTexture(scene) {
+  if (scene.textures.exists('pov-tractor-key')) return 'pov-tractor-key';
+  const tex = scene.textures.createCanvas('pov-tractor-key', 9, 17);
+  const ctx = tex.getContext();
+  obj(ctx, 2, 1, 5, 5, r => { r(0, 0, 5, 5, '#c8ccd4'); r(0, 0, 1, 5, '#eef0f4'); r(4, 1, 1, 4, '#8a909a'); r(2, 2, 1, 1, '#2e1d0c'); });
+  ctx.fillStyle = '#a0a8b4';
+  [[3, 7, 3, 1], [2, 8, 1, 3], [6, 8, 1, 3], [3, 11, 3, 1]].forEach(([x, y, w, h]) => ctx.fillRect(x, y, w, h));
+  obj(ctx, 3, 12, 3, 4, r => { r(0, 0, 3, 4, '#3a9a4a'); r(0, 0, 1, 4, '#6ac070'); });
+  tex.refresh();
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  return 'pov-tractor-key';
+}
+
+// Gauge needles flickering with the engine, and puffs from the exhaust
+// (while it runs).
 function animate(scene, w, h) {
-  const { k, gauges, stack, ignition } = geometry(w, h);
+  const g = geometry(w, h);
+  const { k, gauges, stack, ignition } = g;
+  const ploughing = today() >= WEDNESDAY && !hasFlag('plowed');
+  const engine = { on: !ploughing };
 
   // his house key, still in the ignition, the tag swinging with the engine
   scene.key = null;
@@ -231,7 +255,7 @@ function animate(scene, w, h) {
   const draw = (time) => {
     needles.clear().lineStyle(1, 0xd02020, 1);
     gauges.forEach(({ x, y, r }, i) => {
-      const a = base[i] + (i === 0 ? Math.sin(time / 90) * 0.05 + (Math.random() - 0.5) * 0.06 : 0);
+      const a = engine.on ? base[i] + (i === 0 ? Math.sin(time / 90) * 0.05 + (Math.random() - 0.5) * 0.06 : 0) : -2.8;
       needles.lineBetween(x, y, x + Math.cos(a) * r * 0.75, y + Math.sin(a) * r * 0.75);
     });
     needles.fillStyle(0x202020).fillRect(gauges[0].x - 1, gauges[0].y - 1, 2, 2).fillRect(gauges[1].x - 1, gauges[1].y - 1, 2, 2);
@@ -240,21 +264,80 @@ function animate(scene, w, h) {
   scene.events.on('update', draw);
   scene.events.once('shutdown', () => scene.events.off('update', draw));
 
-  scene.time.addEvent({
-    delay: 420,
-    loop: true,
-    callback: () => {
-      const puff = scene.add.circle(stack.x + 2 * k, stack.top - 3 * k, 2 * k, 0x6a6a70, 0.7);
-      scene.tweens.add({
-        targets: puff,
-        y: puff.y - 26 * k,
-        x: puff.x + (6 + Math.random() * 6) * k,
-        scale: 3,
-        alpha: 0,
-        duration: 1800,
-        onComplete: () => puff.destroy(),
-      });
-    },
+  const puff = (size = 1) => {
+    const p = scene.add.circle(stack.x + 2 * k, stack.top - 3 * k, 2 * k * size, 0x6a6a70, 0.7);
+    scene.tweens.add({
+      targets: p,
+      y: p.y - 26 * k,
+      x: p.x + (6 + Math.random() * 6) * k,
+      scale: 3,
+      alpha: 0,
+      duration: 1800,
+      onComplete: () => p.destroy(),
+    });
+  };
+  scene.time.addEvent({ delay: 420, loop: true, callback: () => { if (engine.on) puff(); } });
+
+  if (!ploughing) return;
+  if (!hasFlag('tractorKeys')) {
+    // the keys aren't in it: no going anywhere
+    scene.time.delayedCall(1000, () => { if (!scene.caption) scene.say(line('tractorKeysLost')); });
+    return;
+  }
+  // in goes the key, a turn, and the engine starts; then off over the land
+  scene.busy = true;
+  const key = scene.add.image(ignition.x, ignition.y + 40 * k, tractorKeyTexture(scene)).setOrigin(0.5, 0.1).setDepth(4);
+  scene.tweens.add({
+    targets: key, y: ignition.y, duration: 600, delay: 600, ease: 'Quad.easeOut',
+    onComplete: () => scene.tweens.add({
+      targets: key, angle: 40, duration: 250, delay: 250,
+      onComplete: () => {
+        engine.on = true;
+        scene.cameras.main.shake(400, 0.006);
+        [0, 120, 240].forEach(t => scene.time.delayedCall(t, () => puff(1.6)));
+        scene.tweens.add({ targets: key, angle: { from: 36, to: 44 }, duration: 120, yoyo: true, repeat: -1 });
+        scene.time.delayedCall(700, () => {
+          scene.busy = false;
+          scene.say({ af: 'Vroem! Kom ons ploeg die land.', en: "Vroom! Let's plough the land." }, () => plough(scene, g, w));
+        });
+      },
+    }),
+  });
+}
+
+// Driving over the land, ploughing: clods of earth rolling past on either
+// side of the hood, the cab shaking; then it's done.
+function plough(scene, { k, hz, dashTop, vx, stack }, w) {
+  scene.busy = true;
+  const clods = scene.add.graphics().setDepth(2);
+  const hoodTop = hz + Math.round(14 * k);
+  const hoodHalf = y => (13 + (y - hoodTop) / (dashTop - hoodTop) * 34) * k;
+  const pillar = y => (12 + (y / dashTop) * 6) * k;
+  const all = Array.from({ length: 160 }, () => ({ x: (Math.random() - 0.5) * 3, z: 1 + Math.random() * 11, dark: Math.random() < 0.6 }));
+  const step = (_time, delta) => {
+    clods.clear();
+    all.forEach((c) => {
+      c.z -= delta / 1000 * 4;
+      if (c.z < 1) Object.assign(c, { z: 12, x: (Math.random() - 0.5) * 3 });
+      const y = hz + 2 * k + (dashTop - hz) * (1 / c.z);
+      const x = vx + c.x * (y - hz) * 1.6;
+      if (y >= dashTop || x < pillar(y) || x > w - pillar(y)) return;
+      if (y >= hoodTop && Math.abs(x - vx) < hoodHalf(y) + 1) return;
+      if (y >= stack.top && x > stack.x - 2 * k && x < stack.x + 6 * k) return; // behind the exhaust
+      const s = Math.max(1, Math.round(6 * k / c.z));
+      clods.fillStyle(0x2e1d0c).fillRect(Math.round(x) - 1, Math.round(y) - 1, s * 2 + 2, s + 2);
+      clods.fillStyle(c.dark ? 0x4a2c14 : 0xc08850).fillRect(Math.round(x), Math.round(y), s * 2, s);
+    });
+  };
+  scene.events.on('update', step);
+  scene.events.once('shutdown', () => scene.events.off('update', step));
+  scene.cameras.main.shake(4800, 0.0025);
+  scene.time.delayedCall(5000, () => {
+    scene.events.off('update', step);
+    clods.destroy();
+    setFlag('plowed');
+    scene.busy = false;
+    scene.say({ af: 'So! Die land is geploeg.', en: "There! The land's ploughed." }, () => scene.close());
   });
 }
 
