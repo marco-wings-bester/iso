@@ -71,7 +71,13 @@ bookshelf in the farmhouse, and with them the engine starts and off he goes,
 clods rolling past. And see that the wells work: a bucket from each. The top
 one comes up full (and the pail beside that well has water in it after); the
 bottom one, by the orchard, comes up empty: that well has run dry (to put
-right on Thursday). Both done, he's tired out and can go to bed. Down to town and right to Bob's house are still to come. Both picture maps are
+right on Thursday). Both done, he's tired out and can go to bed. That
+afternoon **the town** opens: down the road from the crossroads (before then
+he turns back: "not today", or "farm work first"), a square with a fountain,
+houses, a cafe and a restaurant to walk round (`src/TownScene.js`; the map is
+`public/assets/town.jpg`, from `art/town-source.jpg`, its paths baked into
+`src/townMask.js` by `scripts/build-masks.py`). The road out at the top right
+goes back to the crossroads. Right to Bob's house is still to come. The picture maps are
 `src/MapScene.js` scenes. In conversations
 Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it

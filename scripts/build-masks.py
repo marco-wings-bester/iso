@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Build the walkable areas of the picture maps (the crossroads, the beach):
+"""Build the walkable areas of the picture maps (the crossroads, the beach, the town):
 
   public/assets/crossroads.jpg → src/roadMask.js   the four roads at the crossroads
   public/assets/seaside.jpg    → src/beachMask.js  the village road, the sand and the jetty
+  public/assets/town.jpg       → src/townMask.js   the town's paths and its square
 
 Pixels are picked by colour (the pictures are shaded, and JPEGs), with extra
 boxes (the jetty's boards, a way down onto the sand), small holes (pebbles,
@@ -37,6 +38,11 @@ def sand(R, G, B):
     return (R >= 228) & (G >= 192) & (G <= 228) & (B >= 116) & (B <= 170) & (R - B >= 70)
 
 
+def light_path(R, G, B):
+    """The paler stretch of the road out of town, between the field walls."""
+    return (R > G) & (G > B) & (R > 185) & (G > 155) & (B > 100) & (R - B > 40)
+
+
 def planks(R, G, B):
     """The jetty's boards."""
     return (R >= 140) & (R <= 205) & (G >= 92) & (G <= 150) & (B >= 52) & (B <= 110) & (R - B >= 60)
@@ -66,6 +72,28 @@ MAPS = [
         ],
         'exclude': [(940, 1050, 180, 160), (1200, 730, 208, 150)],  # thatched roofs (same colour as the road)
     },
+    {
+        'image': 'public/assets/town.jpg',
+        'out': 'src/townMask.js',
+        'what': "the town's paths and its square",
+        'cell': 8,
+        'close': 9,  # (the cobbles in the paths)
+        'start': (760, 1500),  # below the fountain
+        'walk': dirt,
+        'boxes': [
+            ((1000, 0, 536, 420), light_path),  # the road out, at the top right…
+            ((1150, 240, 120, 80), None),       # …joined up where shadows and cobbles break it
+            ((1280, 110, 130, 80), None),
+        ],
+        'exclude': [
+            # the houses, the cafe, the restaurant (their walls share the paths' colour) and the fountain
+            (370, 330, 370, 395), (80, 600, 360, 405), (520, 750, 340, 340), (120, 1030, 360, 355),
+            (1020, 400, 460, 370), (980, 880, 490, 420), (130, 1430, 460, 370), (930, 1410, 400, 380),
+            (130, 1870, 480, 420), (1020, 1980, 400, 400), (655, 1270, 230, 205),
+            # paths off the sides, which the screen cuts off: only the road out at the top right leaves
+            (0, 0, 140, 2752), (1396, 300, 140, 2452),
+        ],
+    },
 ]
 
 
@@ -76,7 +104,8 @@ def build(m):
     for (x, y, w, h), test in m['boxes']:  # extra colours in a box, or (None) all of it
         walk[y:y + h, x:x + w] |= True if test is None else test(R, G, B)[y:y + h, x:x + w]
     mask = Image.fromarray((walk * 255).astype(np.uint8))
-    mask = mask.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))  # close small holes
+    close = m.get('close', 5)
+    mask = mask.filter(ImageFilter.MaxFilter(close)).filter(ImageFilter.MinFilter(close))  # close small holes
     full = np.asarray(mask) > 127
     for x, y, w, h in m['exclude']:
         full[y:y + h, x:x + w] = False
