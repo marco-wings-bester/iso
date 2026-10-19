@@ -43,7 +43,7 @@ export const SPOTS = [
   { view: 'apple', area: { x: 305, y: 105, w: 90, h: 160 }, stand: { x: 286, y: 322 }, face: 'up' },     // big apple tree by the farmhouse
   { view: 'apple', area: { x: 495, y: 950, w: 85, h: 100 }, stand: { x: 482, y: 1050 }, face: 'right' }, // orchard apple trees
   { view: 'apple', area: { x: 580, y: 905, w: 90, h: 95 }, stand: { x: 482, y: 1026 }, face: 'right' },
-  { view: 'pine', area: { x: 612, y: 1145, w: 116, h: 150 }, stand: { x: 456, y: 1318 }, face: 'right' }, // the big pine, bottom right
+  { view: 'pine', area: { x: 612, y: 1145, w: 116, h: 150 }, stand: { x: 410, y: 1318 }, face: 'right' }, // the big pine, bottom right
 ];
 
 export function inRect(x, y, r) {
