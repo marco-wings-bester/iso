@@ -26,7 +26,7 @@ home, with Louise or alone. Then Farmer Jones wants to go to the beach: tap
 right at the bottom of the farm and he walks down the road past the gate to
 the crossroads (`src/RoadScene.js`; the map is
 `public/assets/crossroads.jpg`). On Tuesday the beach is the only way on
-from there: down to town, right to Bob's farm and off to the river he turns
+from there: down to town, right to Derik's place and off to the river he turns
 back, saying why ("the town can wait; today I'm off to the beach"). Up goes
 back to the farm (or tap right at the top); left goes to **the beach**, a little seaside village with
 its cafe, the sand and a jetty (`src/BeachScene.js`). Its people are real
@@ -94,8 +94,8 @@ road from the left, up to his farmhouse's stoep, and down the path to the
 boma with its fire going. Its cows and sheep are cut out of the picture
 (`scripts/cut-derik.py`, from `art/derik-source.jpg`) so they can graze, step
 about and turn round; the fire flickers and throws sparks, and the chimney
-smokes (`src/derikLife.js`). Off the bottom left of the crossroads, a path
-leads to **the river** (`src/RiverScene.js`, `public/assets/river.jpg`): a gold
+smokes (`src/derikLife.js`). Off the bottom left of the crossroads (from
+Friday), a path leads to **the river** (`src/RiverScene.js`, `public/assets/river.jpg`): a gold
 diggers' camp with a tent, pans and a sluice, a rocker on the near sandbar and
 more pans on the far one, across a shallow ford. The picture maps are
 `src/MapScene.js` scenes. In conversations
