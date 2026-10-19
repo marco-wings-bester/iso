@@ -10,9 +10,9 @@ import { WEDNESDAY, choresLeft } from './chores.js';
 // (Tuesday). He comes in from the farm at the top, and the road back up goes
 // there (so does a tap right at the top). Left goes to the beach
 // (BeachScene). Down goes to town (TownScene), from Wednesday afternoon,
-// once the farm work's done; the path off the bottom left to the river
-// (RiverScene), from Wednesday; right to Derik's place (DerikScene), from
-// Thursday, the day of his braai. On Thursday it's only the farm, the beach
+// once the farm work's done; right to Derik's place (DerikScene), from
+// Thursday, the day of his braai; the path off the bottom left to the river
+// (RiverScene), from Friday. On Thursday it's only the farm, the beach
 // and Derik's place, not the town or the river. Till then he turns back at the
 // edge, saying why in his own words. (No name boards: the roads speak for
 // themselves.)
@@ -44,10 +44,11 @@ function derikClosed() {
   return { af: 'Nie vandag nie: môreaand is Derik se braai, dan gaan ek soontoe.', en: "Not today: Derek's braai is tomorrow evening, I'll go then." };
 }
 
-// The river.
+// The river: not before Friday.
 function riverClosed() {
   if (today() === THURSDAY) return braaiDay('Die rivier? Nie vandag nie.', 'The river? Not today.');
-  if (today() >= WEDNESDAY) return null;
+  if (today() > THURSDAY) return null;
+  if (today() === WEDNESDAY) return { af: 'Die rivier? Nie vandag nie: daar is werk op die plaas.', en: "The river? Not today: there's work on the farm." };
   return beachDay('Die rivier? Nie vandag nie.', 'The river? Not today.');
 }
 
