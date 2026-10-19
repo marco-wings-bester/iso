@@ -10,7 +10,7 @@ import Player from './Player.js';
 import { farmGrid } from './WalkGrid.js';
 import { BUILDINGS, ROAD, SPOTS, inRect, rectCenter } from './buildings.js';
 import { IMG_W, IMG_H, PLAYER_SPEED, DEBUG_PATH } from './constants.js';
-import { bike, pedal, SPEED as BIKE_SPEED } from './bike.js';
+import { bike, pedal, park, showParked, tapParked, SPEED as BIKE_SPEED } from './bike.js';
 import { today } from './days.js';
 import { WEDNESDAY, choresLeft } from './chores.js';
 import { asset } from './asset.js';
@@ -57,6 +57,7 @@ export default class GameScene extends Phaser.Scene {
       grid: farmGrid,
       markerScale: UI / zoom,
     });
+    showParked(this); // his bike, if he left it outside a door here
     this.leaving = false;
     this.pail = null;
     this.fillPail();
@@ -96,6 +97,7 @@ export default class GameScene extends Phaser.Scene {
         return;
       }
       const { worldX: x, worldY: y } = pointer;
+      if (tapParked(this, x, y)) return;
       if (this.bob && inRect(x, y, BOB_AREA)) {
         this.player.walkTo(BOB_STAND.x, BOB_STAND.y, () => this.talkToBob());
         return;
@@ -245,6 +247,7 @@ export default class GameScene extends Phaser.Scene {
 
   enter(id) {
     if (id === 'barn') bike.riding = false; // his bike, back on its stand
+    else park(this, BUILDINGS[id].park); // or left outside
     this.leaving = true;
     this.player.stop();
     this.cameras.main.fadeOut(FADE_MS);

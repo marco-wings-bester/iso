@@ -1,5 +1,6 @@
 // Enterable buildings, in farm image px. Tapping anywhere on `area` walks to
 // the door; stepping into `door` goes inside; leaving puts you back at `exit`.
+// On his bike, he leaves it at `park` (src/bike.js; the barn's has a stand inside).
 // `name` is shown as you go in ({ af, en }: src/i18n.js).
 export const BUILDINGS = {
   house: {
@@ -7,6 +8,7 @@ export const BUILDINGS = {
     area: { x: 105, y: 150, w: 200, h: 170 },
     door: { x: 244, y: 322, w: 24, h: 10 },
     exit: { x: 262, y: 344 },
+    park: { x: 298, y: 346 },
   },
   barn: {
     name: { af: 'Skuur', en: 'Barn' },
@@ -19,6 +21,7 @@ export const BUILDINGS = {
     area: { x: 600, y: 680, w: 110, h: 108 },
     door: { x: 612, y: 788, w: 26, h: 10 },
     exit: { x: 624, y: 806 },
+    park: { x: 592, y: 824 },
   },
 };
 
