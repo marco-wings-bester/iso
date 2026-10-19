@@ -2,7 +2,7 @@ import * as farmMask from './walkMask.js';
 import * as roadMask from './roadMask.js';
 import * as beachMask from './beachMask.js';
 import * as townMask from './townMask.js';
-import * as pieterMask from './pieterMask.js';
+import * as derikMask from './derikMask.js';
 import * as riverMask from './riverMask.js';
 
 // A grid of walkable cells over a scene, in world pixels. Movement only checks
@@ -139,9 +139,9 @@ export default class WalkGrid {
 export const farmGrid = WalkGrid.fromMask(farmMask);
 // The picture maps, baked by scripts/build-masks.py: the crossroads'
 // four roads, the beach's road, sand and jetty, the town's paths, the
-// paths on Pieter's farm, and the open ground by the river.
+// paths at Derik's place, and the open ground by the river.
 export const roadGrid = WalkGrid.fromMask(roadMask);
 export const beachGrid = WalkGrid.fromMask(beachMask);
 export const townGrid = WalkGrid.fromMask(townMask);
-export const pieterGrid = WalkGrid.fromMask(pieterMask);
+export const derikGrid = WalkGrid.fromMask(derikMask);
 export const riverGrid = WalkGrid.fromMask(riverMask);

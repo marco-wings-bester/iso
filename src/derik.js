@@ -12,6 +12,32 @@ import { converse } from './dialog.js';
 // Where Johan stands to talk to him: beside him on the jetty, behind Lientjie.
 export const BY_DERIK = { x: 346, y: 2466 };
 
+// At his place on the evening of the braai (Thursday: src/DerikScene.js),
+// by the fire in his boma: Johan pays him back the R15 ('repaid').
+export async function braaiWithDerik(scene, derik) {
+  const cast = {
+    jones: { get sprite() { return scene.player.sprite; } },
+    derik: { sprite: derik.sprite, name: derik.name, color: '#3a6a98' },
+  };
+  scene.player.face('right');
+  await scene.talk(async () => {
+    if (hasFlag('repaid') || !hasFlag('loan')) {
+      await converse(scene, cast, [['derik', { af: 'Kom sit, Johan! Die vleis is amper gaar.', en: "Come and sit, Jones! The meat's nearly done." }]]);
+      return;
+    }
+    await converse(scene, cast, [
+      ['derik', { af: 'Johan! Welkom, welkom! Die vuur brand lekker.', en: 'Jones! Welcome, welcome! The fire is going nicely.' }],
+      { choose: [
+        { say: { af: 'Hier is jou R15. Baie dankie, Derik!', en: "Here's your R15. Thanks so much, Derek!" } },
+        { say: { af: 'Voor ek vergeet: hier is jou geld terug.', en: "Before I forget: here's your money back." } },
+      ] },
+      () => coins(scene, scene.player.sprite, derik.sprite),
+      () => setFlag('repaid'),
+      ['derik', { af: 'Dankie, ou maat! Kom sit, die vleis is amper gaar.', en: "Thanks, old friend! Come and sit, the meat's nearly done." }],
+    ]);
+  });
+}
+
 export async function talkToDerik(scene, derik) {
   const cast = {
     jones: { get sprite() { return scene.player.sprite; } },
@@ -23,7 +49,7 @@ export async function talkToDerik(scene, derik) {
       const days = daysToBraai();
       await converse(scene, cast, [['derik', days >= 2 ? { af: 'Onthou, oormore aand braai ons!', en: "Remember, it's a braai at ours the day after tomorrow!" }
         : days === 1 ? { af: 'Onthou, môreaand braai ons!', en: "Remember, it's a braai at ours tomorrow evening!" }
-          : { af: 'Vanaand braai ons by my huis in die dorpie! Sien jou daar.', en: "Tonight's the braai at my house in the village! See you there." }]]);
+          : { af: 'Vanaand braai ons by my plek, regs by die kruispad! Sien jou daar.', en: "Tonight's the braai at my place, right from the crossroads! See you there." }]]);
       return;
     }
     if (!hasFlag('noCash')) {
@@ -52,7 +78,7 @@ export async function talkToDerik(scene, derik) {
   });
 }
 
-// Three coins, one after the other, from his hand to Johan's, in an arc.
+// Three coins, one after the other, from one's hand to the other's, in an arc.
 function coins(scene, from, to) {
   const a = { x: from.x - 4, y: from.y - 34 };
   const b = { x: to.x, y: to.y - 34 };

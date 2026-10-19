@@ -9,6 +9,7 @@ const NAMES = {
   en: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
 };
 
+export const THURSDAY = 3; // Derik's braai (src/DerikScene.js)
 export const SUNDAY = 6;
 
 // Days since the story started (0: Monday).

@@ -2,7 +2,7 @@ import MapScene from './MapScene.js';
 import { roadGrid } from './WalkGrid.js';
 import { hasFlag, setFlag } from './state.js';
 import { asset } from './asset.js';
-import { today } from './days.js';
+import { today, THURSDAY } from './days.js';
 import { WEDNESDAY, choresLeft } from './chores.js';
 
 // The crossroads past the farm gate (assets/crossroads.jpg), where
@@ -10,15 +10,14 @@ import { WEDNESDAY, choresLeft } from './chores.js';
 // (Tuesday). He comes in from the farm at the top, and the road back up goes
 // there (so does a tap right at the top). Left goes to the beach
 // (BeachScene). Down goes to town (TownScene), from Wednesday afternoon,
-// once the farm work's done; right to Pieter's farm (PieterScene) and the
-// path off the bottom left to the river (RiverScene), from Wednesday. Not on
-// Thursday, though: that's Derik's braai, at his place in the village by the
-// beach, so only the farm and the beach. Till then he turns back at the
+// once the farm work's done; right to Derik's place (DerikScene) and the
+// path off the bottom left to the river (RiverScene), from Wednesday. On
+// Thursday, though, it's Derik's braai: only the farm, the beach and Derik's
+// place, not the town or the river. Till then he turns back at the
 // edge, saying why in his own words. (No name boards: the roads speak for
 // themselves.)
 
 const HERE = { af: 'Die kruispad', en: 'The crossroads' };
-const THURSDAY = 3;
 
 // Tuesday is for the beach: anywhere else, not today (once he's had his
 // coffee there, he's had enough for one day anyway).
@@ -26,8 +25,8 @@ const beachDay = (af, en) => (hasFlag('coffee')
   ? { af: `${af} Ek het genoeg rondgeloop vir een dag.`, en: `${en} I've been about enough for one day.` }
   : { af: `${af} Vandag gaan ek strand toe.`, en: `${en} Today I'm off to the beach.` });
 
-// Thursday is Derik's braai: anywhere but the beach (his place), not today.
-const braaiDay = (af, en) => ({ af: `${af} Vanaand is Derik se braai in die dorpie by die strand.`, en: `${en} Tonight's Derek's braai in the village by the beach.` });
+// Thursday is Derik's braai, at his place: the town and the river, not today.
+const braaiDay = (af, en) => ({ af: `${af} Vanaand is Derik se braai.`, en: `${en} Tonight's Derek's braai.` });
 
 // The road to town: not before Wednesday, and then not till the farm work's
 // done (src/chores.js); not on Thursday.
@@ -38,11 +37,10 @@ function townClosed() {
   return null;
 }
 
-// Pieter's: he's had enough of a day as it is (the chest!).
-function pieterClosed() {
-  if (today() === THURSDAY) return braaiDay('Ek kuier later by Pieter.', "I'll visit Bob another time.");
+// Derik's place: not on Tuesday, beach day.
+function derikClosed() {
   if (today() >= WEDNESDAY) return null;
-  return { af: 'Pieter het vandag genoeg gehad… ek los hom eers.', en: "Bob's had quite enough for one day… I'll leave him be." };
+  return beachDay('Nee wat, nie vandag nie.', 'Nah, not today.');
 }
 
 // The river.
@@ -65,13 +63,13 @@ export default class RoadScene extends MapScene {
       beach: { side: 'left', near: 940, to: 'Beach' },
       river: { side: 'left', near: 1420, to: 'River', closed: riverClosed },
       town: { side: 'bottom', near: 345, to: 'Town', closed: townClosed },
-      pieter: { side: 'right', near: 955, to: 'Pieter', closed: pieterClosed },
+      derik: { side: 'right', near: 955, to: 'Derik', closed: derikClosed },
     };
   }
 
   // `at`: where he is, when redrawn for a new screen size; `from`: the road
   // he comes in by (the farm, unless back from the beach, the town,
-  // Pieter's or the river).
+  // Derik's or the river).
   create({ at, from = 'farm' } = {}) {
     this.place(at, from);
     if (at) return;
