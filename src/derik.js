@@ -19,7 +19,8 @@ export async function braaiWithDerik(scene, derik) {
     jones: { get sprite() { return scene.player.sprite; } },
     derik: { sprite: derik.sprite, name: derik.name, color: '#3a6a98' },
   };
-  scene.player.face('right');
+  scene.player.face(derik.x < scene.player.x ? 'left' : 'right');
+  derik.notice(scene.player);
   await scene.talk(async () => {
     if (hasFlag('repaid') || !hasFlag('loan')) {
       await converse(scene, cast, [['derik', { af: 'Kom sit, Johan! Die vleis is amper gaar.', en: "Come and sit, Jones! The meat's nearly done." }]]);
