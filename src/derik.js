@@ -1,6 +1,8 @@
 import { hasFlag, setFlag, setValue } from './state.js';
 import { today, daysToBraai } from './days.js';
 import { converse } from './dialog.js';
+import { think } from './bubble.js';
+import { line } from './hints.js';
 
 // Derik, fishing off the end of the jetty at the beach (src/villagers.js).
 // Once Boer Johan has found he can't pay for his coffee ('noCash',
@@ -13,7 +15,11 @@ import { converse } from './dialog.js';
 export const BY_DERIK = { x: 346, y: 2466 };
 
 // At his place on the evening of the braai (Thursday: src/DerikScene.js),
-// by the fire in his boma: Johan pays him back the R15 ('repaid').
+// by the fire in his boma. Johan pays him back the R15 ('repaid'); Derik's
+// lit the fire, but he hasn't got any meat: would Johan bring some
+// ('needMeat')? Two chickens from Johan's hen house, with the knife from his
+// tool shed (src/views/coop.js: 'chickens'), and they're on the grill
+// ('meatBrought').
 export async function braaiWithDerik(scene, derik) {
   const cast = {
     jones: { get sprite() { return scene.player.sprite; } },
@@ -22,21 +28,46 @@ export async function braaiWithDerik(scene, derik) {
   scene.player.face(derik.x < scene.player.x ? 'left' : 'right');
   derik.notice(scene.player);
   await scene.talk(async () => {
-    if (hasFlag('repaid') || !hasFlag('loan')) {
-      await converse(scene, cast, [['derik', { af: 'Kom sit, Johan! Die vleis is amper gaar.', en: "Come and sit, Jones! The meat's nearly done." }]]);
+    if (hasFlag('meatBrought')) {
+      await converse(scene, cast, [['derik', { af: 'Kom sit, Johan! Die hoender is amper gaar.', en: "Come and sit, Jones! The chicken's nearly done." }]]);
       return;
     }
-    await converse(scene, cast, [
-      ['derik', { af: 'Johan! Welkom, welkom! Die vuur brand lekker.', en: 'Jones! Welcome, welcome! The fire is going nicely.' }],
+    if (hasFlag('chickens')) {
+      await converse(scene, cast, [
+        ['derik', { af: 'Hoender! Pragtig, Johan. Kom ons gooi dit op die rooster.', en: "Chicken! Beautiful, Jones. Let's get it on the grill." }],
+        () => setFlag('meatBrought'),
+      ]);
+      return;
+    }
+    if (hasFlag('needMeat')) {
+      await converse(scene, cast, [['derik', { af: 'Die vuur is reg, net die vleis kort nog!', en: "The fire's ready, it's just the meat we're missing!" }]]);
+      return;
+    }
+    const steps = [['derik', { af: 'Johan! Welkom, welkom! Die vuur brand lekker.', en: 'Jones! Welcome, welcome! The fire is going nicely.' }]];
+    if (hasFlag('loan') && !hasFlag('repaid')) {
+      steps.push(
+        { choose: [
+          { say: { af: 'Hier is jou R15. Baie dankie, Derik!', en: "Here's your R15. Thanks so much, Derek!" } },
+          { say: { af: 'Voor ek vergeet: hier is jou geld terug.', en: "Before I forget: here's your money back." } },
+        ] },
+        () => coins(scene, scene.player.sprite, derik.sprite),
+        () => setFlag('repaid'),
+        ['derik', { af: 'Dankie, ou maat!', en: 'Thanks, old friend!' }],
+      );
+    }
+    steps.push(
+      ['derik', { af: 'Ek het die vuur al aangesteek… maar ek het glad nie vleis nie! Sal jy omgee om vir ons vleis te bring?', en: "I've already got the fire going… but I haven't got any meat at all! Would you mind bringing us some?" }],
       { choose: [
-        { say: { af: 'Hier is jou R15. Baie dankie, Derik!', en: "Here's your R15. Thanks so much, Derek!" } },
-        { say: { af: 'Voor ek vergeet: hier is jou geld terug.', en: "Before I forget: here's your money back." } },
+        { say: { af: 'Glad nie! Ek kry gou vir ons iets.', en: "Not at all! I'll fetch us something." } },
+        { say: { af: 'Geen probleem, ek is nou terug.', en: "No problem, I'll be right back." } },
       ] },
-      () => coins(scene, scene.player.sprite, derik.sprite),
-      () => setFlag('repaid'),
-      ['derik', { af: 'Dankie, ou maat! Kom sit, die vleis is amper gaar.', en: "Thanks, old friend! Come and sit, the meat's nearly done." }],
-    ]);
+      () => setFlag('needMeat'),
+      ['derik', { af: 'Lekker! Die vuur sal wag.', en: 'Great! The fire will wait.' }],
+    );
+    await converse(scene, cast, steps);
   });
+  const hint = hasFlag('needMeat') && !hasFlag('chickens') ? line('needMeat') : null;
+  if (hint) think(scene, scene.player.sprite, hint);
 }
 
 export async function talkToDerik(scene, derik) {

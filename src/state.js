@@ -20,7 +20,10 @@
 // (`day` below). Wednesday's farm work before bed (src/chores.js): the
 // tractor's keys on the bookshelf ('tractorKeys'), ploughing ('plowed'), a
 // bucket from each well ('wellTop'; 'wellBottom', which is dry); all done
-// ('choresDone').
+// ('choresDone'). Thursday, Derik's braai at his place: Johan pays him back
+// ('repaid'); Derik has no meat ('needMeat') → the knife in the tool shed
+// ('knife') → two hens from the hen house (`hens`, then 'chickens') → on
+// Derik's grill ('meatBrought').
 // Numbers kept with them: `day`, the day of the week (0 = Monday, the day
 // the story starts; one on each night he sleeps: src/days.js), and
 // `loanDay`, the day Derik lent him the R15 (his braai is two days later).

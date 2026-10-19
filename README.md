@@ -72,8 +72,12 @@ and so on. Derik's braai is the evening of the day after tomorrow from when
 he lent the R15: Derik, and Johan's first thought of the day, remind him as it comes up, and
 it can't be before then. **Thursday** is the braai, at Derik's place: only the farm,
 the beach and Derik's place are open (the town and the river not today), and
-Derik's not fishing but at the brick braai in his boma; tapping him there,
-Johan pays back the R15 ('repaid').
+Derik's not fishing but waiting by the fire in his boma; tapping him there,
+Johan pays back the R15 ('repaid'). He's lit the fire, but he hasn't got any
+meat: would Johan bring some? Back on the farm, tapping the hen house looks
+inside it (`src/views/coop.js`): hens on their nests and in the straw. To
+take two for the braai Johan needs a knife; it's on the workbench in the tool
+shed (from then on). With two chickens, back to Derik's: on the grill.
 
 **Wednesday** there's farm work before bed (`src/chores.js`; the morning
 screen and the menu list it, ticked off as it's done). Plough the land: in
