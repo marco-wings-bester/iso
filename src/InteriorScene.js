@@ -193,6 +193,14 @@ export default class InteriorScene extends Phaser.Scene {
     }
 
     if (building === 'cafe') setUpCafe(this);
+    // home for salt for Derik's braai (src/derik.js): the salt pot's empty
+    if (house && hasFlag('needSalt') && !hasFlag('salt') && !hasFlag('noSaltHome')) {
+      setFlag('noSaltHome');
+      this.time.delayedCall(800, async () => {
+        await this.think({ af: 'Kom ek kyk of daar sout is…', en: "Let me see if there's any salt…" });
+        if (this.sys.isActive()) this.think(line('noSalt'));
+      });
+    }
 
     this.game.events.emit('location', { name: room.name ?? BUILDINGS[building].name });
   }
@@ -231,7 +239,8 @@ export default class InteriorScene extends Phaser.Scene {
   // apple. Otherwise a hint, at the level set in the menu.
   useCupboard() {
     this.player.face('left');
-    if (!hasFlag('read')) this.think(line('cupboardNoRecipe'));
+    if (hasFlag('needSalt') && !hasFlag('salt')) this.think(line('noSalt'));
+    else if (!hasFlag('read')) this.think(line('cupboardNoRecipe'));
     else if (hasFlag('gavePie')) this.think({ af: 'Pieter het nou die tert.', en: 'Bob has the pie now.' });
     else if (hasFlag('baked')) this.think({ af: 'Ek het al klaar ’n tert gebak.', en: "I've already baked a pie." });
     else if (!hasFlag('apple')) this.think(line('cupboardNoApple'));

@@ -16,7 +16,9 @@ import { line } from './hints.js';
 // carries his steaming cup about ('coffee'): he can sit down at a table with
 // it, sipping, or look out of the window at the garden behind the cafe
 // (ViewScene 'garden'). Out of the door, it's finished ('coffeeDone'), and
-// at the beach he says how wide awake he is (BeachScene).
+// at the beach he says how wide awake he is (BeachScene). On Thursday, with
+// no salt at home for Derik's braai ('needSalt', src/derik.js), he has a chat
+// with her and she lends him her salt pot ('salt').
 
 const SANNIE = { name: { af: 'Sannie', en: 'Sally' }, color: '#2a7ab0' };
 const LOOK = {
@@ -175,6 +177,25 @@ export async function atCounter(scene) {
   player.face('up');
   sannie.play('sannie-px-idle-down');
   lock(scene, true);
+  if (hasFlag('needSalt') && !hasFlag('salt')) {
+    await converse(scene, cast(scene), [
+      ['sannie', { af: 'Johan! Nog ’n koffie?', en: 'Jones! Another coffee?' }],
+      { choose: [
+        { say: { af: 'Nee dankie, Sannie. Ek kom eintlik vir sout vra.', en: "No thanks, Sally. I've actually come to ask for salt." } },
+        { say: { af: 'Nie vandag nie. Het jy dalk sout wat ek kan leen?', en: 'Not today. Have you got some salt I could borrow?' } },
+      ] },
+      ['sannie', { af: 'Sout? Waarvoor dan?', en: 'Salt? Whatever for?' }],
+      { choose: [
+        { say: { af: 'Derik braai vanaand, en die hoender is op die vuur, maar hy het nie sout nie.', en: "Derek's having a braai tonight, the chicken's on the fire, but he hasn't any salt." } },
+        { say: { af: 'Vir Derik se braai. Daar is hoender, maar nie ’n korreltjie sout nie!', en: "For Derek's braai. There's chicken, but not a grain of salt!" } },
+      ] },
+      ['sannie', { af: 'Ag, Derik en sy braaie! Hier, vat my soutpotjie. Bring dit net weer terug, hoor?', en: "Oh, Derek and his braais! Here, take my salt pot. Just bring it back, won't you?" }],
+      () => setFlag('salt'),
+      () => scene.think(line('saltLent')),
+    ]);
+    lock(scene, false);
+    return;
+  }
   if (hasFlag('coffee')) {
     await converse(scene, cast(scene), [['sannie', { af: 'Lekker, nè? Kom gerus weer!', en: "Lovely, isn't it? Do come again!" }]]);
     lock(scene, false);
