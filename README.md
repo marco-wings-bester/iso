@@ -91,7 +91,10 @@ houses, a cafe and a restaurant to walk round (`src/TownScene.js`; the map is
 goes back to the crossroads. Right from the crossroads is **Derek's place**
 (Derik se plek: `src/DerikScene.js`, `public/assets/derik.jpg`): in by the
 road from the left, up to his farmhouse's stoep, and down the path to the
-boma with its fire going. Off the bottom left of the crossroads, a path
+boma with its fire going. Its cows and sheep are cut out of the picture
+(`scripts/cut-derik.py`, from `art/derik-source.jpg`) so they can graze, step
+about and turn round; the fire flickers and throws sparks, and the chimney
+smokes (`src/derikLife.js`). Off the bottom left of the crossroads, a path
 leads to **the river** (`src/RiverScene.js`, `public/assets/river.jpg`): a gold
 diggers' camp with a tent, pans and a sluice, a rocker on the near sandbar and
 more pans on the far one, across a shallow ford. The picture maps are

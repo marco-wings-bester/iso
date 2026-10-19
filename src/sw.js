@@ -4,7 +4,7 @@
 // version starts a fresh cache (and the old one is dropped): pictures never
 // get out of step with the code that uses them.
 const CACHE = 'farm-walk-__BUILD_ID__';
-const PICTURES = ['map.png', 'crossroads.jpg', 'seaside.jpg', 'seaside-sprites.png', 'seaside-overhead.png', 'town.jpg', 'derik.jpg', 'river.jpg'];
+const PICTURES = ['map.png', 'crossroads.jpg', 'seaside.jpg', 'seaside-sprites.png', 'seaside-overhead.png', 'town.jpg', 'derik.jpg', 'derik-sprites.png', 'river.jpg'];
 const PRECACHE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', ...PICTURES.map(p => `assets/${p}?v=__BUILD_ID__`)];
 
 self.addEventListener('install', (event) => {

@@ -21,7 +21,7 @@ export function preloadSeaside(scene) {
 
 // A frame (x, y, w, h in picture px) of a fitted texture, as an image whose
 // top left is at (x, y) in the picture, its origin at (ox, oy) of it.
-function piece(scene, fitted, name, [x, y, w, h], at, ox, oy) {
+export function piece(scene, fitted, name, [x, y, w, h], at, ox, oy) {
   const { key, tex, sx, sy } = fitted;
   const fx = Math.floor(x / sx);
   const fy = Math.floor(y / sy);
@@ -34,7 +34,7 @@ function piece(scene, fitted, name, [x, y, w, h], at, ox, oy) {
 }
 
 // A little texture drawn once: (w, h) px, painted by `paint(g)`.
-function texture(scene, key, w, h, paint) {
+export function texture(scene, key, w, h, paint) {
   if (!scene.textures.exists(key)) {
     const g = scene.make.graphics({ add: false });
     paint(g);
@@ -51,7 +51,7 @@ function ripple(scene, x, y, size = 1) {
 }
 
 // Every so often (between `min` and `max` ms), `act()`.
-function nowAndThen(scene, min, max, act) {
+export function nowAndThen(scene, min, max, act) {
   const next = () => scene.time.delayedCall(rand(min, max), () => { act(); next(); });
   next();
 }

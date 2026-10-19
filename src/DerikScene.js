@@ -4,20 +4,22 @@ import { asset } from './asset.js';
 import { today, THURSDAY } from './days.js';
 import { placeVillagers, BEACH_VILLAGERS } from './villagers.js';
 import { braaiWithDerik } from './derik.js';
+import { preloadDerik, animateDerik } from './derikLife.js';
 
 // Derik's place (assets/derik.jpg), right from the crossroads: his
 // farmhouse with its long stoep and a water tower behind, cattle and sheep
 // about, and below it his boma, a fire going in it, logs to sit on round it
 // and a brick braai. Boer Johan comes in by the road from the left, which
 // goes up to the stoep's steps, a path off it down to the boma; that road's
-// the way back to the crossroads. On Thursday it's Derik's braai: he's at
-// the braai in the boma (not fishing at the beach), and Johan pays him back
-// his R15 (src/derik.js).
+// the way back to the crossroads. His cows and sheep graze about, the fire
+// burns and the chimney smokes (src/derikLife.js). On Thursday it's Derik's
+// braai: he's waiting by the fire in the boma (not fishing at the beach), and
+// Johan pays him back his R15 (src/derik.js).
 
 const HERE = { af: 'Derik se plek', en: "Derek's place" };
-// Derik at his braai, and where Johan stands to talk to him.
-const AT_BRAAI = { x: 1196, y: 1300 };
-const BY_BRAAI = { x: 1120, y: 1310 };
+// Derik by the fire, and where Johan stands to talk to him.
+const BY_FIRE = { x: 1116, y: 1336 };
+const BY_DERIK = { x: 1180, y: 1340 };
 
 export default class DerikScene extends MapScene {
   constructor() {
@@ -32,21 +34,27 @@ export default class DerikScene extends MapScene {
     };
   }
 
+  preload() {
+    super.preload();
+    preloadDerik(this);
+  }
+
   // `at`: where he is, when redrawn for a new screen size.
   create({ at } = {}) {
     this.place(at, at ? null : 'crossroads');
+    animateDerik(this);
     const derik = BEACH_VILLAGERS.find(v => v.id === 'derik');
     this.villagers = today() === THURSDAY
-      ? placeVillagers(this, [{ ...derik, does: 'stand', at: AT_BRAAI, face: 'left' }], this.map.scale)
+      ? placeVillagers(this, [{ ...derik, does: 'stand', at: BY_FIRE, face: 'left' }], this.map.scale)
       : [];
     if (!at) this.game.events.emit('location', { name: HERE });
   }
 
-  // Tapping Derik: Johan walks over to the braai and they talk.
+  // Tapping Derik: Johan walks over to him by the fire and they talk.
   tapThing(x, y) {
     const derik = this.villagers.find(v => v.contains(x, y));
     if (!derik) return false;
-    this.player.walkTo(BY_BRAAI.x, BY_BRAAI.y, () => braaiWithDerik(this, derik));
+    this.player.walkTo(BY_DERIK.x, BY_DERIK.y, () => braaiWithDerik(this, derik));
     return true;
   }
 
