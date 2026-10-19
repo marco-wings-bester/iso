@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Build the walkable areas of the picture maps (the crossroads, the beach, the town, Pieter's farm, the river):
+"""Build the walkable areas of the picture maps (the crossroads, the beach, the town, Derik's place, the river):
 
   public/assets/crossroads.jpg → src/roadMask.js   the four roads at the crossroads
   public/assets/seaside.jpg    → src/beachMask.js  the village road, the sand and the jetty
   public/assets/town.jpg       → src/townMask.js   the town's paths and its square
-  public/assets/pieter.jpg     → src/pieterMask.js the paths on Pieter's farm, and his braai
+  public/assets/derik.jpg      → src/derikMask.js  the paths at Derik's place, and his braai
   public/assets/river.jpg      → src/riverMask.js  the open ground by the river, its sandbars and a ford
 
 Pixels are picked by colour (the pictures are shaded, and JPEGs), with extra
@@ -110,9 +110,9 @@ MAPS = [
         ],
     },
     {
-        'image': 'public/assets/pieter.jpg',
-        'out': 'src/pieterMask.js',
-        'what': "the paths on Pieter's farm, and the floor round his braai fire",
+        'image': 'public/assets/derik.jpg',
+        'out': 'src/derikMask.js',
+        'what': "the paths at Derik's place, and the floor round his braai fire",
         'cell': 8,
         'close': 7,
         'start': (220, 1060),  # on the road in, below the farmhouse

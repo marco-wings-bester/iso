@@ -70,7 +70,10 @@ up; the day at the top changes with the dawn. He's up in the early light,
 thinking of what the day holds (`src/morning.js`). So: Monday he bakes and eats the pie and sleeps; Tuesday Bob comes by,
 and so on. Derik's braai is the evening of the day after tomorrow from when
 he lent the R15: Derik, and Johan's first thought of the day, remind him as it comes up, and
-it can't be before then. (The braai itself is still to come.)
+it can't be before then. **Thursday** is the braai, at Derik's place: only the farm,
+the beach and Derik's place are open (the town and the river not today), and
+Derik's not fishing but at the brick braai in his boma; tapping him there,
+Johan pays back the R15 ('repaid').
 
 **Wednesday** there's farm work before bed (`src/chores.js`; the morning
 screen and the menu list it, ticked off as it's done). Plough the land: in
@@ -85,10 +88,10 @@ he turns back: "not today", or "farm work first"), a square with a fountain,
 houses, a cafe and a restaurant to walk round (`src/TownScene.js`; the map is
 `public/assets/town.jpg`, from `art/town-source.jpg`, its paths baked into
 `src/townMask.js` by `scripts/build-masks.py`). The road out at the top right
-goes back to the crossroads. Right from the crossroads is **Bob's farm**
-(Pieter se plaas: `src/PieterScene.js`, `public/assets/pieter.jpg`): in by the
+goes back to the crossroads. Right from the crossroads is **Derek's place**
+(Derik se plek: `src/DerikScene.js`, `public/assets/derik.jpg`): in by the
 road from the left, up to his farmhouse's stoep, and down the path to the
-braai with its fire going. Off the bottom left of the crossroads, a path
+boma with its fire going. Off the bottom left of the crossroads, a path
 leads to **the river** (`src/RiverScene.js`, `public/assets/river.jpg`): a gold
 diggers' camp with a tent, pans and a sluice, a rocker on the near sandbar and
 more pans on the far one, across a shallow ford. The picture maps are

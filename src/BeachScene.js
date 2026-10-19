@@ -5,6 +5,7 @@ import { placeVillagers, BEACH_VILLAGERS } from './villagers.js';
 import { asset } from './asset.js';
 import { talkToDerik, BY_DERIK } from './derik.js';
 import { hasFlag, setFlag } from './state.js';
+import { today, THURSDAY } from './days.js';
 import { think } from './bubble.js';
 import { line } from './hints.js';
 import { park } from './bike.js';
@@ -50,7 +51,9 @@ export default class BeachScene extends MapScene {
   create({ at, out } = {}) {
     this.place(at, at ? null : 'crossroads');
     animateSeaside(this);
-    this.villagers = placeVillagers(this, BEACH_VILLAGERS, this.map.scale);
+    // (not Derik on Thursday: he's at home, getting the braai going: src/DerikScene.js)
+    const here = today() === THURSDAY ? BEACH_VILLAGERS.filter(v => v.id !== 'derik') : BEACH_VILLAGERS;
+    this.villagers = placeVillagers(this, here, this.map.scale);
     if (!at || out) this.game.events.emit('location', { name: HERE });
     // out of the cafe, his coffee finished: wide awake now
     if (out && hasFlag('coffeeDone') && !hasFlag('awake')) {
