@@ -2,7 +2,7 @@ import MapScene from './MapScene.js';
 import { roadGrid } from './WalkGrid.js';
 import { hasFlag, setFlag } from './state.js';
 import { asset } from './asset.js';
-import { today } from './days.js';
+import { today, daysToBraai } from './days.js';
 import { WEDNESDAY, choresLeft } from './chores.js';
 
 // The crossroads past the farm gate (assets/crossroads.jpg), where
@@ -10,7 +10,7 @@ import { WEDNESDAY, choresLeft } from './chores.js';
 // (Tuesday). He comes in from the farm at the top, and the road back up goes
 // there (so does a tap right at the top). Left goes to the beach
 // (BeachScene). Down goes to town (TownScene), from Wednesday afternoon,
-// once the farm work's done; right to Pieter's farm (PieterScene) and the
+// once the farm work's done (but not on the day of Derik's braai); right to Pieter's farm (PieterScene) and the
 // path off the bottom left to the river (RiverScene), from Wednesday. Till
 // then he turns back at the edge, saying why in his own words. (No name
 // boards: the roads speak for themselves.)
@@ -24,10 +24,11 @@ const beachDay = (af, en) => (hasFlag('coffee')
   : { af: `${af} Vandag gaan ek strand toe.`, en: `${en} Today I'm off to the beach.` });
 
 // The road to town: not before Wednesday, and then not till the farm work's
-// done (src/chores.js).
+// done (src/chores.js); and not on the day of Derik's braai (src/days.js).
 function townClosed() {
   if (today() < WEDNESDAY) return beachDay('Nee wat, die dorp kan wag.', 'Nah, the town can wait.');
   if (choresLeft()) return { af: 'Eers die werk op die plaas, dan kan ek dorp toe gaan.', en: 'Farm work first, then I can go to town.' };
+  if (daysToBraai() === 0) return { af: 'Nie vandag nie: vanaand is Derik se braai in die dorpie by die strand.', en: "Not today: tonight's Derek's braai in the village by the beach." };
   return null;
 }
 
