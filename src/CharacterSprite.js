@@ -687,8 +687,8 @@ export function createBob(scene) {
 // Farmer Jones riding it: 'player-bike' (outdoors) and 'player-bike-px'
 // (crisp, indoors), frames BIKE_W wide (the same height and feet row as his
 // walking ones), with `${key}-walk-${dir}` (pedalling, the wheels turning)
-// and `${key}-idle-${dir}`. And the bike on its own on its stand in the
-// barn, 'bike-px'. Side views are drawn facing left, 'right' mirrored.
+// and `${key}-idle-${dir}`. And the bike on its own on its stand: 'bike-px'
+// in the barn, 'bike' left outside a door. Side views are drawn facing left, 'right' mirrored.
 export const BIKE_W = 24;
 const BIKE_COLOURS = {
   G: '#3a9a4a', g: '#2a6a34', // frame
@@ -834,11 +834,12 @@ export function createBike(scene) {
     tex.refresh();
     if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   });
-  if (!scene.textures.exists('bike-px')) {
-    const tex = scene.textures.createCanvas('bike-px', BIKE_W, FRAME_H);
-    drawBikeFrame(tex.getContext(), 0, 0, buildParkedBike(), 1, BIKE_SHADOW.side);
+  [['bike', ART_PX], ['bike-px', 1]].forEach(([key, p]) => {
+    if (scene.textures.exists(key)) return;
+    const tex = scene.textures.createCanvas(key, BIKE_W * p, FRAME_H * p);
+    drawBikeFrame(tex.getContext(), 0, 0, buildParkedBike(), p, BIKE_SHADOW.side);
     tex.refresh();
-    tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
-  }
+    if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  });
   look = FARMER;
 }

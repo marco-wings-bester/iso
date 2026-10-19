@@ -72,8 +72,8 @@ export default class InteriorScene extends Phaser.Scene {
     room.animate?.(this);
     createCharacter(this);
     createBike(this);
-    // his bike, if it's here on its stand (and not out with him)
-    this.bikeHere = !!room.bike && !bike.riding;
+    // his bike, if it's here on its stand (and not out with him, or left outside another door)
+    this.bikeHere = !!room.bike && !bike.riding && !bike.parked;
     if (this.bikeHere) this.bikeImage = this.add.image(room.bike.x, room.bike.y, 'bike-px').setOrigin(0).setDepth(room.bike.y + 26);
 
     // (on his bike, he's wider: the wheels stay off the walls and furniture)

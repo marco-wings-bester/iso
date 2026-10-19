@@ -7,6 +7,7 @@ import { talkToDerik, BY_DERIK } from './derik.js';
 import { hasFlag, setFlag } from './state.js';
 import { think } from './bubble.js';
 import { line } from './hints.js';
+import { park } from './bike.js';
 
 // The beach (assets/seaside.jpg), down the left-hand road from the crossroads:
 // a little seaside village (houses, a bakery, the Cozy Seaside Cafe, a
@@ -16,12 +17,13 @@ import { line } from './hints.js';
 // right; he can walk the road, the sand and out along the jetty. Off the
 // right-hand edge (either road) is back to the crossroads. Tapping the cafe
 // (or its deck) walks him to the foot of its steps and in (ROOMS.cafe,
-// src/cafe.js); he comes out there again.
+// src/cafe.js); he comes out there again. His bike stays out, by the steps.
 
 const HERE = { af: 'Die strand', en: 'The beach' };
 // The cafe and its deck in the picture, and the foot of the deck's steps.
 const CAFE = [{ x: 890, y: 1290, w: 410, h: 340 }, { x: 670, y: 1610, w: 560, h: 160 }];
 const CAFE_STEPS = { x: 776, y: 1806 };
+const CAFE_PARK = { x: 700, y: 1830 };
 
 export default class BeachScene extends MapScene {
   constructor() {
@@ -82,6 +84,7 @@ export default class BeachScene extends MapScene {
   }
 
   enterCafe() {
+    park(this, CAFE_PARK);
     this.leaving = true;
     this.player.stop();
     this.player.face('up');

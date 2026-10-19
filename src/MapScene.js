@@ -3,7 +3,7 @@ import { createCharacter, createBike } from './CharacterSprite.js';
 import Player from './Player.js';
 import { PLAYER_SPEED } from './constants.js';
 import { UI } from './screen.js';
-import { bike, pedal, SPEED as BIKE_SPEED } from './bike.js';
+import { bike, pedal, showParked, tapParked, SPEED as BIKE_SPEED } from './bike.js';
 import { think } from './bubble.js';
 
 // A place drawn as one picture (the crossroads, the beach). The
@@ -15,7 +15,7 @@ import { think } from './bubble.js';
 // (not today, say), he steps back, turns round and thinks them instead. A tap near the end of a road walks all the
 // way to it. Turning the phone fits the picture again, keeping him where he
 // is (or, if that's off the screen now, at `home`). On his bike (src/bike.js)
-// he rides here too.
+// he rides here too (and where he left it outside a door, it's still there).
 //
 // A scene extends this with `map` = { key, file, w, h, grid, scale, home }
 // and `exits`, calls `place(at)` in create and `move(delta)` and `edges()` in
@@ -80,6 +80,7 @@ export default class MapScene extends Phaser.Scene {
       markerScale: UI / z,
     });
     this.player.sprite.setScale(scale);
+    showParked(this, scale);
     this.leaving = false;
     this.busy = false;  // talking: taps and keys only move it along
     this.choice = null; // replies to pick from (src/dialog.js)
@@ -103,6 +104,7 @@ export default class MapScene extends Phaser.Scene {
         return;
       }
       if (this.leaving || this.busy) return;
+      if (tapParked(this, x, y)) return;
       if (this.tapThing?.(x, y)) return; // someone or something there (the scene's own)
       // near the end of a road: all the way to its end (and, for a road
       // with `strip`, anywhere along that edge of the screen)
