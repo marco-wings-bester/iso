@@ -88,7 +88,7 @@ he turns back: "not today", or "farm work first"), a square with a fountain,
 houses, a cafe and a restaurant to walk round (`src/TownScene.js`; the map is
 `public/assets/town.jpg`, from `art/town-source.jpg`, its paths baked into
 `src/townMask.js` by `scripts/build-masks.py`). The road out at the top right
-goes back to the crossroads. Right from the crossroads is **Derek's place**
+goes back to the crossroads. Right from the crossroads (from Thursday) is **Derek's place**
 (Derik se plek: `src/DerikScene.js`, `public/assets/derik.jpg`): in by the
 road from the left, up to his farmhouse's stoep, and down the path to the
 boma with its fire going. Its cows and sheep are cut out of the picture
