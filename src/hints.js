@@ -159,6 +159,27 @@ const LINES = {
     none: { af: 'Die trekker se sleutels! Op die boekrak, nogal.', en: 'The tractor keys! On the bookshelf, of all places.' },
     explicit: { af: 'Die trekker se sleutels! Nou kan ek gaan ploeg: tik op die trekker.', en: 'The tractor keys! Now I can go ploughing: tap the tractor.' },
   },
+  // Thursday: Derik's asked for meat for the braai (src/derik.js)
+  needMeat: {
+    none: null,
+    subtle: { af: 'Vleis vir die braai… ek het mos hoenders by die huis.', en: "Meat for the braai… I've got chickens at home." },
+    explicit: { af: 'Ek kan twee hoenders uit my hoenderhok op die plaas gaan haal.', en: 'I can fetch two chickens from my hen house on the farm.' },
+  },
+  // in the hen house, without a knife (src/views/coop.js)
+  coopNoKnife: {
+    none: { af: 'Ek het nie ’n mes nie.', en: "I haven't got a knife." },
+    subtle: { af: 'Ek het nie ’n mes nie. Waar het ek laas een gesien…?', en: "I haven't got a knife. Where did I last see one…?" },
+    explicit: { af: 'Ek het nie ’n mes nie. Daar lê een op die werkbank in die gereedskapskuur.', en: "I haven't got a knife. There's one on the workbench in the tool shed." },
+  },
+  knifeFound: {
+    none: { af: '’n Mes.', en: 'A knife.' },
+    explicit: { af: '’n Mes! Nou kan ek twee hoenders uit die hoenderhok vir die braai kry.', en: 'A knife! Now I can get two chickens from the hen house for the braai.' },
+  },
+  // two chickens for the braai
+  chickens: {
+    none: { af: 'Twee hoenders vir Derik se braai!', en: "Two chickens for Derek's braai!" },
+    explicit: { af: 'Twee hoenders vir Derik se braai! Nou terug na sy plek toe.', en: "Two chickens for Derek's braai! Now back to his place." },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },
