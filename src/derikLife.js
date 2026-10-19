@@ -2,11 +2,15 @@ import Phaser from 'phaser';
 import { ANIMALS } from './derikSprites.js';
 import { piece, nowAndThen } from './seaside.js';
 import { asset } from './asset.js';
+import { hasFlag } from './state.js';
 
 // Life at Derik's place (DerikScene): his cows and sheep, cut out of the
 // picture (scripts/cut-derik.py) and put back where they were, grazing,
 // now and then shuffling a step or turning round; the fire in his boma
 // burning, sparks flying up from it; and smoke from the farmhouse chimney.
+// Once Johan's brought the chickens for the braai ('meatBrought',
+// src/derik.js), they're on a grill over the fire, sizzling (`scene.grill`),
+// and salted when he brings the salt (`scene.saltChicken`).
 // All in picture px.
 
 const SHEET = 'derik-sprites';
@@ -23,6 +27,62 @@ export function animateDerik(scene) {
   Object.entries(ANIMALS).forEach(([name, { frame, at }]) => animal(scene, sheet, name, frame, at));
   fire(scene);
   chimney(scene);
+  scene.grilled = false;
+  scene.grill = () => grill(scene);
+  scene.saltChicken = () => salt(scene);
+  if (hasFlag('meatBrought')) grill(scene);
+}
+
+// The grill across the fire, two chickens on it browning, a wisp of steam
+// off them now and then.
+function grill(scene) {
+  if (scene.grilled) return;
+  scene.grilled = true;
+  const { x, y } = FIRE;
+  const g = scene.add.graphics().setDepth(y + 4);
+  const L = x - 64;
+  const T = y - 38;
+  const W = 128;
+  const H = 34;
+  g.fillStyle(0x2e1d0c).fillRect(L - 2, T - 2, W + 4, H + 4); // its outline…
+  g.fillStyle(0x4a4644).fillRect(L, T, W, H);                  // …the frame
+  g.fillStyle(0x2e1d0c).fillRect(L + 4, T + 4, W - 8, H - 8);  // and the gaps between its bars,
+  for (let bx = L + 8; bx < L + W - 6; bx += 9) {               // the bars across them
+    g.fillStyle(0x5a5654).fillRect(bx, T + 4, 4, H - 8);
+    g.fillStyle(0x8a8480).fillRect(bx, T + 4, 1, H - 8);
+  }
+  g.fillStyle(0x4a4644).fillRect(L - 10, T + H / 2 - 2, 10, 4).fillRect(L + W, T + H / 2 - 2, 10, 4); // handles
+  [x - 30, x + 30].forEach((cx, i) => {
+    const cy = y - 20 + i * 2;
+    const c = scene.add.graphics().setDepth(y + 5);
+    c.fillStyle(0x2e1d0c).fillEllipse(cx, cy, 44, 28).fillEllipse(cx - 20, cy + 6, 16, 12).fillEllipse(cx + 20, cy + 6, 16, 12);
+    c.fillStyle(0xa8582a).fillEllipse(cx, cy, 40, 24).fillEllipse(cx - 20, cy + 6, 12, 8).fillEllipse(cx + 20, cy + 6, 12, 8);
+    c.fillStyle(0xd88a40).fillEllipse(cx - 3, cy - 3, 28, 13);
+    c.fillStyle(0xf4c070).fillEllipse(cx - 8, cy - 6, 10, 4);
+    c.fillStyle(0xf8ecd8).fillRect(cx - 27, cy + 4, 4, 4).fillRect(cx + 23, cy + 4, 4, 4); // the drumsticks' bones
+  });
+  scene.time.addEvent({
+    delay: 500, loop: true,
+    callback: () => {
+      const wisp = scene.add.ellipse(x + rand(-50, 50), y - 30, 10, 8, 0xf4f0ea, 0.5).setDepth(y + 6);
+      scene.tweens.add({ targets: wisp, y: wisp.y - rand(50, 80), scale: 2, alpha: 0, duration: 1500, onComplete: () => wisp.destroy() });
+    },
+  });
+}
+
+// Salt sprinkled over the chickens.
+function salt(scene) {
+  const { x, y } = FIRE;
+  return new Promise((done) => {
+    for (let i = 0; i < 40; i++) {
+      const sx = x + rand(-50, 50);
+      const grain = scene.add.rectangle(sx, y - 90 - rand(0, 30), 3, 3, 0xffffff).setDepth(y + 7);
+      scene.tweens.add({
+        targets: grain, y: y - 22 + rand(-6, 6), alpha: 0.3, delay: i * 25, duration: 500, ease: 'Quad.easeIn',
+        onComplete: () => { grain.destroy(); if (i === 39) done(); },
+      });
+    }
+  });
 }
 
 // One cow or sheep, standing at its feet; grazing (its head going down and

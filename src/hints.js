@@ -180,6 +180,23 @@ const LINES = {
     none: { af: 'Twee hoenders vir Derik se braai!', en: "Two chickens for Derek's braai!" },
     explicit: { af: 'Twee hoenders vir Derik se braai! Nou terug na sy plek toe.', en: "Two chickens for Derek's braai! Now back to his place." },
   },
+  // Derik has no salt for the chicken either
+  needSalt: {
+    none: null,
+    subtle: { af: 'Sout… daar is seker sout in my kombuis.', en: "Salt… there's bound to be salt in my kitchen." },
+    explicit: { af: 'Ek gaan kyk in my kombuis by die huis vir sout.', en: "I'll look in my kitchen at home for salt." },
+  },
+  // home, and the salt pot's empty
+  noSalt: {
+    none: { af: 'Ag nee, my soutpot is leeg!', en: 'Oh no, my salt pot is empty!' },
+    subtle: { af: 'Ag nee, my soutpot is leeg! By wie kan ek sout leen…?', en: 'Oh no, my salt pot is empty! Who could I borrow salt from…?' },
+    explicit: { af: 'Ag nee, my soutpot is leeg! Sannie by die kafee by die strand sal seker vir my sout leen.', en: 'Oh no, my salt pot is empty! Sally at the cafe by the beach will surely lend me some salt.' },
+  },
+  // Sannie's lent him her salt
+  saltLent: {
+    none: { af: 'Sout vir die hoender!', en: 'Salt for the chicken!' },
+    explicit: { af: 'Sout vir die hoender! Nou terug na Derik toe.', en: 'Salt for the chicken! Now back to Derek.' },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },

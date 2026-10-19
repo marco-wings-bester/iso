@@ -19,7 +19,9 @@ export const BY_DERIK = { x: 346, y: 2466 };
 // lit the fire, but he hasn't got any meat: would Johan bring some
 // ('needMeat')? Two chickens from Johan's hen house, with the knife from his
 // tool shed (src/views/coop.js: 'chickens'), and they're on the grill
-// ('meatBrought').
+// ('meatBrought', src/derikLife.js). But he hasn't any salt either
+// ('needSalt'): there's none in Johan's kitchen, but Sannie at the cafe lends
+// him hers (src/cafe.js: 'salt'), and the chicken's salted ('salted').
 export async function braaiWithDerik(scene, derik) {
   const cast = {
     jones: { get sprite() { return scene.player.sprite; } },
@@ -28,14 +30,38 @@ export async function braaiWithDerik(scene, derik) {
   scene.player.face(derik.x < scene.player.x ? 'left' : 'right');
   derik.notice(scene.player);
   await scene.talk(async () => {
-    if (hasFlag('meatBrought')) {
+    if (hasFlag('salted')) {
       await converse(scene, cast, [['derik', { af: 'Kom sit, Johan! Die hoender is amper gaar.', en: "Come and sit, Jones! The chicken's nearly done." }]]);
+      return;
+    }
+    if (hasFlag('salt')) {
+      await converse(scene, cast, [
+        ['derik', { af: 'Sout! Jy’s ’n ster, Johan.', en: "Salt! You're a star, Jones." }],
+        async () => {
+          setFlag('salted');
+          await scene.saltChicken?.();
+        },
+        ['derik', { af: 'So, nou is dit ’n braai! Kom sit, die hoender is amper gaar.', en: "There, now it's a braai! Come and sit, the chicken's nearly done." }],
+      ]);
+      return;
+    }
+    if (hasFlag('needSalt')) {
+      await converse(scene, cast, [['derik', { af: 'Die hoender wag net vir die sout!', en: "The chicken's just waiting for the salt!" }]]);
       return;
     }
     if (hasFlag('chickens')) {
       await converse(scene, cast, [
         ['derik', { af: 'Hoender! Pragtig, Johan. Kom ons gooi dit op die rooster.', en: "Chicken! Beautiful, Jones. Let's get it on the grill." }],
-        () => setFlag('meatBrought'),
+        () => {
+          setFlag('meatBrought');
+          scene.grill?.();
+        },
+        ['derik', { af: 'Ag nee… ek het ook nie sout nie! Het jy dalk sout by die huis?', en: "Oh no… I haven't got any salt either! Have you got some at home?" }],
+        { choose: [
+          { say: { af: 'Seker! Ek gaan kyk gou.', en: "Surely! I'll go and look." } },
+          { say: { af: 'Ek is nou terug met sout.', en: "I'll be right back with salt." } },
+        ] },
+        () => setFlag('needSalt'),
       ]);
       return;
     }
@@ -66,7 +92,8 @@ export async function braaiWithDerik(scene, derik) {
     );
     await converse(scene, cast, steps);
   });
-  const hint = hasFlag('needMeat') && !hasFlag('chickens') ? line('needMeat') : null;
+  const hint = hasFlag('needSalt') && !hasFlag('salt') ? line('needSalt')
+    : hasFlag('needMeat') && !hasFlag('chickens') ? line('needMeat') : null;
   if (hint) think(scene, scene.player.sprite, hint);
 }
 

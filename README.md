@@ -77,7 +77,10 @@ Johan pays back the R15 ('repaid'). He's lit the fire, but he hasn't got any
 meat: would Johan bring some? Back on the farm, tapping the hen house looks
 inside it (`src/views/coop.js`): hens on their nests and in the straw. To
 take two for the braai Johan needs a knife; it's on the workbench in the tool
-shed (from then on). With two chickens, back to Derik's: on the grill.
+shed (from then on). With two chickens, back to Derik's: on a grill over the
+fire. Only, he hasn't any salt either. Johan's salt pot at home is empty;
+Sannie at the cafe lends him hers, after a chat; back at Derik's, the
+chicken's salted.
 
 **Wednesday** there's farm work before bed (`src/chores.js`; the morning
 screen and the menu list it, ticked off as it's done). Plough the land: in
