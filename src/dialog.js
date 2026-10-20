@@ -8,7 +8,8 @@ import { FONT } from './bubble.js';
 // {x, y} with a `name`, a `color` and `below` for a voice outside the door —
 // and `steps` are, in order:
 //   [who, text]       they say it; a tap moves it along (text, and the
-//                     cast's names, can be { af, en }: src/i18n.js)
+//                     cast's names, can be { af, en }: src/i18n.js). Farmer
+//                     Jones too ('jones'), where his words aren't picked
 //   { choose: [...] } Farmer Jones's reply, picked from the options at the
 //                     bottom of the screen; each { say, then } (his pick isn't
 //                     shown again: whoever he's talking to just answers it)

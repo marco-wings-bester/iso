@@ -105,8 +105,10 @@ smokes (`src/derikLife.js`). Off the bottom left of the crossroads (from
 Friday), a path leads to **the river** (`src/RiverScene.js`, `public/assets/river.jpg`): a gold
 diggers' camp with a tent, pans and a sluice, a rocker on the near sandbar and
 more pans on the far one, across a shallow ford. The picture maps are
-`src/MapScene.js` scenes. In conversations
-Farmer Jones's replies are picked from two (`src/dialog.js`). Every speech
+`src/MapScene.js` scenes. Only in the talks with Bob and Louise (Pieter and
+Wiesie: at the gate, and in the farmhouse, where it matters whether she finds
+out) are Farmer Jones's replies picked from two (`src/dialog.js`); everywhere
+else he just says his line in a bubble of his own, a tap moving it along. Every speech
 bubble, thought and caption stays up until a tap (or Space/Enter) moves it
 along, so there's always time to read it; place names and messages stay until
 the next tap. Doing things out of order gets a hint from Farmer Jones; how

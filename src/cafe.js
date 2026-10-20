@@ -36,7 +36,7 @@ function lock(scene, on) {
 
 function cast(scene) {
   return {
-    jones: { get sprite() { return scene.player.sprite; } },
+    jones: { get sprite() { return scene.player.sprite; }, name: { af: 'Johan', en: 'Jones' }, color: '#b8402e' },
     sannie: { get sprite() { return scene.sannie; }, ...SANNIE },
   };
 }
@@ -180,15 +180,9 @@ export async function atCounter(scene) {
   if (hasFlag('needSalt') && !hasFlag('salt')) {
     await converse(scene, cast(scene), [
       ['sannie', { af: 'Johan! Nog ’n koffie?', en: 'Jones! Another coffee?' }],
-      { choose: [
-        { say: { af: 'Nee dankie, Sannie. Ek kom eintlik vir sout vra.', en: "No thanks, Sally. I've actually come to ask for salt." } },
-        { say: { af: 'Nie vandag nie. Het jy dalk sout wat ek kan leen?', en: 'Not today. Have you got some salt I could borrow?' } },
-      ] },
+      ['jones', { af: 'Nee dankie, Sannie. Ek kom eintlik vir sout vra.', en: "No thanks, Sally. I've actually come to ask for salt." }],
       ['sannie', { af: 'Sout? Waarvoor dan?', en: 'Salt? Whatever for?' }],
-      { choose: [
-        { say: { af: 'Derik braai vanaand, en die hoender is op die vuur, maar hy het nie sout nie.', en: "Derek's having a braai tonight, the chicken's on the fire, but he hasn't any salt." } },
-        { say: { af: 'Vir Derik se braai. Daar is hoender, maar nie ’n korreltjie sout nie!', en: "For Derek's braai. There's chicken, but not a grain of salt!" } },
-      ] },
+      ['jones', { af: 'Derik braai vanaand, en die hoender is op die vuur, maar hy het nie sout nie.', en: "Derek's having a braai tonight, the chicken's on the fire, but he hasn't any salt." }],
       ['sannie', { af: 'Ag, Derik en sy braaie! Hier, vat my soutpotjie. Bring dit net weer terug, hoor?', en: "Oh, Derek and his braais! Here, take my salt pot. Just bring it back, won't you?" }],
       () => setFlag('salt'),
       () => scene.think(line('saltLent')),
@@ -204,14 +198,8 @@ export async function atCounter(scene) {
   if (hasFlag('loan')) {
     await converse(scene, cast(scene), [
       ['sannie', { af: 'Welkom terug, Johan! Het jy geld gekry?', en: 'Welcome back, Jones! Got some money?' }],
-      { choose: [
-        { say: { af: 'Ja! Derik het vir my R15 geleen.', en: 'Yes! Derek lent me R15.' }, then: [
-          ['sannie', { af: 'Ag, Derik is ’n goeie mens. Een koffie, kom reg!', en: "Ah, Derek's a good sort. One coffee, coming up!" }],
-        ] },
-        { say: { af: 'Hier is R15. Een koffie, asseblief!', en: "Here's R15. One coffee, please!" }, then: [
-          ['sannie', { af: 'Dankie! Een koffie, kom reg!', en: 'Thank you! One coffee, coming up!' }],
-        ] },
-      ] },
+      ['jones', { af: 'Ja! Derik het vir my R15 geleen.', en: 'Yes! Derek lent me R15.' }],
+      ['sannie', { af: 'Ag, Derik is ’n goeie mens. Een koffie, kom reg!', en: "Ah, Derek's a good sort. One coffee, coming up!" }],
       () => makeCoffee(scene),
       ['sannie', { af: 'Hier is jou koffie. Geniet dit!', en: "Here's your coffee. Enjoy!" }],
       async () => takeCoffee(scene),
@@ -228,20 +216,14 @@ export async function atCounter(scene) {
     lock(scene, false);
     return;
   }
-  const price = [['sannie', { af: 'Een koffie, kom reg! Dis R15, asseblief.', en: "One coffee, coming up! That's R15, please." }]];
   await converse(scene, cast(scene), [
     ['sannie', { af: 'Welkom by die Cozy Seaside Cafe! Wat kan ek vir jou kry?', en: 'Welcome to the Cozy Seaside Cafe! What can I get you?' }],
-    { choose: [
-      { say: { af: '’n Koppie koffie, asseblief.', en: 'A cup of coffee, please.' }, then: price },
-      { say: { af: 'Een koffie, sterk en soet!', en: 'One coffee, strong and sweet!' }, then: price },
-    ] },
+    ['jones', { af: '’n Koppie koffie, asseblief.', en: 'A cup of coffee, please.' }],
+    ['sannie', { af: 'Een koffie, kom reg! Dis R15, asseblief.', en: "One coffee, coming up! That's R15, please." }],
     () => scene.think({ af: 'Kom ek kyk in my beursie…', en: 'Let me check my wallet…' }),
     () => scene.lookInWallet(),
     async () => setFlag('noCash'),
-    { choose: [
-      { say: { af: 'Jammer, ek het nie kontant nie…', en: "Sorry, I haven't got any cash…" } },
-      { say: { af: 'Ehm… kan ek later betaal?', en: 'Um… can I pay later?' } },
-    ] },
+    ['jones', { af: 'Jammer, ek het nie kontant nie…', en: "Sorry, I haven't got any cash…" }],
     ['sannie', {
       af: 'Ag, toe maar. Kom terug as jy geld het, dan maak ek vir jou ’n lekker koppie.',
       en: "Oh, never mind. Come back when you've got some money, and I'll make you a lovely cup.",
