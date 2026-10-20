@@ -1,12 +1,13 @@
 import { daysToBraai } from './days.js';
 import { choresLeft } from './chores.js';
 import { getSetting } from './settings.js';
+import { isRaining } from './weather.js';
 
 // The game is a week long, Monday to Sunday (src/days.js). Each night passes
 // as an animation over the farm (src/night.js); then, up in the morning,
 // Boer Johan thinks of what the day holds: its farm work (src/chores.js),
-// Derik's braai coming up (only with hints on: src/hints.js), or just what
-// a lovely morning it is.
+// Derik's braai coming up (only with hints on: src/hints.js), the rain on
+// Friday (src/weather.js), or just what a lovely morning it is.
 export function wakeThought() {
   const af = [];
   const en = [];
@@ -21,6 +22,10 @@ export function wakeThought() {
   } else if (braai === 0) {
     af.push('Vanaand is Derik se braai!');
     en.push("Tonight is Derek's braai!");
+  }
+  if (isRaining()) {
+    af.push('Hoor net hoe reën dit buite!');
+    en.push("Just listen to it raining outside!");
   }
   if (!af.length) {
     af.push('Goeiemôre! Wat ’n pragtige oggend.');

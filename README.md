@@ -83,7 +83,8 @@ Sannie at the cafe lends him hers, after a chat; back at Derik's, the
 chicken's salted. A little later it's done: they sit on the log behind the
 fire and eat, night falling as they talk, till Johan's off home to bed.
 That evening it's dark everywhere he goes (`src/evening.js`); all that's left
-is bed, and then it's Friday.
+is bed, and then it's Friday: rain, all day, everywhere out of doors
+(`src/weather.js`), and Johan hears it as he wakes.
 
 **Wednesday** there's farm work before bed (`src/chores.js`; the morning
 screen and the menu list it, ticked off as it's done). Plough the land: in
