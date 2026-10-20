@@ -926,6 +926,59 @@ export const ROOMS = {
     },
   },
 
+  // Derik's farmhouse kitchen (src/derikHouse.js): on Friday, Derik and his
+  // friend Abram at the table over coffee, a stool there for Johan. Out of
+  // the door is back to Derik's place, at the end of the path by the stoep.
+  derik: {
+    w: 144, h: 160, wallH: 44,
+    name: { af: 'Derik se huis', en: "Derek's house" },
+    door: { x: 60, w: 24 },
+    exit: { to: 'Derik', data: { at: { x: 656, y: 772 } } },
+    spots: {
+      // tap the table: sit down at it, on the stool (src/derikHouse.js)
+      derikTable: {
+        area: { x: 40, y: 72, w: 66, h: 46 },
+        stand: { x: 72, y: 124 },
+      },
+    },
+    // where they sit (feet), facing the table
+    seats: {
+      derik: { x: 49, y: 99, face: 'right' },
+      abram: { x: 95, y: 99, face: 'left' },
+      johan: { x: 72, y: 114, face: 'up' },
+    },
+    cups: [{ x: 62, y: 84 }, { x: 82, y: 84 }, { x: 72, y: 92 }],
+    solid: [
+      { x: 6, y: 40, w: 18, h: 16 },  // the stove
+      { x: 42, y: 76, w: 62, h: 26 }, // the table and its chairs
+      { x: 120, y: 40, w: 18, h: 14 }, // the dresser
+      { x: 114, y: 128, w: 22, h: 26 }, // plant
+    ],
+    draw(ctx) {
+      const { w, h, wallH } = this;
+      planks(ctx, 0, wallH, w, h - wallH, OAK, 47);
+      windowLight(ctx, 34, wallH, 20, 28);
+      windowLight(ctx, 86, wallH, 20, 28);
+      doormat(ctx, this);
+      boardWall(ctx, w, wallH, ['#c8a070', '#b08858', '#6a4a2a'], 17);
+      fill(ctx, 0, wallH - 2, w, 2, C.seam);
+      frame(ctx, this);
+      windowPane(ctx, 34, 10);
+      windowPane(ctx, 86, 10);
+      stove(ctx, 8, 24);
+      dresser(ctx, 121, 10);
+      rug(ctx, 38, 70, 70, 52);
+      chair(ctx, 44, 84, false);
+      chair(ctx, 90, 84, true);
+      table(ctx, 56, 80);
+      // Johan's stool, in front of the table
+      obj(ctx, 66, 108, 12, 5, r => { r(0, 0, 12, 3, C.wood); r(0, 0, 12, 1, C.woodLt); r(1, 3, 2, 2, C.woodDkr); r(9, 3, 2, 2, C.woodDkr); });
+      // their coffee
+      this.cups.forEach(({ x, y }) => obj(ctx, x - 2, y - 3, 4, 3, r => { r(0, 0, 4, 3, '#f8f0e0'); r(1, 0, 2, 1, '#6a3a1e'); }));
+      plant(ctx, 120, 130);
+    },
+  },
+
   barn: {
     w: 160, h: 176, wallH: 46,
     door: { x: 64, w: 32 },

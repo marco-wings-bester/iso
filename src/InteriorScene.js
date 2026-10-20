@@ -17,6 +17,7 @@ import { think } from './bubble.js';
 import { line } from './hints.js';
 import { knock, hideBob, bobWaiting, bobInChest, sarahVisits, sarahWaiting, openChest } from './sarah.js';
 import { setUpCafe, atCounter, atTable, atWindow } from './cafe.js';
+import { setUpDerikHouse, atDerikTable } from './derikHouse.js';
 import { bike, pedal, SPEED as BIKE_SPEED, BODY as BIKE_BODY } from './bike.js';
 
 const FADE_MS = 250;
@@ -157,6 +158,7 @@ export default class InteriorScene extends Phaser.Scene {
           read: () => this.read(), cook: () => this.useCupboard(), eat: () => this.eatPie(), sleep: () => this.tryToSleep(),
           fire: () => this.lookAtFire(), hide: () => this.useChest(), counter: () => atCounter(this), bike: () => this.takeBike(),
           tableA: () => atTable(this, 'tableA'), tableB: () => atTable(this, 'tableB'), window: () => atWindow(this),
+          derikTable: () => atDerikTable(this),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
@@ -193,6 +195,7 @@ export default class InteriorScene extends Phaser.Scene {
     }
 
     if (building === 'cafe') setUpCafe(this);
+    if (building === 'derik') setUpDerikHouse(this);
     // home for salt for Derik's braai (src/derik.js): the salt pot's empty
     if (house && hasFlag('needSalt') && !hasFlag('salt') && !hasFlag('noSaltHome')) {
       setFlag('noSaltHome');

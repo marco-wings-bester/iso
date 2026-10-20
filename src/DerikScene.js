@@ -6,6 +6,9 @@ import { hasFlag } from './state.js';
 import { placeVillagers, BEACH_VILLAGERS } from './villagers.js';
 import { braaiWithDerik } from './derik.js';
 import { preloadDerik, animateDerik } from './derikLife.js';
+import { FRIDAY } from './weather.js';
+import { park } from './bike.js';
+import { think } from './bubble.js';
 
 // Derik's place (assets/derik.jpg), right from the crossroads: his
 // farmhouse with its long stoep and a water tower behind, cattle and sheep
@@ -16,7 +19,10 @@ import { preloadDerik, animateDerik } from './derikLife.js';
 // burns and the chimney smokes (src/derikLife.js). On Thursday it's Derik's
 // braai: he's waiting by the fire in the boma (not fishing at the beach), and
 // Johan pays him back his R15 (src/derik.js); once the chicken's done they
-// sit and eat on the log by the fire, and night falls.
+// sit and eat on the log by the fire, and night falls. Tapping the
+// farmhouse walks Johan to the end of the path by its stoep and in: on
+// Friday Derik and Abram are in there over coffee (ROOMS.derik,
+// src/derikHouse.js); any other day there's nobody home.
 
 const HERE = { af: 'Derik se plek', en: "Derek's place" };
 // Derik by the fire, and where Johan stands to talk to him; where they sit
@@ -24,6 +30,9 @@ const HERE = { af: 'Derik se plek', en: "Derek's place" };
 // fire, and where Johan gets up from it (src/derik.js).
 const BY_FIRE = { x: 1116, y: 1336 };
 const BY_DERIK = { x: 1180, y: 1340 };
+// The farmhouse and its stoep, and the end of the path in front of it.
+const HOUSE = { x: 600, y: 300, w: 720, h: 440 };
+const DOOR = { x: 656, y: 772 };
 const MEAL = {
   johan: { x: 962, y: 1238 }, derik: { x: 1046, y: 1238 },
   via: { x: 1120, y: 1272 }, up: { x: 1140, y: 1296 },
@@ -62,10 +71,31 @@ export default class DerikScene extends MapScene {
   // Tapping Derik: Johan walks over to him by the fire and they talk.
   tapThing(x, y) {
     const derik = this.villagers.find(v => v.contains(x, y));
+    if (!derik && x >= HOUSE.x && x < HOUSE.x + HOUSE.w && y >= HOUSE.y && y < HOUSE.y + HOUSE.h) {
+      this.player.walkTo(DOOR.x, DOOR.y, () => this.enterHouse());
+      return true;
+    }
     if (!derik) return false;
     if (hasFlag('braaiDone')) this.player.walkTo(MEAL.up.x, MEAL.up.y, () => braaiWithDerik(this, derik));
     else this.player.walkTo(BY_DERIK.x, BY_DERIK.y, () => braaiWithDerik(this, derik));
     return true;
+  }
+
+  // In at the door, on Friday (his bike left outside); any other day, nobody's home.
+  enterHouse() {
+    this.player.face('right');
+    if (today() !== FRIDAY) {
+      think(this, this.player.sprite, today() === THURSDAY
+        ? { af: 'Derik is buite by sy vuur.', en: "Derek's outside by his fire." }
+        : { af: 'Daar is niemand tuis nie.', en: "There's nobody home." });
+      return;
+    }
+    park(this, { x: DOOR.x - 40, y: DOOR.y });
+    this.leaving = true;
+    this.player.stop();
+    const cam = this.cameras.main;
+    cam.fadeOut(250);
+    cam.once('camerafadeoutcomplete', () => this.scene.start('Interior', { building: 'derik' }));
   }
 
   update(_time, delta) {
