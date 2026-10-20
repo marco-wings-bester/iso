@@ -3,6 +3,8 @@ import { today, daysToBraai } from './days.js';
 import { converse } from './dialog.js';
 import { think } from './bubble.js';
 import { line } from './hints.js';
+import { walkSprite } from './bob.js';
+import { bike, park, showParked } from './bike.js';
 
 // Derik, fishing off the end of the jetty at the beach (src/villagers.js).
 // Once Boer Johan has found he can't pay for his coffee ('noCash',
@@ -21,8 +23,13 @@ export const BY_DERIK = { x: 346, y: 2466 };
 // tool shed (src/views/coop.js: 'chickens'), and they're on the grill
 // ('meatBrought', src/derikLife.js). But he hasn't any salt either
 // ('needSalt'): there's none in Johan's kitchen, but Sannie at the cafe lends
-// him hers (src/cafe.js: 'salt'), and the chicken's salted ('salted').
+// him hers (src/cafe.js: 'salt'), and the chicken's salted ('salted'). A
+// little later it's done, and they eat (`eatWithDerik`).
 export async function braaiWithDerik(scene, derik) {
+  if (hasFlag('salted') && !hasFlag('braaiDone')) {
+    await eatWithDerik(scene, derik);
+    return;
+  }
   const cast = {
     jones: { get sprite() { return scene.player.sprite; }, name: { af: 'Johan', en: 'Jones' }, color: '#b8402e' },
     derik: { sprite: derik.sprite, name: derik.name, color: '#3a6a98' },
@@ -30,8 +37,8 @@ export async function braaiWithDerik(scene, derik) {
   scene.player.face(derik.x < scene.player.x ? 'left' : 'right');
   derik.notice(scene.player);
   await scene.talk(async () => {
-    if (hasFlag('salted')) {
-      await converse(scene, cast, [['derik', { af: 'Kom sit, Johan! Die hoender is amper gaar.', en: "Come and sit, Jones! The chicken's nearly done." }]]);
+    if (hasFlag('braaiDone')) {
+      await converse(scene, cast, [['derik', { af: 'Lekker slaap, Johan! Sien jou gou weer.', en: 'Sleep well, Jones! See you soon.' }]]);
       return;
     }
     if (hasFlag('salt')) {
@@ -41,8 +48,15 @@ export async function braaiWithDerik(scene, derik) {
           setFlag('salted');
           await scene.saltChicken?.();
         },
-        ['derik', { af: 'So, nou is dit ’n braai! Kom sit, die hoender is amper gaar.', en: "There, now it's a braai! Come and sit, the chicken's nearly done." }],
+        ['derik', { af: 'So, nou is dit ’n braai! Die hoender is nou-nou gaar.', en: "There, now it's a braai! The chicken'll be done in a moment." }],
       ]);
+      // a little later, it's done (once nothing else is going on)
+      const done = () => scene.time.delayedCall(5000, () => {
+        if (!scene.sys.isActive() || hasFlag('braaiDone')) return;
+        if (scene.busy || scene.thought || scene.leaving) done();
+        else eatWithDerik(scene, derik);
+      });
+      done();
       return;
     }
     if (hasFlag('needSalt')) {
@@ -86,6 +100,54 @@ export async function braaiWithDerik(scene, derik) {
   const hint = hasFlag('needSalt') && !hasFlag('salt') ? line('needSalt')
     : hasFlag('needMeat') && !hasFlag('chickens') ? line('needMeat') : null;
   if (hint) think(scene, scene.player.sprite, hint);
+}
+
+// The chicken's done: Derik calls Johan to come and sit, and they go round
+// the fire to the log behind it (Johan off his bike, if he's on it) and sit
+// down to eat. Night falls as they talk; then Johan's off home to bed
+// ('braaiDone', and he's tired), Derik staying by his fire.
+export async function eatWithDerik(scene, derik) {
+  const cast = {
+    jones: { get sprite() { return scene.player.sprite; }, name: { af: 'Johan', en: 'Jones' }, color: '#b8402e' },
+    derik: { sprite: derik.sprite, name: derik.name, color: '#3a6a98' },
+  };
+  const { player, meal } = scene;
+  const speed = player.speed;
+  const go = (sprite, key, route) => new Promise(r => walkSprite(scene, sprite, key, route, speed, r));
+  await scene.talk(async () => {
+    derik.held = true;
+    await converse(scene, cast, [['derik', { af: 'Reg so, die hoender is gaar! Kom ons sit ’n bietjie.', en: "Right, the chicken's done! Let's sit for a bit." }]]);
+    if (bike.riding) {
+      park(scene, { x: player.x, y: player.y });
+      showParked(scene, scene.map.scale);
+      player.texture = 'player';
+    }
+    scene.serve?.();
+    // round the fire, Johan first and Derik after him, and down on the log
+    player.act('player-idle-left');
+    const johanThere = go(player.sprite, 'player', [{ ...meal.via }, { x: meal.via.x - 40, y: meal.johan.y + 12 }, { ...meal.johan }]);
+    await new Promise(r => scene.time.delayedCall(500, r));
+    await go(derik.sprite, derik.key, [{ ...meal.via }, { ...meal.derik }]);
+    await johanThere;
+    Object.assign(player, { x: meal.johan.x, y: meal.johan.y });
+    player.sprite.setDepth(meal.johan.y).play('player-sit-down');
+    derik.sprite.setDepth(meal.derik.y).play(`${derik.key}-sit-down`);
+    await converse(scene, cast, [
+      ['derik', { af: 'Smaaklike ete, Johan!', en: 'Enjoy your meal, Jones!' }],
+      ['jones', { af: 'Mmm! Dis die lekkerste hoender wat ek nog ooit geëet het.', en: "Mmm! That's the best chicken I've ever had." }],
+      () => scene.nightfall(6000),
+      ['derik', { af: 'Kyk net hoe mooi brand die vuur in die donker.', en: 'Just look how lovely the fire is in the dark.' }],
+      ['jones', { af: 'Sjoe, dit raak nou laat. Ek moet gaan inkruip. Dankie vir die ete, Derik, ek loop jou gou weer raak!', en: "Phew, it's getting late. I'd better turn in. Thanks for the meal, Derek, I'll see you again soon!" }],
+      ['derik', { af: 'Plesier, Johan! Lekker slaap.', en: 'Pleasure, Jones! Sleep well.' }],
+    ]);
+    setFlag('braaiDone');
+    setFlag('tired');
+    // up off the log, Derik staying by his fire
+    player.stop();
+    Object.assign(player, { x: meal.up.x, y: meal.up.y });
+    player.sprite.setPosition(meal.up.x, meal.up.y).setDepth(meal.up.y);
+    player.face('down');
+  });
 }
 
 export async function talkToDerik(scene, derik) {

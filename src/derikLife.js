@@ -10,7 +10,9 @@ import { hasFlag } from './state.js';
 // burning, sparks flying up from it; and smoke from the farmhouse chimney.
 // Once Johan's brought the chickens for the braai ('meatBrought',
 // src/derik.js), they're on a grill over the fire, sizzling (`scene.grill`),
-// and salted when he brings the salt (`scene.saltChicken`).
+// and salted when he brings the salt (`scene.saltChicken`); then they're
+// served (`scene.serve`) and night falls over the place (`scene.nightfall`),
+// the fire glowing in the dark (as it is from then on: 'braaiDone').
 // All in picture px.
 
 const SHEET = 'derik-sprites';
@@ -30,7 +32,31 @@ export function animateDerik(scene) {
   scene.grilled = false;
   scene.grill = () => grill(scene);
   scene.saltChicken = () => salt(scene);
+  scene.chickens = [];
+  scene.serve = () => { scene.chickens.forEach(c => c.destroy()); scene.chickens = []; };
+  scene.nightfall = ms => nightfall(scene, ms);
   if (hasFlag('meatBrought')) grill(scene);
+  if (hasFlag('braaiDone')) {
+    scene.serve();
+    nightfall(scene, 0);
+  }
+}
+
+// Night over the whole place, and the fire's glow brighter in it, over `ms`.
+function nightfall(scene, ms) {
+  const { w, h } = scene.map;
+  const { x, y } = FIRE;
+  const dark = scene.add.rectangle(0, 0, w, h, 0x0b0a24).setOrigin(0).setDepth(5e4).setAlpha(0);
+  const glow = scene.add.ellipse(x, y - 20, 420, 260, 0xff9a40).setDepth(5e4 + 1).setAlpha(0).setBlendMode(Phaser.BlendModes.ADD);
+  const core = scene.add.ellipse(x, y - 14, 120, 70, 0xffd070).setDepth(5e4 + 1).setAlpha(0).setBlendMode(Phaser.BlendModes.ADD);
+  return new Promise((done) => {
+    scene.tweens.add({ targets: dark, alpha: 0.62, duration: ms });
+    scene.tweens.add({ targets: [glow], alpha: 0.22, duration: ms });
+    scene.tweens.add({ targets: [core], alpha: 0.45, duration: ms, onComplete: () => {
+      scene.tweens.add({ targets: [glow, core], scaleX: 0.93, scaleY: 0.93, duration: 300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      done();
+    } });
+  });
 }
 
 // The grill across the fire, two chickens on it browning, a wisp of steam
@@ -55,6 +81,7 @@ function grill(scene) {
   [x - 30, x + 30].forEach((cx, i) => {
     const cy = y - 20 + i * 2;
     const c = scene.add.graphics().setDepth(y + 5);
+    scene.chickens.push(c);
     c.fillStyle(0x2e1d0c).fillEllipse(cx, cy, 44, 28).fillEllipse(cx - 20, cy + 6, 16, 12).fillEllipse(cx + 20, cy + 6, 16, 12);
     c.fillStyle(0xa8582a).fillEllipse(cx, cy, 40, 24).fillEllipse(cx - 20, cy + 6, 12, 8).fillEllipse(cx + 20, cy + 6, 12, 8);
     c.fillStyle(0xd88a40).fillEllipse(cx - 3, cy - 3, 28, 13);
