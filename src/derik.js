@@ -24,7 +24,7 @@ export const BY_DERIK = { x: 346, y: 2466 };
 // him hers (src/cafe.js: 'salt'), and the chicken's salted ('salted').
 export async function braaiWithDerik(scene, derik) {
   const cast = {
-    jones: { get sprite() { return scene.player.sprite; } },
+    jones: { get sprite() { return scene.player.sprite; }, name: { af: 'Johan', en: 'Jones' }, color: '#b8402e' },
     derik: { sprite: derik.sprite, name: derik.name, color: '#3a6a98' },
   };
   scene.player.face(derik.x < scene.player.x ? 'left' : 'right');
@@ -57,10 +57,7 @@ export async function braaiWithDerik(scene, derik) {
           scene.grill?.();
         },
         ['derik', { af: 'Ag nee… ek het ook nie sout nie! Het jy dalk sout by die huis?', en: "Oh no… I haven't got any salt either! Have you got some at home?" }],
-        { choose: [
-          { say: { af: 'Seker! Ek gaan kyk gou.', en: "Surely! I'll go and look." } },
-          { say: { af: 'Ek is nou terug met sout.', en: "I'll be right back with salt." } },
-        ] },
+        ['jones', { af: 'Seker! Ek gaan kyk gou.', en: "Surely! I'll go and look." }],
         () => setFlag('needSalt'),
       ]);
       return;
@@ -72,10 +69,7 @@ export async function braaiWithDerik(scene, derik) {
     const steps = [['derik', { af: 'Johan! Welkom, welkom! Die vuur brand lekker.', en: 'Jones! Welcome, welcome! The fire is going nicely.' }]];
     if (hasFlag('loan') && !hasFlag('repaid')) {
       steps.push(
-        { choose: [
-          { say: { af: 'Hier is jou R15. Baie dankie, Derik!', en: "Here's your R15. Thanks so much, Derek!" } },
-          { say: { af: 'Voor ek vergeet: hier is jou geld terug.', en: "Before I forget: here's your money back." } },
-        ] },
+        ['jones', { af: 'Hier is jou R15. Baie dankie, Derik!', en: "Here's your R15. Thanks so much, Derek!" }],
         () => coins(scene, scene.player.sprite, derik.sprite),
         () => setFlag('repaid'),
         ['derik', { af: 'Dankie, ou maat!', en: 'Thanks, old friend!' }],
@@ -83,10 +77,7 @@ export async function braaiWithDerik(scene, derik) {
     }
     steps.push(
       ['derik', { af: 'Ek het die vuur al aangesteek… maar ek het glad nie vleis nie! Sal jy omgee om vir ons vleis te bring?', en: "I've already got the fire going… but I haven't got any meat at all! Would you mind bringing us some?" }],
-      { choose: [
-        { say: { af: 'Glad nie! Ek kry gou vir ons iets.', en: "Not at all! I'll fetch us something." } },
-        { say: { af: 'Geen probleem, ek is nou terug.', en: "No problem, I'll be right back." } },
-      ] },
+      ['jones', { af: 'Glad nie! Ek kry gou vir ons iets.', en: "Not at all! I'll fetch us something." }],
       () => setFlag('needMeat'),
       ['derik', { af: 'Lekker! Die vuur sal wag.', en: 'Great! The fire will wait.' }],
     );
@@ -99,7 +90,7 @@ export async function braaiWithDerik(scene, derik) {
 
 export async function talkToDerik(scene, derik) {
   const cast = {
-    jones: { get sprite() { return scene.player.sprite; } },
+    jones: { get sprite() { return scene.player.sprite; }, name: { af: 'Johan', en: 'Jones' }, color: '#b8402e' },
     derik: { sprite: derik.sprite, name: derik.name, color: '#3a6a98' },
   };
   scene.player.face('left');
@@ -117,10 +108,7 @@ export async function talkToDerik(scene, derik) {
     }
     await converse(scene, cast, [
       ['derik', { af: 'Haai, Johan! Jy lyk bietjie bekaf. Wat makeer?', en: "Hey, Jones! You look a bit down. What's up?" }],
-      { choose: [
-        { say: { af: 'Ek wou ’n koffie koop, maar ek het nie kontant nie.', en: "I wanted to buy a coffee, but I haven't got any cash." } },
-        { say: { af: 'My beursie is leeg, en ek is so lus vir ’n koffie.', en: "My wallet's empty, and I'm dying for a coffee." } },
-      ] },
+      ['jones', { af: 'Ek wou ’n koffie koop, maar ek het nie kontant nie.', en: "I wanted to buy a coffee, but I haven't got any cash." }],
       ['derik', { af: 'Ag, is dit al? Hier, ek leen vir jou R15.', en: "Oh, is that all? Here, I'll lend you R15." }],
       () => coins(scene, derik.sprite, scene.player.sprite),
       async () => {
@@ -128,10 +116,7 @@ export async function talkToDerik(scene, derik) {
         setValue('loanDay', today());
       },
       ['derik', { af: 'Bring dit sommer oormore aand as jy by ons kom braai.', en: 'Just bring it back the day after tomorrow, in the evening, when you come over to ours for a braai.' }],
-      { choose: [
-        { say: { af: 'Baie dankie, Derik! Ek sal dit bring.', en: "Thanks so much, Derek! I'll bring it." } },
-        { say: { af: 'Jy’s ’n held! Sien jou oormore by die braai.', en: "You're a star! See you at the braai the day after tomorrow." } },
-      ] },
+      ['jones', { af: 'Baie dankie, Derik! Ek sal dit bring.', en: "Thanks so much, Derek! I'll bring it." }],
       ['derik', { af: 'Plesier. Gaan geniet jou koffie!', en: 'Pleasure. Go and enjoy your coffee!' }],
     ]);
   });
