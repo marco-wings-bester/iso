@@ -117,13 +117,14 @@ class Villager {
     next();
   }
 
-  // Standing about: now and then a look one way, then back (or a hop).
+  // Standing about: now and then a look one way, then back (or a hop); not
+  // while `held` (a scene has him doing something else).
   lookAbout() {
     const look = () => this.scene.time.delayedCall(rand(3000, 7000), () => {
       if (this.spec.hops && Math.random() < 0.5) {
         const y = this.spec.at.y;
         this.scene.tweens.add({ targets: this.sprite, y: y - 18, duration: 170, yoyo: true, repeat: Math.random() < 0.4 ? 1 : 0, ease: 'Quad.easeOut', onComplete: () => this.sprite.setY(y) });
-      } else if (!this.noticing) {
+      } else if (!this.noticing && !this.held) {
         const home = this.spec.face ?? 'down';
         this.face(DIRS[Math.floor(Math.random() * 4)]);
         this.scene.time.delayedCall(rand(900, 1800), () => { if (!this.noticing) this.face(home); });
@@ -166,7 +167,7 @@ class Villager {
 
   // Johan's come over: whoever's standing about turns to him for a while.
   notice(johan) {
-    if (this.does === 'sit' || this.does === 'fish' || !this.idle) return;
+    if (this.does === 'sit' || this.does === 'fish' || !this.idle || this.held) return;
     const dx = johan.x - this.x;
     const dy = johan.y - this.y;
     this.noticing = true;

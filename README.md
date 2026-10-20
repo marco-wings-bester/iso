@@ -80,7 +80,8 @@ take two for the braai Johan needs a knife; it's on the workbench in the tool
 shed (from then on). With two chickens, back to Derik's: on a grill over the
 fire. Only, he hasn't any salt either. Johan's salt pot at home is empty;
 Sannie at the cafe lends him hers, after a chat; back at Derik's, the
-chicken's salted.
+chicken's salted. A little later it's done: they sit on the log behind the
+fire and eat, night falling as they talk, till Johan's off home to bed.
 
 **Wednesday** there's farm work before bed (`src/chores.js`; the morning
 screen and the menu list it, ticked off as it's done). Plough the land: in

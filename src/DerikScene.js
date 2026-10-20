@@ -2,6 +2,7 @@ import MapScene from './MapScene.js';
 import { derikGrid } from './WalkGrid.js';
 import { asset } from './asset.js';
 import { today, THURSDAY } from './days.js';
+import { hasFlag } from './state.js';
 import { placeVillagers, BEACH_VILLAGERS } from './villagers.js';
 import { braaiWithDerik } from './derik.js';
 import { preloadDerik, animateDerik } from './derikLife.js';
@@ -14,12 +15,19 @@ import { preloadDerik, animateDerik } from './derikLife.js';
 // the way back to the crossroads. His cows and sheep graze about, the fire
 // burns and the chimney smokes (src/derikLife.js). On Thursday it's Derik's
 // braai: he's waiting by the fire in the boma (not fishing at the beach), and
-// Johan pays him back his R15 (src/derik.js).
+// Johan pays him back his R15 (src/derik.js); once the chicken's done they
+// sit and eat on the log by the fire, and night falls.
 
 const HERE = { af: 'Derik se plek', en: "Derek's place" };
-// Derik by the fire, and where Johan stands to talk to him.
+// Derik by the fire, and where Johan stands to talk to him; where they sit
+// to eat (on the log behind the fire, facing it), the way there round the
+// fire, and where Johan gets up from it (src/derik.js).
 const BY_FIRE = { x: 1116, y: 1336 };
 const BY_DERIK = { x: 1180, y: 1340 };
+const MEAL = {
+  johan: { x: 962, y: 1238 }, derik: { x: 1046, y: 1238 },
+  via: { x: 1120, y: 1272 }, up: { x: 1140, y: 1296 },
+};
 
 export default class DerikScene extends MapScene {
   constructor() {
@@ -44,9 +52,10 @@ export default class DerikScene extends MapScene {
     this.place(at, at ? null : 'crossroads');
     animateDerik(this);
     const derik = BEACH_VILLAGERS.find(v => v.id === 'derik');
-    this.villagers = today() === THURSDAY
-      ? placeVillagers(this, [{ ...derik, does: 'stand', at: BY_FIRE, face: 'left' }], this.map.scale)
-      : [];
+    // (after the meal, still on his log by the fire)
+    const spec = hasFlag('braaiDone') ? { ...derik, does: 'sit', at: MEAL.derik, face: 'down' } : { ...derik, does: 'stand', at: BY_FIRE, face: 'left' };
+    this.villagers = today() === THURSDAY ? placeVillagers(this, [spec], this.map.scale) : [];
+    this.meal = MEAL;
     if (!at) this.game.events.emit('location', { name: HERE });
   }
 
@@ -54,7 +63,8 @@ export default class DerikScene extends MapScene {
   tapThing(x, y) {
     const derik = this.villagers.find(v => v.contains(x, y));
     if (!derik) return false;
-    this.player.walkTo(BY_DERIK.x, BY_DERIK.y, () => braaiWithDerik(this, derik));
+    if (hasFlag('braaiDone')) this.player.walkTo(MEAL.up.x, MEAL.up.y, () => braaiWithDerik(this, derik));
+    else this.player.walkTo(BY_DERIK.x, BY_DERIK.y, () => braaiWithDerik(this, derik));
     return true;
   }
 

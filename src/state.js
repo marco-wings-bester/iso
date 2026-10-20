@@ -24,7 +24,9 @@
 // ('repaid'); Derik has no meat ('needMeat') → the knife in the tool shed
 // ('knife') → two hens from the hen house (`hens`, then 'chickens') → on
 // Derik's grill ('meatBrought') → no salt ('needSalt'), none at home either
-// ('noSaltHome') → Sannie at the cafe lends hers ('salt') → salted ('salted').
+// ('noSaltHome') → Sannie at the cafe lends hers ('salt') → salted ('salted')
+// → they eat on the log by the fire as night falls, then Johan's off to bed
+// ('braaiDone', and 'tired').
 // Numbers kept with them: `day`, the day of the week (0 = Monday, the day
 // the story starts; one on each night he sleeps: src/days.js), and
 // `loanDay`, the day Derik lent him the R15 (his braai is two days later).
