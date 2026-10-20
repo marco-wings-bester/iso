@@ -1,18 +1,23 @@
 import Phaser from 'phaser';
-import { ANIMALS } from './derikSprites.js';
+import { ANIMALS, COLD_FIRE } from './derikSprites.js';
 import { piece, nowAndThen } from './seaside.js';
 import { asset } from './asset.js';
 import { hasFlag } from './state.js';
+import { today, THURSDAY } from './days.js';
+import { isEvening } from './evening.js';
 
 // Life at Derik's place (DerikScene): his cows and sheep, cut out of the
 // picture (scripts/cut-derik.py) and put back where they were, grazing,
 // now and then shuffling a step or turning round; the fire in his boma
-// burning, sparks flying up from it; and smoke from the farmhouse chimney.
+// burning on Thursday, the day of his braai, sparks flying up from it (any
+// other day it's out: cold ash in the pit); and smoke from the farmhouse
+// chimney.
 // Once Johan's brought the chickens for the braai ('meatBrought',
 // src/derik.js), they're on a grill over the fire, sizzling (`scene.grill`),
 // and salted when he brings the salt (`scene.saltChicken`); then they're
 // served (`scene.serve`) and night falls over the place (`scene.nightfall`),
-// the fire glowing in the dark (as it is from then on: 'braaiDone').
+// the fire glowing in the dark (as it is for the rest of the evening:
+// src/evening.js).
 // All in picture px.
 
 const SHEET = 'derik-sprites';
@@ -27,7 +32,8 @@ export function preloadDerik(scene) {
 export function animateDerik(scene) {
   const sheet = scene.fit(SHEET);
   Object.entries(ANIMALS).forEach(([name, { frame, at }]) => animal(scene, sheet, name, frame, at));
-  fire(scene);
+  if (today() === THURSDAY) fire(scene);
+  else piece(scene, sheet, 'coldFire', COLD_FIRE.frame, COLD_FIRE.at, 0, 0).setDepth(-0.5);
   chimney(scene);
   scene.grilled = false;
   scene.grill = () => grill(scene);
@@ -35,8 +41,9 @@ export function animateDerik(scene) {
   scene.chickens = [];
   scene.serve = () => { scene.chickens.forEach(c => c.destroy()); scene.chickens = []; };
   scene.nightfall = ms => nightfall(scene, ms);
+  if (today() !== THURSDAY) return;
   if (hasFlag('meatBrought')) grill(scene);
-  if (hasFlag('braaiDone')) {
+  if (isEvening()) {
     scene.serve();
     nightfall(scene, 0);
   }
