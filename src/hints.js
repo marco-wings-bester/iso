@@ -197,6 +197,12 @@ const LINES = {
     none: { af: 'Sout vir die hoender!', en: 'Salt for the chicken!' },
     explicit: { af: 'Sout vir die hoender! Nou terug na Derik toe.', en: 'Salt for the chicken! Now back to Derek.' },
   },
+  // Friday: Derik and Abram have asked him to look at the town's fountain (src/derikHouse.js)
+  fixFountain: {
+    none: null,
+    subtle: { af: 'Die fontein in die dorp… kom ek gaan kyk wat makeer.', en: "The fountain in town… let's go and see what's wrong." },
+    explicit: { af: 'Ek moet na die fontein op die dorpsplein gaan kyk: die pad dorp toe is af by die kruispad.', en: 'I must go and look at the fountain on the town square: the road to town is down from the crossroads.' },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },
