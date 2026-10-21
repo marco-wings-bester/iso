@@ -85,7 +85,7 @@ fire and eat, night falling as they talk, till Johan's off home to bed.
 That evening it's dark everywhere he goes (`src/evening.js`); all that's left
 is bed, and then it's Friday: rain, all day, everywhere out of doors
 (`src/weather.js`), and Johan hears it as he wakes. That day Derik's at
-home: tapping his farmhouse, Johan goes in, and Derik and his friend Abram
+home: tapping his farmhouse, Johan goes in, and Derik and his friend Abraham
 are at the kitchen table over coffee (`src/derikHouse.js`). They ask him to
 join them, and talk about the fountain on the town square, which has
 stopped working (it's dry: `scripts/dry-fountain.py`); could Johan have a

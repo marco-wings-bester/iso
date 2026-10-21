@@ -24,8 +24,8 @@ export function wakeThought() {
     en.push("Tonight is Derek's braai!");
   }
   if (isRaining()) {
-    af.push('Hoor net hoe reën dit buite!');
-    en.push("Just listen to it raining outside!");
+    af.push('Hoor net hoe reën dit buite! Sjoe, dit sous behoorlik. Nou ja, die plaas het die water nodig.');
+    en.push("Just listen to it raining outside! Goodness, it's pouring. Oh well, the farm needs the water.");
   }
   if (!af.length) {
     af.push('Goeiemôre! Wat ’n pragtige oggend.');

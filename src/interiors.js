@@ -927,7 +927,7 @@ export const ROOMS = {
   },
 
   // Derik's farmhouse kitchen (src/derikHouse.js): on Friday, Derik and his
-  // friend Abram at the table over coffee, a stool there for Johan. Out of
+  // friend Abraham at the table over coffee, a stool there for Johan. Out of
   // the door is back to Derik's place, at the end of the path by the stoep.
   derik: {
     w: 144, h: 160, wallH: 44,
@@ -944,7 +944,7 @@ export const ROOMS = {
     // where they sit (feet), facing the table
     seats: {
       derik: { x: 49, y: 99, face: 'right' },
-      abram: { x: 95, y: 99, face: 'left' },
+      abraham: { x: 95, y: 99, face: 'left' },
       johan: { x: 72, y: 114, face: 'up' },
     },
     cups: [{ x: 62, y: 84 }, { x: 82, y: 84 }, { x: 72, y: 92 }],
