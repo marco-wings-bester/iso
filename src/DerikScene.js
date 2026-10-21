@@ -21,7 +21,7 @@ import { think } from './bubble.js';
 // Johan pays him back his R15 (src/derik.js); once the chicken's done they
 // sit and eat on the log by the fire, and night falls. Tapping the
 // farmhouse walks Johan to the end of the path by its stoep and in: on
-// Friday Derik and Abram are in there over coffee (ROOMS.derik,
+// Friday Derik and Abraham are in there over coffee (ROOMS.derik,
 // src/derikHouse.js); any other day there's nobody home.
 
 const HERE = { af: 'Derik se plek', en: "Derek's place" };

@@ -66,7 +66,14 @@ export default class GameScene extends Phaser.Scene {
       dusk(this, IMG_W, IMG_H);
       if (data.from === 'road') this.time.delayedCall(700, () => think(this, this.player.sprite, { af: 'Sjoe, dis al donker. Tyd om te gaan slaap.', en: "Phew, it's dark already. Time for bed." }));
     }
-    if (isRaining()) rain(this, IMG_W, IMG_H); // Friday (src/weather.js)
+    if (isRaining()) {
+      rain(this, IMG_W, IMG_H); // Friday (src/weather.js)
+      // the first time out in it, he says so
+      if (!hasFlag('rainOut') && data.from === 'house') {
+        setFlag('rainOut');
+        this.time.delayedCall(600, () => think(this, this.player.sprite, { af: 'Brrr, nat weer! Gelukkig het ek my hoed op.', en: 'Brrr, wet weather! Good thing I have my hat on.' }));
+      }
+    }
     this.pail = null;
     this.fillPail();
 
