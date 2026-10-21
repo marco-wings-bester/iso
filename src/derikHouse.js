@@ -6,8 +6,8 @@ import { BEACH_VILLAGERS } from './villagers.js';
 import { line } from './hints.js';
 
 // Inside Derik's farmhouse (ROOMS.derik), on Friday, the day it rains:
-// Derik and his friend Abraham at the kitchen table over coffee. They call
-// Johan over to join them; he sits down on the stool, and they're talking
+// Derik and his friend Abraham at the kitchen table over coffee. They're
+// talking about the rain as he comes in, then call him over to join them; he sits down on the stool, and they're talking
 // about the fountain on the town square: it's stopped working (dry as a
 // bone: scripts/dry-fountain.py). Johan's handy with pumps and wells…
 // could he have a look? ('metAbraham', 'fixFountain'). Tapping the table
@@ -59,6 +59,8 @@ export function setUpDerikHouse(scene) {
     scene.time.delayedCall(700, async () => {
       lock(scene, true);
       await converse(scene, cast(scene), [
+        ['abraham', { af: 'Jinne, maar dit reën darem straf vandag!', en: "Goodness, it's raining hard today!" }],
+        ['derik', { af: 'Ja, dit reën katte en honde!', en: "Yes, it's raining cats and dogs!" }],
         ['derik', { af: 'Johan! Kom in, kom in. Kom sit en drink ’n koppie koffie saam met ons.', en: "Jones! Come in, come in. Come and sit and have a cup of coffee with us." }],
       ]);
       lock(scene, false);
