@@ -69,12 +69,16 @@ function umbrellaTexture(scene) {
     }
   }
   for (let x = 1; x < UMBRELLA_W; x += 4) rect(g, x + 1, 9, 2, 1, x % 8 === 1 ? '#982f2a' : '#d8ccb8'); // its scalloped hem
-  rect(g, cx, 0, 1, 1, '#4a3020');              // the tip
-  rect(g, cx + 1, 10, 1, UMBRELLA_H - 13, '#4a3020'); // the shaft
-  rect(g, cx + 1, UMBRELLA_H - 2, 3, 1, '#4a3020');   // the crook
-  rect(g, cx + 3, UMBRELLA_H - 4, 1, 2, '#4a3020');
+  rect(g, cx, 0, 1, 1, '#4a3020'); // the tip
   const tex = scene.textures.createCanvas('umbrella', (UMBRELLA_W + 2) * ART_PX, (UMBRELLA_H + 2) * ART_PX);
-  blit(tex.getContext(), outline(g), 0, 0, ART_PX);
+  const ctx = tex.getContext();
+  blit(ctx, outline(g), 0, 0, ART_PX);
+  // the shaft and its crook: thin, half a sprite pixel, no outline
+  const px = (cx + 1) * ART_PX;
+  ctx.fillStyle = '#3a2414';
+  ctx.fillRect(px, 11 * ART_PX, 1, (UMBRELLA_H - 11) * ART_PX);
+  ctx.fillRect(px, (UMBRELLA_H + 1) * ART_PX - 1, 2 * ART_PX, 1);
+  ctx.fillRect(px + 2 * ART_PX - 1, (UMBRELLA_H - 1) * ART_PX, 1, 2 * ART_PX);
   tex.refresh();
 }
 
