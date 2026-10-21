@@ -18,6 +18,7 @@ import { line } from './hints.js';
 import { knock, hideBob, bobWaiting, bobInChest, sarahVisits, sarahWaiting, openChest } from './sarah.js';
 import { setUpCafe, atCounter, atTable, atWindow } from './cafe.js';
 import { setUpDerikHouse, atDerikTable } from './derikHouse.js';
+import { isRaining } from './weather.js';
 import { bike, pedal, SPEED as BIKE_SPEED, BODY as BIKE_BODY } from './bike.js';
 
 const FADE_MS = 250;
@@ -254,7 +255,8 @@ export default class InteriorScene extends Phaser.Scene {
   // (until it's prised open with the crowbar).
   useChest() {
     this.player.face('right');
-    if (hasFlag('sarahKnocked') && !hasFlag('bobHidden')) hideBob(this);
+    if (isRaining() && !hasFlag('umbrella')) this.takeUmbrella();
+    else if (hasFlag('sarahKnocked') && !hasFlag('bobHidden')) hideBob(this);
     else if (hasFlag('bobHidden') && hasFlag('sarahVisited') && !hasFlag('bobHome')) openChest(this);
     else if (hasFlag('bobHidden') && !hasFlag('bobHome')) this.think({ af: 'Sjuut… Pieter is daarin.', en: "Shh… Bob's in there." });
     else this.think({ af: 'Net ou komberse hierin.', en: 'Just old blankets in here.' });
@@ -263,6 +265,23 @@ export default class InteriorScene extends Phaser.Scene {
   // Sarah's at the door and Bob isn't hidden yet: no going out.
   mustHideBob() {
     return this.building === 'house' && hasFlag('sarahKnocked') && !hasFlag('bobHidden');
+  }
+
+  // Friday's rain (src/weather.js), and he hasn't got his umbrella: no going out.
+  needUmbrella() {
+    return this.building === 'house' && isRaining() && !hasFlag('umbrella');
+  }
+
+  // His umbrella, from the big chest: he opens it, takes it out, and shuts it.
+  async takeUmbrella() {
+    this.busy = true;
+    const { chest } = this.room;
+    const open = this.roomImage('chest-open', chest.open).setDepth(0.4);
+    await new Promise(r => this.time.delayedCall(500, r));
+    setFlag('umbrella');
+    await this.think({ af: 'Daar’s my sambreel! Nou kan ek uitgaan.', en: "There's my umbrella! Now I can go out." });
+    open.destroy();
+    this.busy = false;
   }
 
   // The pie on the table: he has half of it, and that makes him sleepy.
@@ -437,7 +456,7 @@ export default class InteriorScene extends Phaser.Scene {
     const side = { left: -4, right: 4 }[dir] ?? 0;
     this.carry?.setPosition(x + side, y - 7).setDepth(y + (dir === 'up' ? -0.5 : 0.5));
     if (y < this.exitY) return;
-    if (!this.mustHideBob()) {
+    if (!this.mustHideBob() && !this.needUmbrella()) {
       this.leave();
       return;
     }
@@ -445,7 +464,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.player.stop();
     this.player.y = this.room.h - WALL - 10;
     this.player.face('up');
-    this.think(line('notNow'));
+    this.think(line(this.mustHideBob() ? 'notNow' : 'needUmbrella'));
   }
 
   leave() {

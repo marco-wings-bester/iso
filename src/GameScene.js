@@ -16,7 +16,7 @@ import { WEDNESDAY, choresLeft } from './chores.js';
 import { asset } from './asset.js';
 import { UI } from './screen.js';
 import { isEvening, dusk } from './evening.js';
-import { isRaining, rain } from './weather.js';
+import { isRaining, rain, umbrella } from './weather.js';
 
 const SPAWN = { x: 387, y: 1265 }; // farm gate, image px
 // the pail beside the red-roofed well: where the water shows once he's filled
@@ -68,10 +68,11 @@ export default class GameScene extends Phaser.Scene {
     }
     if (isRaining()) {
       rain(this, IMG_W, IMG_H); // Friday (src/weather.js)
+      umbrella(this); // (his umbrella up)
       // the first time out in it, he says so
       if (!hasFlag('rainOut') && data.from === 'house') {
         setFlag('rainOut');
-        this.time.delayedCall(600, () => think(this, this.player.sprite, { af: 'Brrr, nat weer! Gelukkig het ek my hoed op.', en: 'Brrr, wet weather! Good thing I have my hat on.' }));
+        this.time.delayedCall(600, () => think(this, this.player.sprite, { af: 'Brrr, nat weer! Gelukkig het ek my sambreel.', en: 'Brrr, wet weather! Good thing I have my umbrella.' }));
       }
     }
     this.pail = null;

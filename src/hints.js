@@ -203,6 +203,12 @@ const LINES = {
     subtle: { af: 'Die fontein in die dorp… kom ek gaan kyk wat makeer.', en: "The fountain in town… let's go and see what's wrong." },
     explicit: { af: 'Ek moet na die fontein op die dorpsplein gaan kyk: die pad dorp toe is af by die kruispad.', en: 'I must go and look at the fountain on the town square: the road to town is down from the crossroads.' },
   },
+  // Friday: out in the rain without his umbrella? (src/weather.js)
+  needUmbrella: {
+    none: { af: 'Ek gaan nie sonder my sambreel in hierdie reën uit nie!', en: "I'm not going out in this rain without my umbrella!" },
+    subtle: { af: 'Ek gaan nie sonder my sambreel in hierdie reën uit nie! Waar het ek dit nou weer gebêre…?', en: "I'm not going out in this rain without my umbrella! Now where did I put it…?" },
+    explicit: { af: 'Ek gaan nie sonder my sambreel in hierdie reën uit nie! Dit is in die groot kis in die hoek.', en: "I'm not going out in this rain without my umbrella! It's in the big chest in the corner." },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },

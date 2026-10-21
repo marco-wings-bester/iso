@@ -1,8 +1,15 @@
+import Phaser from 'phaser';
 import { today } from './days.js';
+import { hasFlag } from './state.js';
+import { ART_PX } from './constants.js';
+import { grid, rect, outline, blit } from './pixelArt.js';
 
 // Friday it rains, gently, all day, everywhere out of doors (the farm, the
 // crossroads, the beach…): the light greyer, rain slanting down across the
-// screen, and drops splashing on the ground.
+// screen, and drops splashing on the ground. Johan won't go out in it without
+// his umbrella (in the chest in the farmhouse: 'umbrella', src/InteriorScene.js);
+// out of doors he holds it up over his head (`umbrella`), and indoors it's
+// shut.
 
 export const FRIDAY = 4;
 
@@ -43,4 +50,45 @@ export function rain(scene, w, h) {
       }
     },
   });
+}
+
+// His umbrella, red and cream: a dome and its shaft down to the crook, 24×30
+// sprite px (at the map's resolution, like his own sprite).
+const UMBRELLA_W = 24;
+const UMBRELLA_H = 30;
+function umbrellaTexture(scene) {
+  if (scene.textures.exists('umbrella')) return;
+  const g = grid(UMBRELLA_W + 2, UMBRELLA_H + 2);
+  const cx = UMBRELLA_W / 2;
+  for (let y = 0; y < 9; y++) {
+    const half = Math.round(11.5 * Math.sqrt(1 - ((8.5 - y) / 9.5) ** 2));
+    for (let x = Math.round(cx - half); x < Math.round(cx + half); x++) {
+      const panel = Math.floor((x - cx + 12) / 4) % 2;
+      const lit = x < cx - 2 && y < 5;
+      rect(g, x + 1, y + 1, 1, 1, panel ? (lit ? '#fffaf0' : '#f6eedc') : (lit ? '#f07a5a' : '#d04c3a'));
+    }
+  }
+  for (let x = 1; x < UMBRELLA_W; x += 4) rect(g, x + 1, 9, 2, 1, x % 8 === 1 ? '#982f2a' : '#d8ccb8'); // its scalloped hem
+  rect(g, cx, 0, 1, 1, '#4a3020');              // the tip
+  rect(g, cx + 1, 10, 1, UMBRELLA_H - 13, '#4a3020'); // the shaft
+  rect(g, cx + 1, UMBRELLA_H - 2, 3, 1, '#4a3020');   // the crook
+  rect(g, cx + 3, UMBRELLA_H - 4, 1, 2, '#4a3020');
+  const tex = scene.textures.createCanvas('umbrella', (UMBRELLA_W + 2) * ART_PX, (UMBRELLA_H + 2) * ART_PX);
+  blit(tex.getContext(), outline(g), 0, 0, ART_PX);
+  tex.refresh();
+}
+
+// Out in the rain with it: the umbrella up over his head, following him.
+export function umbrella(scene) {
+  if (!isRaining() || !hasFlag('umbrella')) return;
+  umbrellaTexture(scene);
+  const { sprite } = scene.player;
+  const u = scene.add.image(0, 0, 'umbrella').setOrigin(0.5, 1);
+  const follow = () => {
+    const s = sprite.scaleX;
+    u.setScale(s).setPosition(sprite.x + 2 * ART_PX * s, sprite.y - 7 * ART_PX * s).setDepth(sprite.depth + 0.5).setVisible(sprite.visible);
+  };
+  follow();
+  scene.events.on('update', follow);
+  scene.events.once('shutdown', () => scene.events.off('update', follow));
 }
