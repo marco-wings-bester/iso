@@ -73,12 +73,13 @@ function umbrellaTexture(scene) {
   const tex = scene.textures.createCanvas('umbrella', (UMBRELLA_W + 2) * ART_PX, (UMBRELLA_H + 2) * ART_PX);
   const ctx = tex.getContext();
   blit(ctx, outline(g), 0, 0, ART_PX);
-  // the shaft and its crook: thin, half a sprite pixel, no outline
+  // the shaft and its crook: a sprite pixel wide, no outline
   const px = (cx + 1) * ART_PX;
+  const t = ART_PX;
   ctx.fillStyle = '#3a2414';
-  ctx.fillRect(px, 11 * ART_PX, 1, (UMBRELLA_H - 11) * ART_PX);
-  ctx.fillRect(px, (UMBRELLA_H + 1) * ART_PX - 1, 2 * ART_PX, 1);
-  ctx.fillRect(px + 2 * ART_PX - 1, (UMBRELLA_H - 1) * ART_PX, 1, 2 * ART_PX);
+  ctx.fillRect(px, 11 * ART_PX, t, (UMBRELLA_H - 11) * ART_PX);
+  ctx.fillRect(px, (UMBRELLA_H + 1) * ART_PX - t, 3 * ART_PX, t);
+  ctx.fillRect(px + 3 * ART_PX - t, (UMBRELLA_H - 1) * ART_PX, t, 2 * ART_PX);
   tex.refresh();
 }
 
