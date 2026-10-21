@@ -1,12 +1,15 @@
 import MapScene from './MapScene.js';
 import { townGrid } from './WalkGrid.js';
 import { asset } from './asset.js';
+import { animateTown } from './townLife.js';
 
 // The town (assets/town.jpg), down the road from the crossroads: houses
 // round a square with a fountain, a cafe and a restaurant, the paths
 // winding between them. Boer Johan comes in by the road at the top right,
 // between the fields, and that's the way back to the crossroads. Open from
-// Wednesday afternoon, once the farm work's done (RoadScene).
+// Wednesday afternoon, once the farm work's done (RoadScene). Folk at the
+// restaurant and the cafe, a neighbour checking her mail, pigeons and cats
+// liven it up (src/townLife.js).
 
 const HERE = { af: 'Die dorp', en: 'The town' };
 
@@ -26,6 +29,7 @@ export default class TownScene extends MapScene {
   // `at`: where he is, when redrawn for a new screen size.
   create({ at } = {}) {
     this.place(at, at ? null : 'crossroads');
+    animateTown(this); // people, pigeons and cats (src/townLife.js)
     if (!at) this.game.events.emit('location', { name: HERE });
   }
 
