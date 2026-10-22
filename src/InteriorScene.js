@@ -259,7 +259,8 @@ export default class InteriorScene extends Phaser.Scene {
     else if (hasFlag('sarahKnocked') && !hasFlag('bobHidden')) hideBob(this);
     else if (hasFlag('bobHidden') && hasFlag('sarahVisited') && !hasFlag('bobHome')) openChest(this);
     else if (hasFlag('bobHidden') && !hasFlag('bobHome')) this.think({ af: 'Sjuut… Pieter is daarin.', en: "Shh… Bob's in there." });
-    else this.think({ af: 'Net ou komberse hierin.', en: 'Just old blankets in here.' });
+    else if (isRaining()) this.think({ af: 'Net ou komberse hierin.', en: 'Just old blankets in here.' }); // (his umbrella's out with him)
+    else this.think({ af: 'Net ou komberse hierin, en my sambreel.', en: 'Just old blankets in here, and my umbrella.' });
   }
 
   // Sarah's at the door and Bob isn't hidden yet: no going out.
