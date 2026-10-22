@@ -927,8 +927,9 @@ export const ROOMS = {
   },
 
   // Derik's farmhouse kitchen (src/derikHouse.js): on Friday, Derik and his
-  // friend Abraham at the table over coffee, a stool there for Johan. Out of
-  // the door is back to Derik's place, at the end of the path by the stoep.
+  // friend Abraham at the table over coffee (later, beer), a stool there for
+  // Johan, and a bookshelf. Out of the door is back to Derik's place, at
+  // the end of the path by the stoep.
   derik: {
     w: 144, h: 160, wallH: 44,
     name: { af: 'Derik se huis', en: "Derek's house" },
@@ -939,6 +940,11 @@ export const ROOMS = {
       derikTable: {
         area: { x: 40, y: 72, w: 66, h: 46 },
         stand: { x: 72, y: 124 },
+      },
+      // tap the bookshelf: a book on dowsing, for the town's dry fountain (src/derikHouse.js)
+      derikBooks: {
+        area: { x: 114, y: 6, w: 28, h: 42 },
+        stand: { x: 126, y: 58 },
       },
     },
     // where they sit (feet), facing the table
@@ -951,7 +957,7 @@ export const ROOMS = {
     solid: [
       { x: 6, y: 40, w: 18, h: 16 },  // the stove
       { x: 42, y: 76, w: 62, h: 26 }, // the table and its chairs
-      { x: 120, y: 40, w: 18, h: 14 }, // the dresser
+      { x: 116, y: 40, w: 24, h: 10 }, // the bookshelf
       { x: 114, y: 128, w: 22, h: 26 }, // plant
     ],
     draw(ctx) {
@@ -966,7 +972,7 @@ export const ROOMS = {
       windowPane(ctx, 34, 10);
       windowPane(ctx, 86, 10);
       stove(ctx, 8, 24);
-      dresser(ctx, 121, 10);
+      bookshelf(ctx, 116, 10, 23);
       rug(ctx, 38, 70, 70, 52);
       chair(ctx, 44, 84, false);
       chair(ctx, 90, 84, true);
