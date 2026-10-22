@@ -22,7 +22,7 @@ export const BY_DERIK = { x: 346, y: 2466 };
 // ('needMeat')? Two chickens from Johan's hen house, with the knife from his
 // tool shed (src/views/coop.js: 'chickens'), and they're on the grill
 // ('meatBrought', src/derikLife.js). But he hasn't any salt either
-// ('needSalt'): there's none in Johan's kitchen, but Sannie at the cafe lends
+// ('needSalt'): there's none in Johan's kitchen, but Marinel at the cafe lends
 // him hers (src/cafe.js: 'salt'), and the chicken's salted ('salted'). A
 // little later it's done, and they eat (`eatWithDerik`).
 export async function braaiWithDerik(scene, derik) {

@@ -7,11 +7,11 @@ import { createVillager } from './CharacterSprite.js';
 import { obj } from './pixelArt.js';
 import { line } from './hints.js';
 
-// Inside the Cozy Seaside Cafe at the beach (ROOMS.cafe): Sannie (Sally in
-// English) behind the counter, the coffee machine steaming. Boer Johan comes
+// Inside the Cozy Seaside Cafe at the beach (ROOMS.cafe): Marinel behind the
+// counter, the coffee machine steaming. Boer Johan comes
 // in wanting a coffee; at the counter he orders one, checks his wallet (his
 // view of it, ViewScene 'wallet') and finds he hasn't a cent in cash
-// ('noCash'). Sannie doesn't mind: come back when he has some. Once Derik
+// ('noCash'). Marinel doesn't mind: come back when he has some. Once Derik
 // has lent him R15 ('loan', src/derik.js), he pays, she makes it, and he
 // carries his steaming cup about ('coffee'): he can sit down at a table with
 // it, sipping, or look out of the window at the garden behind the cafe
@@ -20,7 +20,7 @@ import { line } from './hints.js';
 // no salt at home for Derik's braai ('needSalt', src/derik.js), he has a chat
 // with her and she lends him her salt pot ('salt').
 
-const SANNIE = { name: { af: 'Sannie', en: 'Sally' }, color: '#2a7ab0' };
+const SANNIE = { name: { af: 'Marinel', en: 'Marinel' }, color: '#2a7ab0' };
 const LOOK = {
   hair: 'bob', skirt: true,
   palette: {
@@ -41,7 +41,7 @@ function cast(scene) {
   };
 }
 
-// Sannie at her place behind the counter, its front drawn over her; steam
+// Marinel at her place behind the counter, its front drawn over her; steam
 // curling up off the coffee machine. And, coming in, he's after a coffee.
 export function setUpCafe(scene) {
   const { room } = scene;
@@ -180,7 +180,7 @@ export async function atCounter(scene) {
   if (hasFlag('needSalt') && !hasFlag('salt')) {
     await converse(scene, cast(scene), [
       ['sannie', { af: 'Johan! Nog ’n koffie?', en: 'Jones! Another coffee?' }],
-      ['jones', { af: 'Nee dankie, Sannie. Ek kom eintlik vir sout vra.', en: "No thanks, Sally. I've actually come to ask for salt." }],
+      ['jones', { af: 'Nee dankie, Marinel. Ek kom eintlik vir sout vra.', en: "No thanks, Marinel. I've actually come to ask for salt." }],
       ['sannie', { af: 'Sout? Waarvoor dan?', en: 'Salt? Whatever for?' }],
       ['jones', { af: 'Derik braai vanaand, en die hoender is op die vuur, maar hy het nie sout nie.', en: "Derek's having a braai tonight, the chicken's on the fire, but he hasn't any salt." }],
       ['sannie', { af: 'Ag, Derik en sy braaie! Hier, vat my soutpotjie. Bring dit net weer terug, hoor?', en: "Oh, Derek and his braais! Here, take my salt pot. Just bring it back, won't you?" }],
