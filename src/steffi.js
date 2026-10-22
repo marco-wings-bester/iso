@@ -15,7 +15,7 @@ import { think } from './bubble.js';
 
 const LOOK = {
   hair: 'long', shorts: true,
-  palette: { S: '#f8d0b0', s: '#e0a888', B: '#6a4a2a', d: '#4a2a14', R: '#f0c860', r: '#c89a38', C: '#e86a6a', c: '#c04a4a', O: '#4a7ab8', o: '#345a90' },
+  palette: { S: '#f8d0b0', s: '#e0a888', B: '#6a4a2a', d: '#4a2a14', R: '#c8482a', r: '#8a2c18', C: '#e86a6a', c: '#c04a4a', O: '#4a7ab8', o: '#345a90' },
 };
 const AT = { x: 586, y: 1482 };       // where she stands, in the water
 const BY_HER = { x: 632, y: 1474 };   // where Johan stands to talk to her
