@@ -13,8 +13,9 @@ import { line } from './hints.js';
 // bone: scripts/dry-fountain.py). Johan's handy with pumps and wells…
 // could he have a look? ('metAbraham', 'fixFountain'). Tapping the table
 // afterwards, he sits with them again. Once he's seen the fountain for
-// himself ('fountainLooked'), the bookshelf has the answer: a book on how a
-// dowsing rod finds water under the ground ('readDowsing'). By then Derik and
+// himself ('fountainLooked'), the bookshelf has the answer: a book on
+// finding water under the ground ('readDowsing'; how plainly he takes it in
+// is at the hint level). By then Derik and
 // Abraham are on to beer; he thanks them, says he's off to bed, and has a
 // plan to find the fountain's water tomorrow ('dowsePlan', and he's tired).
 
@@ -117,7 +118,8 @@ export async function atDerikTable(scene) {
   if (hint) scene.think(hint);
 }
 
-// A mug of beer in front of each of them (over their coffee cups).
+// Beer: a mug in each one's hand. Every so often they raise them,
+// "Gesondheid!", and take a good long swig.
 function beer(scene) {
   if (scene.beer) return;
   if (!scene.textures.exists('beer-mug')) {
@@ -130,31 +132,67 @@ function beer(scene) {
     });
     tex.refresh();
   }
-  const { cups } = scene.room;
-  scene.beer = [cups[0], cups[1]].map(({ x, y }) => scene.add.image(x, y + 1, 'beer-mug').setOrigin(0.5, 1).setDepth(y + 1));
+  const { seats } = scene.room;
+  // in the hand nearer the table, at chest height
+  const hold = [
+    { who: scene.derik, x: seats.derik.x + 6, y: seats.derik.y - 9, flip: false },
+    { who: scene.abraham, x: seats.abraham.x - 6, y: seats.abraham.y - 9, flip: true },
+  ];
+  scene.beer = hold.map(h => ({ ...h, mug: scene.add.image(h.x, h.y, 'beer-mug').setOrigin(0.5, 1).setFlipX(h.flip).setDepth(h.who.depth + 1) }));
+  const cheers = () => scene.time.delayedCall(6000 + Math.random() * 5000, () => {
+    if (!scene.sys.isActive()) return;
+    if (scene.busy) { cheers(); return; }
+    // up go the mugs…
+    scene.beer.forEach(({ mug, y }) => scene.tweens.add({ targets: mug, y: y - 8, duration: 300, yoyo: true, hold: 500, ease: 'Quad.easeOut' }));
+    const words = scene.add.text((seats.derik.x + seats.abraham.x) / 2, seats.derik.y - 38, 'Gesondheid!', {
+      fontFamily: 'monospace', fontStyle: 'bold', fontSize: '28px', color: '#fffaf0', stroke: '#2e1d0c', strokeThickness: 6,
+    }).setOrigin(0.5).setScale(0.25).setDepth(1e4);
+    scene.tweens.add({ targets: words, y: words.y - 6, alpha: { from: 1, to: 0 }, delay: 900, duration: 700, onComplete: () => words.destroy() });
+    // …and down the hatch: to the mouth, tipped up, and back
+    scene.time.delayedCall(1200, () => scene.beer.forEach(({ mug, x, y, flip, who }) => scene.tweens.add({
+      targets: mug, x: who.x + (flip ? -3 : 3), y: who.y - 15, angle: flip ? 40 : -40, duration: 350, yoyo: true, hold: 900, ease: 'Sine.easeInOut',
+      onComplete: () => mug.setPosition(x, y).setAngle(0),
+    })));
+    cheers();
+  });
+  cheers();
 }
 
-// The bookshelf: once he's seen the dry fountain, a book on dowsing.
+// The bookshelf: once he's seen the dry fountain, a book there about finding
+// water under the ground. He takes it down, reads it (his reading pose), and
+// puts it back; what he makes of it is at the hint level (src/hints.js).
 export async function atDerikBooks(scene) {
-  scene.player.face('up');
+  const { player } = scene;
+  player.face('up');
   if (!hasFlag('fountainLooked')) {
     scene.think({ af: 'Derik het ’n hele paar boeke. Niks wat ek nou nodig het nie.', en: "Derek has quite a few books. Nothing I need right now." });
     return;
   }
   if (hasFlag('dowsePlan')) {
-    scene.think({ af: 'Môre gaan ek die water vir die fontein soek, met ’n mikstok!', en: "Tomorrow I'll find the fountain's water, with a dowsing rod!" });
+    scene.think(line('dowseAgain'));
     return;
   }
   lock(scene, true);
-  await scene.think({ af: 'Hmm… “Water onder die grond vind: die mikstok en die waterwyser.” Dit klink nuttig!', en: 'Hmm… "Finding water under the ground: the dowsing rod and the water diviner." That sounds useful!' });
-  await scene.think({ af: '’n Gevurkte stok van ’n wilgerboom, een punt in elke hand… en waar daar water onder die grond loop, trek die punt na onder.', en: 'A forked willow stick, one end in each hand… and where there is water running underground, the tip pulls down.' });
-  await scene.think({ af: 'Natuurlik! Die fontein kry sy water van onder die grond. As ek die waterlaag kry, kry ek uit waarom dit opgedroog het.', en: 'Of course! The fountain gets its water from under the ground. If I find the water, I find out why it dried up.' });
+  const wait = ms => new Promise(r => scene.time.delayedCall(ms, r));
+  await wait(400);
+  // the book off the shelf (a gap where it was), turned round, open in his hands
+  const gap = scene.add.rectangle(127, 24, 3, 7, 0x4a2a14).setOrigin(0).setDepth(1);
+  player.dir = 'down';
+  player.act('player-px-read');
+  await scene.think({ af: '“Water onder die grond: hoe om dit te vind.” Kom ek lees gou…', en: '"Water under the ground: how to find it." Let me have a read…' });
+  await scene.think(line('dowsingBook'));
+  player.stop();
+  player.face('up'); // (back on the shelf)
+  gap.destroy();
+  await wait(300);
+  player.face('left');
   setFlag('readDowsing');
   beer(scene);
   await converse(scene, cast(scene), [
     ['abraham', { af: 'Gesondheid! Kom, Johan, ’n biertjie?', en: 'Cheers! Come on, Jones, a beer?' }],
     ['jones', { af: 'Baie dankie, Derik en Abraham, vir die koffie en die geselskap!', en: 'Thanks so much, Derek and Abraham, for the coffee and the company!' }],
-    ['jones', { af: 'Maar ek gaan nou slaap. Ek het ’n goeie plan: môre gaan ek die water vir die fontein opspoor.', en: "But I'm off to bed now. I've got a good plan: tomorrow I'll track down the water for the fountain." }],
+    ['jones', { af: 'Wens ek kon bly, maar ek moet gaan slaap sodat ek lekker vars is môre.', en: "Wish I could stay, but I must get to bed so I'm nice and fresh tomorrow." }],
+    ['jones', { af: 'Ek het ’n plan vir die fontein se water.', en: "I've got a plan for the fountain's water." }],
     ['derik', { af: 'Nou toe! Lekker slaap, Johan.', en: 'Well then! Sleep well, Jones.' }],
     ['abraham', { af: 'Sterkte môre! Die dorp reken op jou.', en: 'Good luck tomorrow! The town is counting on you.' }],
     () => { setFlag('dowsePlan'); setFlag('tired'); },
