@@ -2,13 +2,15 @@ import MapScene from './MapScene.js';
 import { riverGrid } from './WalkGrid.js';
 import { asset } from './asset.js';
 import { flowRiver, flowSluice } from './riverFlow.js';
+import { placeSteffi, isSteffi, talkToSteffi } from './steffi.js';
 
 // The river (assets/river.jpg), down the path off the bottom left of the
 // crossroads: a gold diggers' camp in the woods, a tent and crates, pans
 // and a sluice in the stream, a rocker on the near sandbar and more pans
 // on the far one, across the river (which he can't wade: it flows, ripples
 // drifting downstream, src/riverFlow.js). Boer Johan comes in by the track
-// at the top, which is the way back to the crossroads.
+// at the top, which is the way back to the crossroads. Steffi is in the
+// shallows off the near sandbar, panning for gold (src/steffi.js).
 
 const HERE = { af: 'Die rivier', en: 'The river' };
 
@@ -30,7 +32,15 @@ export default class RiverScene extends MapScene {
     this.place(at, at ? null : 'crossroads');
     flowRiver(this); // (src/riverFlow.js)
     flowSluice(this);
+    this.steffi = placeSteffi(this); // panning for gold (src/steffi.js)
     if (!at) this.game.events.emit('location', { name: HERE });
+  }
+
+  // Tapping Steffi: over to her for a chat.
+  tapThing(x, y) {
+    if (!isSteffi(this.steffi, x, y)) return false;
+    talkToSteffi(this, this.steffi);
+    return true;
   }
 
   update(_time, delta) {
