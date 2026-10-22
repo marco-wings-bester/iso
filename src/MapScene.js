@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { createCharacter, createBike } from './CharacterSprite.js';
 import Player from './Player.js';
-import { PLAYER_SPEED } from './constants.js';
+import { PLAYER_SPEED, FRAME_H, ART_PX } from './constants.js';
 import { UI } from './screen.js';
 import { bike, pedal, showParked, tapParked, SPEED as BIKE_SPEED } from './bike.js';
 import { think } from './bubble.js';
@@ -89,6 +89,7 @@ export default class MapScene extends Phaser.Scene {
     umbrella(this); // (his umbrella up, in it)
     showParked(this, scale);
     this.leaving = false;
+    this.armed = {};    // roads he's been far enough off to leave by (edges)
     this.busy = false;  // talking: taps and keys only move it along
     this.choice = null; // replies to pick from (src/dialog.js)
     this.refitAfter = false;
@@ -176,6 +177,22 @@ export default class MapScene extends Phaser.Scene {
   edges() {
     if (this.leaving) return;
     const { x, y } = this.player;
+    // near the end of a road (three or four of his heights from where it leaves
+    // the screen) is far enough: on he goes, once he's been further off it
+    // (so not straight back the way he came in)
+    const reach = 3.6 * FRAME_H * ART_PX * this.map.scale;
+    this.armed ??= {};
+    const nearEnd = Object.keys(this.exits).find((n) => {
+      const e = this.ends[n];
+      if (!e) return false;
+      const d = Math.hypot(e.x - x, e.y - y);
+      if (d > reach * 1.15) this.armed[n] = true;
+      return this.armed[n] && d < reach;
+    });
+    if (nearEnd) {
+      this.leave(nearEnd);
+      return;
+    }
     const v = this.view;
     const past = { top: y <= v.top + 6, bottom: y >= v.bottom - 10, left: x <= v.left + 10, right: x >= v.right - 10 };
     const off = n => Math.abs(this.exits[n].near - (['top', 'bottom'].includes(this.exits[n].side) ? x : y));
@@ -188,6 +205,7 @@ export default class MapScene extends Phaser.Scene {
     const { player } = this;
     const closed = exit.closed?.();
     if (closed) {
+      this.armed[name] = false; // (till he's gone off a way and comes back)
       // not now: a step back, turn round, and why not
       const { x, y } = this.backs[name];
       player.stop();
