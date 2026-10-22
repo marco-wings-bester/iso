@@ -209,6 +209,18 @@ const LINES = {
     subtle: { af: 'Ek gaan nie sonder my sambreel in hierdie reën uit nie! Waar het ek dit nou weer gebêre…?', en: "I'm not going out in this rain without my umbrella! Now where did I put it…?" },
     explicit: { af: 'Ek gaan nie sonder my sambreel in hierdie reën uit nie! Dit is in die groot kis in die hoek.', en: "I'm not going out in this rain without my umbrella! It's in the big chest in the corner." },
   },
+  // Derik's bookshelf: the book on finding water underground (src/derikHouse.js)
+  dowsingBook: {
+    none: { af: 'Hmm… oor bronne en water diep onder die grond. Interessant.', en: 'Hmm… about springs and water deep under the ground. Interesting.' },
+    subtle: { af: 'Hmm… die ou boere het water onder die grond gevind met net ’n stok uit ’n boom. Interessant…', en: 'Hmm… the old farmers found water under the ground with nothing but a stick from a tree. Interesting…' },
+    explicit: { af: 'Met ’n gevurkte wilgerstok kan ’n mens water onder die grond vind: die punt trek na onder waar die water loop. Môre soek ek so die fontein se water!', en: "With a forked willow stick you can find water under the ground: the tip pulls down where the water runs. Tomorrow I'll find the fountain's water like that!" },
+  },
+  // the bookshelf again, after
+  dowseAgain: {
+    none: { af: 'Ek het klaar daai boek gelees.', en: "I've already read that book." },
+    subtle: { af: 'Ek het klaar daai boek gelees. Môre gaan soek ek die fontein se water.', en: "I've already read that book. Tomorrow I'll go and look for the fountain's water." },
+    explicit: { af: 'Môre soek ek die fontein se water met ’n gevurkte wilgerstok!', en: "Tomorrow I'll find the fountain's water with a forked willow stick!" },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },
