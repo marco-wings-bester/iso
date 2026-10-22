@@ -115,7 +115,10 @@ about and turn round; the fire flickers and throws sparks, and the chimney
 smokes (`src/derikLife.js`). Off the bottom left of the crossroads (from
 Friday), a path leads to **the river** (`src/RiverScene.js`, `public/assets/river.jpg`): a gold
 diggers' camp with a tent, pans and a sluice, a rocker on the near sandbar and
-more pans on the far one, across a shallow ford. The picture maps are
+more pans on the far one. The river flows (Johan can't wade it), and the
+sluice has its own water. Steffi is there in the shallows, panning for gold
+(`src/steffi.js`): Johan's quite taken with her, asks what she's doing and
+about the town's dry fountain, and asks her out for Saturday night. The picture maps are
 `src/MapScene.js` scenes. Only in the talks with Bob and Louise (Pieter and
 Wiesie: at the gate, and in the farmhouse, where it matters whether she finds
 out) are Farmer Jones's replies picked from two (`src/dialog.js`); everywhere
