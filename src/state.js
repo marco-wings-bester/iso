@@ -24,7 +24,7 @@
 // ('repaid'); Derik has no meat ('needMeat') → the knife in the tool shed
 // ('knife') → two hens from the hen house (`hens`, then 'chickens') → on
 // Derik's grill ('meatBrought') → no salt ('needSalt'), none at home either
-// ('noSaltHome') → Sannie at the cafe lends hers ('salt') → salted ('salted')
+// ('noSaltHome') → Marinel at the cafe lends hers ('salt') → salted ('salted')
 // → they eat on the log by the fire as night falls, then Johan's off to bed
 // ('braaiDone', and 'tired'). Friday, rain: coffee at Derik's with Abraham
 // ('metAbraham'), who ask him to look at the town's dry fountain ('fixFountain').

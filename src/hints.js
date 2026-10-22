@@ -190,9 +190,9 @@ const LINES = {
   noSalt: {
     none: { af: 'Ag nee, my soutpot is leeg!', en: 'Oh no, my salt pot is empty!' },
     subtle: { af: 'Ag nee, my soutpot is leeg! By wie kan ek sout leen…?', en: 'Oh no, my salt pot is empty! Who could I borrow salt from…?' },
-    explicit: { af: 'Ag nee, my soutpot is leeg! Sannie by die kafee by die strand sal seker vir my sout leen.', en: 'Oh no, my salt pot is empty! Sally at the cafe by the beach will surely lend me some salt.' },
+    explicit: { af: 'Ag nee, my soutpot is leeg! Marinel by die kafee by die strand sal seker vir my sout leen.', en: 'Oh no, my salt pot is empty! Marinel at the cafe by the beach will surely lend me some salt.' },
   },
-  // Sannie's lent him her salt
+  // Marinel's lent him her salt
   saltLent: {
     none: { af: 'Sout vir die hoender!', en: 'Salt for the chicken!' },
     explicit: { af: 'Sout vir die hoender! Nou terug na Derik toe.', en: 'Salt for the chicken! Now back to Derek.' },

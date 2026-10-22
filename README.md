@@ -39,12 +39,12 @@ umbrellas are drawn in front of whoever sits under them (`src/seaside.js`; the
 boats and canopies are cut out of the picture, `art/beach-source.jpg`, and its
 people taken out, by `scripts/cut-seaside.py`). Tap the **Cozy Seaside Cafe**
 (or its deck) and Boer Johan goes in (`src/cafe.js`, the room in
-`src/interiors.js`): he'd love a coffee, so he orders one from Sannie (Sally in
+`src/interiors.js`): he'd love a coffee, so he orders one from Marinel (Marinel in
 English) at the counter, checks his wallet (his view of it,
 `src/views/wallet.js`) and finds he hasn't a cent in cash; she says to come
 back when he has some. Derik, fishing off the jetty, lends him R15 (tap him;
 `src/derik.js`): "Bring dit sommer oormore aand as jy by ons kom braai." Back
-at the counter Johan pays, Sannie makes his coffee, and he carries it about,
+at the counter Johan pays, Marinel makes his coffee, and he carries it about,
 steaming: tap a table and he sits down with it, sipping, or tap the window at
 the back to look out at the garden behind the cafe (`src/views/garden.js`)
 over his cup. Out of the door it's finished, and he says how wide awake he
@@ -79,7 +79,7 @@ inside it (`src/views/coop.js`): hens on their nests and in the straw. To
 take two for the braai Johan needs a knife; it's on the workbench in the tool
 shed (from then on). With two chickens, back to Derik's: on a grill over the
 fire. Only, he hasn't any salt either. Johan's salt pot at home is empty;
-Sannie at the cafe lends him hers, after a chat; back at Derik's, the
+Marinel at the cafe lends him hers, after a chat; back at Derik's, the
 chicken's salted. A little later it's done: they sit on the log behind the
 fire and eat, night falling as they talk, till Johan's off home to bed.
 That evening it's dark everywhere he goes (`src/evening.js`); all that's left

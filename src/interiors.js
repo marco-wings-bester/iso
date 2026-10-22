@@ -862,7 +862,7 @@ export const ROOMS = {
     },
   },
 
-  // The Cozy Seaside Cafe at the beach (src/cafe.js): Sannie behind the
+  // The Cozy Seaside Cafe at the beach (src/cafe.js): Marinel behind the
   // counter, coffee on the go. Out of the door is back to the beach.
   cafe: {
     w: 144, h: 172, wallH: 44,
@@ -892,7 +892,7 @@ export const ROOMS = {
         stand: { x: 21, y: 52 },
       },
     },
-    // the counter (with what's on it) drawn over Sannie behind it, so she
+    // the counter (with what's on it) drawn over Marinel behind it, so she
     // shows from the waist up; steam curls up off the coffee machine
     counter: { x: 39, y: 31, w: 100, h: 44, depth: 70, draw: ctx => cafeCounter(ctx, 1, 23, 98) },
     sannie: { x: 77, y: 64 },
