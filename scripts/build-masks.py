@@ -5,7 +5,7 @@
   public/assets/seaside.jpg    → src/beachMask.js  the village road, the sand and the jetty
   public/assets/town.jpg       → src/townMask.js   the town's paths and its square
   public/assets/derik.jpg      → src/derikMask.js  the paths at Derik's place, and his braai
-  public/assets/river.jpg      → src/riverMask.js  the open ground by the river, its sandbars and a ford
+  public/assets/river.jpg      → src/riverMask.js  the open ground by the river and its near sandbar
 
 Pixels are picked by colour (the pictures are shaded, and JPEGs), with extra
 boxes (the jetty's boards, a way down onto the sand), small holes (pebbles,
@@ -127,17 +127,16 @@ MAPS = [
     {
         'image': 'public/assets/river.jpg',
         'out': 'src/riverMask.js',
-        'what': 'the open ground by the river, its sandbars and a ford between them',
+        'what': 'the open ground by the river and its near sandbar (not the water)',
         'cell': 8,
         'close': 5,
         'start': (1060, 300),  # on the road in
         'walk': open_ground,
+        'dry': lambda R, G, B: (B > R + 40) & (B > 120),  # the river: he can't wade it
         'boxes': [
             ((800, 878, 300, 27), None),    # past the lanterns, below the crates: round to the bank downstream
             ((1000, 1290, 160, 70), None),  # down the bank onto the near sandbar
             ((620, 1440, 380, 115), None),  # the near sandbar's gravel
-            ((555, 1520, 120, 200), None),  # a ford: the shallows between the two sandbars
-            ((220, 1720, 60, 160), None),   # off the far sandbar onto its bank
         ],
         'exclude': [
             # the camp: the tent, the crates, the bucket, the pans, a dirt pile, the sluice's top
@@ -167,6 +166,9 @@ def build(m):
     full = np.asarray(mask) > 127
     for x, y, w, h in m['exclude']:
         full[y:y + h, x:x + w] = False
+    if m.get('dry'):  # never the water itself (its blue, dilated a little)
+        wet = Image.fromarray((m['dry'](R, G, B) * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(9))
+        full &= np.asarray(wet) < 128
 
     cell = m['cell']
     h, w = full.shape
