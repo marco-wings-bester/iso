@@ -1,7 +1,7 @@
 import MapScene from './MapScene.js';
 import { riverGrid } from './WalkGrid.js';
 import { asset } from './asset.js';
-import { flowRiver } from './riverFlow.js';
+import { flowRiver, flowSluice } from './riverFlow.js';
 
 // The river (assets/river.jpg), down the path off the bottom left of the
 // crossroads: a gold diggers' camp in the woods, a tent and crates, pans
@@ -29,6 +29,7 @@ export default class RiverScene extends MapScene {
   create({ at } = {}) {
     this.place(at, at ? null : 'crossroads');
     flowRiver(this); // (src/riverFlow.js)
+    flowSluice(this);
     if (!at) this.game.events.emit('location', { name: HERE });
   }
 
