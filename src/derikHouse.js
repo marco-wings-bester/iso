@@ -123,34 +123,34 @@ export async function atDerikTable(scene) {
 function beer(scene) {
   if (scene.beer) return;
   if (!scene.textures.exists('beer-mug')) {
-    const tex = scene.textures.createCanvas('beer-mug', 8, 8);
-    obj(tex.getContext(), 1, 1, 6, 6, (r) => {
-      r(0, 0, 5, 2, '#fffaf0');   // the head
-      r(0, 2, 5, 4, '#e8a030');   // the beer
-      r(1, 3, 1, 2, '#f8c860');
-      r(5, 2, 1, 3, '#c8d0d8');   // the handle
+    const tex = scene.textures.createCanvas('beer-mug', 6, 7);
+    obj(tex.getContext(), 1, 1, 4, 5, (r) => {
+      r(0, 0, 3, 1, '#fffaf0');   // the head
+      r(0, 1, 3, 4, '#e8a030');   // the beer
+      r(0, 2, 1, 2, '#f8c860');
+      r(3, 1, 1, 2, '#c8d0d8');   // the handle
     });
     tex.refresh();
   }
   const { seats } = scene.room;
-  // in the hand nearer the table, at chest height
+  // in the hand in front of him, resting on his lap
   const hold = [
-    { who: scene.derik, x: seats.derik.x + 6, y: seats.derik.y - 9, flip: false },
-    { who: scene.abraham, x: seats.abraham.x - 6, y: seats.abraham.y - 9, flip: true },
+    { who: scene.derik, x: seats.derik.x + 3, y: seats.derik.y - 6, flip: false },
+    { who: scene.abraham, x: seats.abraham.x - 3, y: seats.abraham.y - 6, flip: true },
   ];
   scene.beer = hold.map(h => ({ ...h, mug: scene.add.image(h.x, h.y, 'beer-mug').setOrigin(0.5, 1).setFlipX(h.flip).setDepth(h.who.depth + 1) }));
   const cheers = () => scene.time.delayedCall(6000 + Math.random() * 5000, () => {
     if (!scene.sys.isActive()) return;
     if (scene.busy) { cheers(); return; }
     // up go the mugs…
-    scene.beer.forEach(({ mug, y }) => scene.tweens.add({ targets: mug, y: y - 8, duration: 300, yoyo: true, hold: 500, ease: 'Quad.easeOut' }));
+    scene.beer.forEach(({ mug, y }) => scene.tweens.add({ targets: mug, y: y - 6, duration: 300, yoyo: true, hold: 500, ease: 'Quad.easeOut' }));
     const words = scene.add.text((seats.derik.x + seats.abraham.x) / 2, seats.derik.y - 38, 'Gesondheid!', {
       fontFamily: 'monospace', fontStyle: 'bold', fontSize: '28px', color: '#fffaf0', stroke: '#2e1d0c', strokeThickness: 6,
     }).setOrigin(0.5).setScale(0.25).setDepth(1e4);
     scene.tweens.add({ targets: words, y: words.y - 6, alpha: { from: 1, to: 0 }, delay: 900, duration: 700, onComplete: () => words.destroy() });
     // …and down the hatch: to the mouth, tipped up, and back
     scene.time.delayedCall(1200, () => scene.beer.forEach(({ mug, x, y, flip, who }) => scene.tweens.add({
-      targets: mug, x: who.x + (flip ? -3 : 3), y: who.y - 15, angle: flip ? 40 : -40, duration: 350, yoyo: true, hold: 900, ease: 'Sine.easeInOut',
+      targets: mug, x: who.x + (flip ? -2 : 2), y: who.y - 13, angle: flip ? 35 : -35, duration: 350, yoyo: true, hold: 900, ease: 'Sine.easeInOut',
       onComplete: () => mug.setPosition(x, y).setAngle(0),
     })));
     cheers();
