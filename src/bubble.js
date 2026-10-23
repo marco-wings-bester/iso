@@ -44,19 +44,22 @@ function bubble(scene, who, text, { name, color = '#447a34', speech = false, bel
     const view = cam.worldView;
     const head = who.y - (who.displayHeight ?? 0) * (who.originY ?? 0);
     const bx = Phaser.Math.Clamp(Math.round(who.x - w / 2), view.x + 2 * u, view.right - w - 2 * u);
-    const by = below
+    // above them, unless that's up under the top of the screen (where the
+    // day and place names are): then below, pointing up
+    const low = below || head - 10 * u - h < view.y + 26 * u;
+    const by = low
       ? Math.min(view.bottom - h - 2 * u, Math.round(who.y + 6 * u))
       : Math.max(view.y + 2 * u, Math.round(head - 10 * u - h));
     const tx = Phaser.Math.Clamp(Math.round(who.x), bx + 4 * u, bx + w - 6 * u);
     const b = by + h;
     g.clear().fillStyle(0x2e1d0c);
     g.fillRect(bx + u, by, w - 2 * u, h).fillRect(bx, by + u, w, h - 2 * u);
-    if (below) g.fillRect(tx - 3 * u, by - u, 6 * u, u).fillRect(tx - 2 * u, by - 2 * u, 4 * u, u).fillRect(tx - u, by - 4 * u, 2 * u, 2 * u);
+    if (low) g.fillRect(tx - 3 * u, by - u, 6 * u, u).fillRect(tx - 2 * u, by - 2 * u, 4 * u, u).fillRect(tx - u, by - 4 * u, 2 * u, 2 * u);
     else if (speech) g.fillRect(tx - 3 * u, b, 6 * u, u).fillRect(tx - 2 * u, b + u, 4 * u, u).fillRect(tx - u, b + 2 * u, 2 * u, 2 * u);
     else g.fillRect(tx - u, b + u, 4 * u, 4 * u).fillRect(tx + u, b + 6 * u, 3 * u, 3 * u);
     g.fillStyle(0xfffcf2);
     g.fillRect(bx + u, by + u, w - 2 * u, h - 2 * u);
-    if (below) g.fillRect(tx - 2 * u, by - u, 4 * u, 2 * u).fillRect(tx - u, by - 2 * u, 2 * u, u);
+    if (low) g.fillRect(tx - 2 * u, by - u, 4 * u, 2 * u).fillRect(tx - u, by - 2 * u, 2 * u, u);
     else if (speech) g.fillRect(tx - 2 * u, b - u, 4 * u, 2 * u).fillRect(tx - u, b + u, 2 * u, u);
     else g.fillRect(tx, b + 2 * u, 2 * u, 2 * u).fillRect(tx + 2 * u, b + 7 * u, u, u);
     label?.setPosition(bx + w / 2, by + 2 * u);

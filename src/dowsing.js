@@ -16,22 +16,27 @@ const PATCH = { x: 730, y: 300 }; // the soggy patch on the grass
 const ACROSS = [{ x: 860, y: 340 }, { x: 760, y: 312 }]; // off the path to it
 const wait = (scene, ms) => new Promise(r => scene.time.delayedCall(ms, r));
 
-// The stick in his hands, held out in front, its tip dipping on `dip()`.
+// The stick in his hands, held out just in front of him the way he's facing
+// (as if it's leading his arms), its tip dipping on `dip()`.
 function stick(scene) {
   const { sprite } = scene.player;
   const g = scene.add.graphics();
   let tilt = 0;
+  const AIM = { right: [1, 0], left: [-1, 0], up: [0, -1], down: [0, 1] };
   const draw = () => {
-    const k = sprite.scaleX;
-    const dir = sprite.flipX ? -1 : ({ left: -1, right: 1 }[scene.player.dir] ?? 1);
-    const hx = sprite.x + dir * 6 * k;
-    const hy = sprite.y - 30 * k;
-    const tx = hx + dir * 22 * k;
-    const ty = hy - 6 * k + tilt * 16 * k;
-    g.clear().setDepth(sprite.depth + 1);
-    g.lineStyle(5 * k, 0x2e1d0c).lineBetween(hx - 4 * k, hy + 2 * k, tx, ty).lineBetween(hx + 4 * k, hy + 2 * k, tx, ty);
-    g.lineStyle(3 * k, 0x8a6a3a).lineBetween(hx - 4 * k, hy + 2 * k, tx, ty).lineBetween(hx + 4 * k, hy + 2 * k, tx, ty);
-    g.lineStyle(3 * k, 0x8a6a3a).lineBetween(tx, ty, tx + dir * 6 * k, ty + 2 * k);
+    const k = sprite.scaleX * 2; // (sprite px → picture px)
+    const [ax, ay] = AIM[sprite.facing ?? scene.player.dir] ?? AIM.down;
+    const hx = sprite.x + ax * 4 * k;
+    const hy = sprite.y - 11 * k + ay * 2 * k;
+    const len = 7 * k;
+    const tx = hx + ax * len;
+    const ty = hy + ay * len * 0.5 - 2 * k + tilt * 5 * k;
+    const px = -ay * 2 * k; // the fork's two ends, either side of his hands
+    const py = ax * 2 * k;
+    g.clear().setDepth(sprite.depth + (ay < 0 ? -0.5 : 0.5));
+    [[5, 0x2e1d0c], [2.5, 0xb08a50]].forEach(([w, c]) => {
+      g.lineStyle(w * k / 4, c).lineBetween(hx + px, hy + py, tx, ty).lineBetween(hx - px, hy - py, tx, ty);
+    });
   };
   scene.events.on('update', draw);
   const off = () => { scene.events.off('update', draw); g.destroy(); };
