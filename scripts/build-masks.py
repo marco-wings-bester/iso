@@ -99,6 +99,8 @@ MAPS = [
             ((1000, 0, 536, 420), light_path),  # the road out, at the top right…
             ((1150, 240, 120, 80), None),       # …joined up where shadows and cobbles break it
             ((1280, 110, 130, 80), None),
+            ((580, 270, 470, 60), None),        # the open grass at the top of the town (where the
+            ((740, 330, 260, 100), None),       # fountain's pipe leaked), joined to the path
         ],
         'exclude': [
             # the houses, the cafe, the restaurant (their walls share the paths' colour) and the fountain
