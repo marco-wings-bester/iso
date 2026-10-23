@@ -221,6 +221,24 @@ const LINES = {
     subtle: { af: 'Ek het klaar daai boek gelees. Môre gaan soek ek die fontein se water.', en: "I've already read that book. Tomorrow I'll go and look for the fountain's water." },
     explicit: { af: 'Môre soek ek die fontein se water met ’n gevurkte wilgerstok!', en: "Tomorrow I'll find the fountain's water with a forked willow stick!" },
   },
+  // the saw from the tool shed (for the willow at the river: src/willow.js)
+  sawFound: {
+    none: { af: '’n Saag.', en: 'A saw.' },
+    subtle: { af: '’n Saag… daarmee kan ’n mens ’n tak afsaag.', en: 'A saw… you could cut a branch off with that.' },
+    explicit: { af: '’n Saag! Nou kan ek ’n gevurkte tak van die wilgerboom by die rivier afsaag.', en: 'A saw! Now I can cut a forked branch off the willow tree by the river.' },
+  },
+  // the willow at the river, without the saw
+  willowNoSaw: {
+    none: { af: '’n Wilgerboom. Mooi takke.', en: 'A willow tree. Nice branches.' },
+    subtle: { af: '’n Wilgerboom. Daai gevurkte tak sal net reg wees… as ek iets gehad het om dit mee af te saag.', en: "A willow tree. That forked branch would be just right… if I had something to cut it off with." },
+    explicit: { af: 'Hierdie wilger se gevurkte tak sal perfek wees, maar ek het ’n saag nodig: daar is een in die gereedskapskuur.', en: "This willow's forked branch would be perfect, but I need a saw: there's one in the tool shed." },
+  },
+  // the forked willow stick, cut
+  willowStick: {
+    none: { af: '’n Gevurkte wilgerstok.', en: 'A forked willow stick.' },
+    subtle: { af: '’n Gevurkte wilgerstok, net soos in die boek.', en: 'A forked willow stick, just like in the book.' },
+    explicit: { af: '’n Gevurkte wilgerstok, net soos in die boek! Nou gaan soek ek die fontein se water.', en: "A forked willow stick, just like in the book! Now to go and find the fountain's water." },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },
