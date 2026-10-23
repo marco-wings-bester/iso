@@ -3,7 +3,8 @@ import { townGrid } from './WalkGrid.js';
 import { asset } from './asset.js';
 import { animateTown } from './townLife.js';
 import { think } from './bubble.js';
-import { setFlag } from './state.js';
+import { setFlag, hasFlag } from './state.js';
+import { dowse, leak, hasLeak } from './dowsing.js';
 
 // The town (assets/town.jpg), down the road from the crossroads: houses
 // round a square with a fountain, a cafe and a restaurant, the paths
@@ -13,7 +14,8 @@ import { setFlag } from './state.js';
 // restaurant and the cafe, a neighbour checking her mail, pigeons and cats
 // liven it up (src/townLife.js). Tapping the fountain (dry: it's stopped
 // working), he walks up to it, looks it over and wonders where its water
-// comes from ('fountainLooked').
+// comes from ('fountainLooked'); with the willow stick, he follows the water
+// up to where it's leaking away (src/dowsing.js).
 
 const HERE = { af: 'Die dorp', en: 'The town' };
 // The fountain on the square, and where he stands in front of it.
@@ -37,6 +39,7 @@ export default class TownScene extends MapScene {
   create({ at } = {}) {
     this.place(at, at ? null : 'crossroads');
     animateTown(this); // people, pigeons and cats (src/townLife.js)
+    if (hasLeak()) leak(this); // (the soggy patch where the fountain's water goes: src/dowsing.js)
     if (!at) this.game.events.emit('location', { name: HERE });
   }
 
@@ -49,6 +52,11 @@ export default class TownScene extends MapScene {
   }
 
   lookAtFountain() {
+    // with the willow stick: off following the water (src/dowsing.js)
+    if (hasFlag('willowStick') && !hasLeak()) {
+      dowse(this);
+      return;
+    }
     this.talk(async () => {
       const { player } = this;
       const wait = ms => new Promise(r => this.time.delayedCall(ms, r));

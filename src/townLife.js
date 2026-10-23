@@ -120,7 +120,10 @@ export function animateTown(scene) {
         const got = Math.random() < 0.6;
         if (got) letter.setPosition(MAILBOX.x - 12, MAILBOX.y - 40).setDepth(MAILBOX.y + 1).setVisible(true);
         const follow = () => letter.setPosition(neighbour.x - 10, neighbour.y - 40).setDepth(neighbour.depth + 1);
-        if (got) scene.events.on('update', follow);
+        if (got) {
+          scene.events.on('update', follow);
+          scene.events.once('shutdown', () => scene.events.off('update', follow));
+        }
         scene.time.delayedCall(900, () => walkSprite(scene, neighbour, NEIGHBOUR.key, [{ x: 720, y: 1066 }, { ...step }], 55, () => {
           scene.events.off('update', follow);
           letter.setVisible(false);
@@ -152,7 +155,8 @@ export function animateTown(scene) {
     return { p, at, peck };
   });
   let away = false;
-  scene.events.on('update', () => {
+  // (off again when the town's left: the listener would outlive these pigeons)
+  const scare = () => {
     if (away || !scene.player) return;
     const { x, y } = scene.player;
     if (!pigeons.some(({ at }) => Math.hypot(at.x - x, at.y - y) < 140)) return;
@@ -180,7 +184,9 @@ export function animateTown(scene) {
       });
       scene.time.delayedCall(2500, () => { away = false; });
     });
-  });
+  };
+  scene.events.on('update', scare);
+  scene.events.once('shutdown', () => scene.events.off('update', scare));
 
   // a ginger cat dozing by the neighbour's doorstep, waking now and then to
   // sit up, flick its tail and lie down again

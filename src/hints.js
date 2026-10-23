@@ -239,6 +239,15 @@ const LINES = {
     subtle: { af: '’n Gevurkte wilgerstok, net soos in die boek.', en: 'A forked willow stick, just like in the book.' },
     explicit: { af: '’n Gevurkte wilgerstok, net soos in die boek! Nou gaan soek ek die fontein se water.', en: "A forked willow stick, just like in the book! Now to go and find the fountain's water." },
   },
+  // dowsing at the fountain (src/dowsing.js)
+  dowseStart: {
+    none: { af: 'Die punt trek… daarnatoe.', en: 'The tip pulls… that way.' },
+    explicit: { af: 'Die punt trek na onder! Die water kom van bo af, teen die pad op. Kom ek volg dit.', en: "The tip pulls down! The water comes from up there, up the path. Let's follow it." },
+  },
+  foundLeak: {
+    none: { af: 'Die water loop hier onder die gras weg… dis hoekom die fontein droog is.', en: "The water's leaking away under the grass here… that's why the fountain's dry." },
+    explicit: { af: 'Die pyp onder die gras moet hier gebreek wees: die water loop hier weg in plaas van na die fontein toe. Dis die probleem!', en: "The pipe under the grass must be broken here: the water's running away here instead of down to the fountain. That's the problem!" },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },
