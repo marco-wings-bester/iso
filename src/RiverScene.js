@@ -3,6 +3,7 @@ import { riverGrid } from './WalkGrid.js';
 import { asset } from './asset.js';
 import { flowRiver, flowSluice } from './riverFlow.js';
 import { placeSteffi, isSteffi, talkToSteffi } from './steffi.js';
+import { placeWillow, isWillow, atWillow } from './willow.js';
 
 // The river (assets/river.jpg), down the path off the bottom left of the
 // crossroads: a gold diggers' camp in the woods, a tent and crates, pans
@@ -33,14 +34,21 @@ export default class RiverScene extends MapScene {
     flowRiver(this); // (src/riverFlow.js)
     flowSluice(this);
     this.steffi = placeSteffi(this); // panning for gold (src/steffi.js)
+    this.willow = placeWillow(this); // (src/willow.js)
     if (!at) this.game.events.emit('location', { name: HERE });
   }
 
-  // Tapping Steffi: over to her for a chat.
+  // Tapping Steffi: over to her for a chat; the willow: over to it.
   tapThing(x, y) {
-    if (!isSteffi(this.steffi, x, y)) return false;
-    talkToSteffi(this, this.steffi);
-    return true;
+    if (isSteffi(this.steffi, x, y)) {
+      talkToSteffi(this, this.steffi);
+      return true;
+    }
+    if (isWillow(this.willow, x, y)) {
+      atWillow(this);
+      return true;
+    }
+    return false;
   }
 
   update(_time, delta) {

@@ -1039,6 +1039,12 @@ export const ROOMS = {
         flag: 'picker',
         found: 'pickerFound',
       },
+      // the saw on the tool rack (for the willow at the river: src/willow.js)
+      saw: {
+        area: { x: 9, y: 8, w: 22, h: 14 },
+        stand: { x: 42, y: 45 },
+        gap: { x: 11, y: 11, w: 16, h: 10 }, // where it hung, once it's taken
+      },
       knife: {
         area: { x: 64, y: 22, w: 24, h: 16 }, // tap the knife on the workbench (where the crowbar was)…
         stand: { x: 76, y: 56 },              // …to take it (once Derik's asked for meat)

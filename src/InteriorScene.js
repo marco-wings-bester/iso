@@ -125,6 +125,7 @@ export default class InteriorScene extends Phaser.Scene {
     // tractor's keys), from when they're there (`when`) till they're taken
     this.props = {};
     this.placeProps();
+    if (spots.saw && hasFlag('saw')) this.sawGap();
     if (spots.sleep) {
       // Him asleep in bed, and the room dimming to night (the fire stays bright).
       this.sleeper = this.roomImage(`sleeper-${building}`, spots.sleep.overlay).setDepth(0.4).setVisible(false);
@@ -159,7 +160,7 @@ export default class InteriorScene extends Phaser.Scene {
           read: () => this.read(), cook: () => this.useCupboard(), eat: () => this.eatPie(), sleep: () => this.tryToSleep(),
           fire: () => this.lookAtFire(), hide: () => this.useChest(), counter: () => atCounter(this), bike: () => this.takeBike(),
           tableA: () => atTable(this, 'tableA'), tableB: () => atTable(this, 'tableB'), window: () => atWindow(this),
-          derikTable: () => atDerikTable(this), derikBooks: () => atDerikBooks(this),
+          derikTable: () => atDerikTable(this), derikBooks: () => atDerikBooks(this), saw: () => this.takeSaw(),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
@@ -321,6 +322,30 @@ export default class InteriorScene extends Phaser.Scene {
     this.player.stop();
     this.cameras.main.fadeOut(FADE_MS);
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Game', { from: this.building }));
+  }
+
+  // The saw on the tool rack: once he knows what he wants a willow stick for
+  // (Derik's book: src/derikHouse.js), he takes it.
+  takeSaw() {
+    this.player.face('up');
+    if (hasFlag('saw')) return;
+    if (!hasFlag('readDowsing')) {
+      this.think({ af: '’n Saag. Ek het dit nou nie nodig nie.', en: "A saw. I don't need it right now." });
+      return;
+    }
+    setFlag('saw');
+    this.sawGap();
+    this.think(line('sawFound'));
+  }
+
+  // The tool rack with the saw gone: just its peg.
+  sawGap() {
+    const { x, y, w, h } = this.room.spots.saw.gap;
+    const g = this.add.graphics().setDepth(0.3);
+    g.fillStyle(0xa86a3c).fillRect(x, y, w, h);
+    g.fillStyle(0x7a4a2a);
+    [12, 17, 22].forEach(px => [11, 16].forEach(py => g.fillRect(px, py, 1, 1)));
+    g.fillStyle(0x5a6070).fillRect(x + 7, y + 1, 2, 2); // the peg it hung on
   }
 
   // Take something lying about (the apple picker, the crowbar).
