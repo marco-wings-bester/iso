@@ -353,6 +353,10 @@ export default class InteriorScene extends Phaser.Scene {
     const s = this.room.spots[id];
     this.player.face('up');
     if (hasFlag(s.flag)) return;
+    if (s.need && !s.need()) {
+      this.think({ af: 'Hmm. Ek het dit nou nie nodig nie.', en: "Hmm. I don't need that right now." });
+      return;
+    }
     this.props[id].destroy();
     delete this.props[id];
     setFlag(s.flag);

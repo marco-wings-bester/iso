@@ -15,7 +15,8 @@ import { WEDNESDAY } from './chores.js';
 // cupboard (bakes the pie), `eat` half the pie, `hide` Bob in the chest,
 // `sleep` in the bed, `fire`: look into the
 // fireplace (a first-person view); `picker`, `crowbar`, `knife`, `shovel`: things lying
-// about in the tool shed to take (from when they're there: `when`) (their `prop` is drawn apart from the room so it
+// about in the tool shed, there from the start, but taken only once the
+// story gives him a reason to (`need`; till then he leaves it) (their `prop` is drawn apart from the room so it
 // can go; taking one sets `flag` and he thinks hint line `found`). The farmhouse's `kitchen` has the places
 // and overlays the baking uses (src/baking.js).
 
@@ -1043,6 +1044,7 @@ export const ROOMS = {
         area: { x: 96, y: 0, w: 12, h: 56 },  // tap the apple picker in the corner…
         stand: { x: 100, y: 58 },             // …to walk over and take it
         prop: { x: 99, y: 0, w: 8, h: 50, draw: ctx => applePicker(ctx, 1, 1) },
+        need: () => hasFlag('read'),
         flag: 'picker',
         found: 'pickerFound',
       },
@@ -1057,22 +1059,23 @@ export const ROOMS = {
         area: { x: 92, y: 92, w: 14, h: 32 },
         stand: { x: 86, y: 112 },
         prop: { x: 96, y: 94, w: 8, h: 28, draw: ctx => spade(ctx, 1, 1) },
-        when: () => hasFlag('foundLeak'),
+        need: () => hasFlag('foundLeak'),
         flag: 'shovel',
         found: 'shovelFound',
       },
       knife: {
-        area: { x: 64, y: 22, w: 24, h: 16 }, // tap the knife on the workbench (where the crowbar was)…
-        stand: { x: 76, y: 56 },              // …to take it (once Derik's asked for meat)
-        prop: { x: 70, y: 31, w: 13, h: 5, draw: ctx => knife(ctx, 1, 1) },
-        when: () => hasFlag('needMeat'),
+        area: { x: 66, y: 10, w: 24, h: 12 }, // tap the knife hanging on the wall over the workbench…
+        stand: { x: 78, y: 56 },              // …to take it (once Derik's asked for meat)
+        prop: { x: 71, y: 15, w: 13, h: 5, draw: ctx => knife(ctx, 1, 1) },
+        need: () => hasFlag('needMeat'),
         flag: 'knife',
         found: 'knifeFound',
       },
       crowbar: {
-        area: { x: 62, y: 22, w: 26, h: 16 }, // tap the crowbar on the workbench…
+        area: { x: 62, y: 22, w: 22, h: 16 }, // tap the crowbar on the workbench…
         stand: { x: 76, y: 56 },              // …to take it
         prop: { x: 67, y: 31, w: 17, h: 5, draw: ctx => crowbar(ctx, 1, 1) },
+        need: () => hasFlag('chestStuck'),
         flag: 'crowbar',
         found: 'crowbarFound',
       },
