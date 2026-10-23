@@ -139,10 +139,12 @@ MAPS = [
             ((800, 878, 300, 27), None),    # past the lanterns, below the crates: round to the bank downstream
             ((1000, 1290, 160, 70), None),  # down the bank onto the near sandbar
             ((620, 1440, 380, 115), None),  # the near sandbar's gravel
+            ((995, 600, 55, 130), None),    # past the tent's top right, between it and the fence…
+            ((1060, 700, 230, 190), None),  # …onto the grass right of it, below the fence, and down
         ],
         'exclude': [
             # the camp: the tent, the crates, the bucket, the pans, a dirt pile, the sluice's top
-            (850, 640, 210, 130), (950, 770, 150, 108), (705, 730, 70, 70), (685, 835, 165, 43), (555, 760, 100, 70),
+            (850, 640, 150, 130), (950, 770, 150, 108), (705, 730, 70, 70), (685, 835, 165, 43), (555, 760, 100, 70),
             (745, 905, 130, 70),
             # fences
             (1045, 600, 235, 120), (300, 650, 230, 110), (0, 160, 210, 120), (0, 1245, 290, 150),
