@@ -14,7 +14,7 @@ import { WEDNESDAY } from './chores.js';
 // and uses — `read` the recipe book at the bookshelf, `cook` at the kitchen
 // cupboard (bakes the pie), `eat` half the pie, `hide` Bob in the chest,
 // `sleep` in the bed, `fire`: look into the
-// fireplace (a first-person view); `picker`, `crowbar`, `knife`: things lying
+// fireplace (a first-person view); `picker`, `crowbar`, `knife`, `shovel`: things lying
 // about in the tool shed to take (from when they're there: `when`) (their `prop` is drawn apart from the room so it
 // can go; taking one sets `flag` and he thinks hint line `found`). The farmhouse's `kitchen` has the places
 // and overlays the baking uses (src/baking.js).
@@ -381,6 +381,13 @@ function crowbar(ctx, x, y) {
     r(13, 0, 2, 1, C.metal);
     r(13, 2, 2, 1, C.metalDk);
   });
+}
+
+// A spade, standing on its blade: a wooden shaft with a D-grip. 6×26.
+function spade(ctx, x, y) {
+  obj(ctx, x + 1, y, 4, 3, r => { r(0, 0, 4, 1, C.woodDk); r(0, 0, 1, 3, C.woodDk); r(3, 0, 1, 3, C.woodDk); r(0, 2, 4, 1, C.woodDk); });
+  obj(ctx, x + 2, y + 3, 2, 15, r => { r(0, 0, 2, 15, C.wood); r(0, 0, 1, 15, C.woodLt); });
+  obj(ctx, x, y + 18, 6, 8, r => { r(0, 0, 6, 6, C.metal); r(0, 0, 6, 1, C.metalHi); r(1, 6, 4, 2, C.metal); r(5, 1, 1, 5, C.metalDk); });
 }
 
 // A kitchen knife: a wooden handle and a steel blade. 11×3.
@@ -1044,6 +1051,15 @@ export const ROOMS = {
         area: { x: 9, y: 8, w: 22, h: 14 },
         stand: { x: 42, y: 45 },
         gap: { x: 11, y: 11, w: 16, h: 10 }, // where it hung, once it's taken
+      },
+      // the spade leaning in the corner, once he's found the leak in town (src/fountainFix.js)
+      shovel: {
+        area: { x: 92, y: 92, w: 14, h: 32 },
+        stand: { x: 86, y: 112 },
+        prop: { x: 96, y: 94, w: 8, h: 28, draw: ctx => spade(ctx, 1, 1) },
+        when: () => hasFlag('foundLeak'),
+        flag: 'shovel',
+        found: 'shovelFound',
       },
       knife: {
         area: { x: 64, y: 22, w: 24, h: 16 }, // tap the knife on the workbench (where the crowbar was)…
