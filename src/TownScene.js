@@ -5,6 +5,7 @@ import { animateTown } from './townLife.js';
 import { think } from './bubble.js';
 import { setFlag, hasFlag } from './state.js';
 import { dowse, leak, hasLeak } from './dowsing.js';
+import { preloadFountain, fountainRuns, onPatch, atPatch } from './fountainFix.js';
 
 // The town (assets/town.jpg), down the road from the crossroads: houses
 // round a square with a fountain, a cafe and a restaurant, the paths
@@ -35,16 +36,23 @@ export default class TownScene extends MapScene {
     };
   }
 
+  preload() {
+    super.preload();
+    preloadFountain(this);
+  }
+
   // `at`: where he is, when redrawn for a new screen size.
   create({ at } = {}) {
     this.place(at, at ? null : 'crossroads');
     animateTown(this); // people, pigeons and cats (src/townLife.js)
-    if (hasLeak()) leak(this); // (the soggy patch where the fountain's water goes: src/dowsing.js)
+    if (hasFlag('fountainFixed')) fountainRuns(this); // (fixed: src/fountainFix.js)
+    else if (hasLeak()) leak(this); // (the soggy patch where the fountain's water goes: src/dowsing.js)
     if (!at) this.game.events.emit('location', { name: HERE });
   }
 
   // Tapping the fountain: over to it, a look round it, and his thoughts.
   tapThing(x, y) {
+    if (onPatch(x, y) && atPatch(this)) return true; // the wet patch (src/fountainFix.js)
     const f = FOUNTAIN;
     if (x < f.x || x >= f.x + f.w || y < f.y || y >= f.y + f.h) return false;
     this.player.walkTo(AT_FOUNTAIN.x, AT_FOUNTAIN.y, () => this.lookAtFountain());
@@ -52,6 +60,10 @@ export default class TownScene extends MapScene {
   }
 
   lookAtFountain() {
+    if (hasFlag('fountainFixed')) {
+      think(this, this.player.sprite, { af: 'Die fontein loop weer. Mooi so!', en: "The fountain's running again. Lovely!" });
+      return;
+    }
     // with the willow stick: off following the water (src/dowsing.js)
     if (hasFlag('willowStick') && !hasLeak()) {
       dowse(this);

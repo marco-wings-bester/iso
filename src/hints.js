@@ -248,6 +248,18 @@ const LINES = {
     none: { af: 'Die water loop hier onder die gras weg… dis hoekom die fontein droog is.', en: "The water's leaking away under the grass here… that's why the fountain's dry." },
     explicit: { af: 'Die pyp onder die gras moet hier gebreek wees: die water loop hier weg in plaas van na die fontein toe. Dis die probleem!', en: "The pipe under the grass must be broken here: the water's running away here instead of down to the fountain. That's the problem!" },
   },
+  // the spade from the tool shed (for the leak in town: src/fountainFix.js)
+  shovelFound: {
+    none: { af: '’n Graaf.', en: 'A spade.' },
+    subtle: { af: '’n Graaf… goed om mee te grawe.', en: 'A spade… good for digging.' },
+    explicit: { af: '’n Graaf! Nou kan ek by die nat kol in die dorp grawe en die pyp regmaak.', en: 'A spade! Now I can dig at the wet patch in town and fix the pipe.' },
+  },
+  // at the wet patch without it
+  leakNoShovel: {
+    none: { af: 'Papnat. Die pyp moet hier onder lê.', en: 'Soaking wet. The pipe must be under here.' },
+    subtle: { af: 'Die pyp lê hier onder… as ek net iets gehad het om mee te grawe.', en: 'The pipe is down there… if only I had something to dig with.' },
+    explicit: { af: 'Ek moet hier grawe om by die pyp te kom: daar staan ’n graaf in my gereedskapskuur.', en: "I need to dig here to get at the pipe: there's a spade in my tool shed." },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },

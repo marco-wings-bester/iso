@@ -56,9 +56,11 @@ function stick(scene) {
 // A soggy patch on the grass, water seeping up through it.
 export function leak(scene) {
   const { x, y } = PATCH;
-  scene.add.ellipse(x, y, 150, 56, 0x2e5a3a, 0.55).setDepth(y - 30);
-  scene.add.ellipse(x - 10, y + 2, 80, 26, 0x6aa8d0, 0.75).setDepth(y - 29);
-  scene.time.addEvent({
+  scene.leakPatch = [
+    scene.add.ellipse(x, y, 150, 56, 0x2e5a3a, 0.55).setDepth(y - 30),
+    scene.add.ellipse(x - 10, y + 2, 80, 26, 0x6aa8d0, 0.75).setDepth(y - 29),
+  ];
+  scene.leakBubbles = scene.time.addEvent({
     delay: 700, loop: true,
     callback: () => {
       const b = scene.add.circle(x + (Math.random() - 0.5) * 70, y + (Math.random() - 0.5) * 18, 4, 0xeaf6ff, 0.9).setDepth(y - 28);
