@@ -61,6 +61,15 @@ function startOn(day) {
   game.scene.start('Game', { fresh: true }); // (data, or it'd be the last trip's)
 }
 const menu = setupMenu({ onNewGame: () => startOn(0), onDay: startOn });
+// the day badge, for a moment, coming into each place (src/menu.js)
+// (not when one's only redrawn for a new screen size: `at`)
+const placesFlash = () => ['Game', 'Interior', 'Road', 'Beach', 'Town', 'Derik', 'River'].forEach((key) => {
+  const scene = game.scene.getScene(key);
+  scene.events.on('create', () => { if (!scene.sys.settings.data?.at) menu.flashDay(); });
+  if (scene.sys.isActive()) menu.flashDay();
+});
+if (window.farmWalkStarted) placesFlash();
+else game.events.once('ready', placesFlash);
 game.events.on('days', () => menu.showDays());
 window.addEventListener('farmwalk-newgame', () => startOn(0));
 // opened in a browser: how to install it, and where the menu is

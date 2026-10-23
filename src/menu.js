@@ -84,10 +84,18 @@ export function setupMenu({ onNewGame, onDay }) {
   // until it's installed: an Install button beside the menu button
   const pill = el('button', { id: 'install-pill', type: 'button' });
   pill.onclick = () => install();
-  // the day of the week, at the top (a new day, a new game, another language)
+  // the day of the week, at the top (a new day, a new game, another language):
+  // shown only for a few seconds, waking up to a new day and coming into a
+  // new place (`flashDay`), and through the night (index.html), then hidden
+  let dayTimer = null;
   const day = el('div', { id: 'day' });
+  const flashDay = () => {
+    day.classList.add('shown');
+    clearTimeout(dayTimer);
+    dayTimer = setTimeout(() => day.classList.remove('shown'), 3000);
+  };
   const showDay = () => { day.textContent = t(dayName()); };
-  window.addEventListener('farmwalk-day', showDay);
+  window.addEventListener('farmwalk-day', () => { showDay(); flashDay(); });
   const showLang = () => {
     document.documentElement.lang = getSetting('lang') === 'en' ? 'en' : 'af';
     button.setAttribute('aria-label', t({ af: 'Kieslys', en: 'Menu' }));
@@ -432,5 +440,5 @@ export function setupMenu({ onNewGame, onDay }) {
     cancel.onclick = () => o.remove();
   }
 
-  return { showDays, welcome };
+  return { showDays, welcome, flashDay };
 }
