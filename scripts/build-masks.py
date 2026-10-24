@@ -106,6 +106,9 @@ MAPS = [
             ((900, 1290, 500, 300), lambda R, G, B: dirt(R, G, B) | light_path(R, G, B)),
             ((1316, 1470, 44, 300), None),
             ((1170, 1734, 190, 36), None),
+            # and round its other side: from the path below, past the lamp and over the grass to the
+            # left of its garden fence, along its front to the door
+            ((860, 1850, 90, 50), None), ((900, 1800, 180, 60), None), ((1000, 1740, 90, 70), None), ((1080, 1738, 100, 32), None),
         ],
         'exclude': [
             # the houses, the cafe, the restaurant (their walls share the paths' colour) and the fountain

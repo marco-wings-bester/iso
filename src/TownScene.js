@@ -7,6 +7,7 @@ import { setFlag, hasFlag } from './state.js';
 import { dowse, leak, hasLeak } from './dowsing.js';
 import { preloadFountain, fountainRuns, onPatch, atPatch } from './fountainFix.js';
 import { park } from './bike.js';
+import { houseAt, visit } from './townDoors.js';
 
 // The town (assets/town.jpg), down the road from the crossroads: houses
 // round a square with a fountain, a cafe and a restaurant, the paths
@@ -21,7 +22,8 @@ import { park } from './bike.js';
 // can go into: Faan's tailor shop, the house down to the right of the
 // fountain (ROOMS.tailor, src/tailor.js), and the restaurant up from it
 // (ROOMS.restaurant, src/restaurant.js): tapping one walks him to its door
-// and in (his bike left outside).
+// and in (his bike left outside). At the other houses he can knock
+// (src/townDoors.js): Tokkie, at the house furthest left, opens up.
 
 const HERE = { af: 'Die dorp', en: 'The town' };
 // The fountain on the square, and where he stands in front of it.
@@ -68,6 +70,11 @@ export default class TownScene extends MapScene {
     if (id) {
       const { door } = DOORS[id];
       this.player.walkTo(door.x, door.y, () => this.enter(id));
+      return true;
+    }
+    const house = houseAt(x, y); // any other house: up to its door, and a knock (src/townDoors.js)
+    if (house) {
+      visit(this, house);
       return true;
     }
     if (!inside(x, y, FOUNTAIN)) return false;
