@@ -1,10 +1,16 @@
+import Phaser from 'phaser';
 import { obj } from '../pixelArt.js';
+import { hasFlag, setFlag } from '../state.js';
+import { line } from '../hints.js';
 import { hash, mix, band, pixels, ellipse, rgb } from './art.js';
 
 // Farmer Jones at the end of the jetty, looking out over the pond: sky and
 // clouds, the far bank's trees mirrored in the water, glints of sun on the
 // surface, lily pads flattened by distance, cattails at the edges, and the
 // jetty's last planks, posts and the toes of his boots in the foreground.
+// With his fishing rod (Wednesday, the bottom well dry: src/chores.js) he
+// casts a line, the float bobs, something bites… and up comes an old shoe
+// ('shoe'): just the thing to block the pipe to that well.
 
 const SKY = [[104, 168, 224], [120, 180, 232], [140, 194, 236], [164, 208, 240], [188, 222, 244], [208, 232, 246]];
 const WATER = [[150, 200, 230], [124, 182, 220], [100, 162, 206], [80, 142, 190], [64, 124, 174], [52, 108, 158]];
@@ -230,6 +236,96 @@ function animate(scene, w, h) {
     splash(scene, x - 10 * size, y, size * 0.6, flatten(y));
   };
   scene.time.addEvent({ delay: 5200, startAt: 3600, loop: true, callback: jump });
+  if (hasFlag('rod') && !hasFlag('shoe')) fish(scene, w, h);
+}
+
+// An old boot, side on, dripping: 14×10.
+function shoeTexture(scene) {
+  if (scene.textures.exists('pov-shoe')) return 'pov-shoe';
+  const tex = scene.textures.createCanvas('pov-shoe', 16, 12);
+  obj(tex.getContext(), 1, 1, 14, 10, (r) => {
+    r(6, 0, 5, 6, '#6a4428'); r(7, 1, 3, 1, '#e8dcc0'); r(7, 3, 3, 1, '#e8dcc0'); // the leg and its laces
+    r(0, 5, 14, 4, '#7a5030'); r(1, 5, 5, 1, '#9a6a40');                       // the foot
+    r(0, 9, 14, 1, '#3a2414');                                                  // the sole
+    r(12, 3, 1, 2, '#4a7a3a'); r(3, 4, 2, 1, '#4a7a3a');                          // weed
+  });
+  tex.refresh();
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  return 'pov-shoe';
+}
+
+// Fishing: the rod held out over the water, the line cast, the float
+// bobbing; a bite, he reels in… an old shoe.
+function fish(scene, w, h) {
+  const { hz, end, k } = geometry(w, h);
+  const wait = ms => new Promise(r => scene.time.delayedCall(ms, r));
+  // his thought, read and tapped on (the view busy again after: no looking away mid-cast)
+  const sayWait = text => new Promise((r) => {
+    scene.busy = false;
+    scene.say(text, () => { scene.busy = true; r(); });
+  });
+  const hand = { x: w * 0.62, y: h + 2 };
+  const tip = { x: w * 0.5, y: end - 40 * k };
+  const float = { x: w * 0.47, y: hz + (end - hz) * 0.55, dip: 0 };
+  const g = scene.add.graphics().setDepth(5);
+  const draw = (lineTo) => {
+    g.clear().lineStyle(Math.max(2, 2 * k), 0x4a2a14).lineBetween(hand.x, hand.y, tip.x, tip.y);
+    if (!lineTo) return;
+    g.lineStyle(1, 0xf0f0f0, 0.9).lineBetween(tip.x, tip.y, lineTo.x, lineTo.y);
+  };
+  const bob = scene.add.graphics().setDepth(6);
+  const drawBob = () => {
+    const y = float.y + float.dip * 3 * k;
+    bob.clear().fillStyle(0x2e1d0c).fillCircle(float.x, y, 2.4 * k).fillStyle(0xf0f0f0).fillCircle(float.x, y, 1.8 * k)
+      .fillStyle(0xd04c3a).fillRect(float.x - 1.8 * k, y - 1.8 * k, 3.6 * k, 1.6 * k);
+  };
+  scene.busy = true;
+  (async () => {
+    await wait(600);
+    draw();
+    await sayWait({ af: 'Kom ek gooi ’n lyntjie in. Dalk help dit my om oor die put te dink…', en: "Let's cast a line. Maybe it'll help me think about the well…" });
+    // the cast
+    const cast = { t: 0 };
+    await new Promise(r => scene.tweens.add({
+      targets: cast, t: 1, duration: 700, ease: 'Quad.easeOut',
+      onUpdate: () => draw({ x: tip.x + (float.x - tip.x) * cast.t, y: tip.y + (float.y - tip.y) * cast.t - Math.sin(cast.t * Math.PI) * 30 * k }),
+      onComplete: r,
+    }));
+    drawBob();
+    splash(scene, float.x, float.y, k * 0.5, 0.3);
+    // bobbing, then a bite
+    const bobbing = scene.tweens.add({ targets: float, dip: 0.4, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut', onUpdate: () => { drawBob(); draw(float); } });
+    await wait(2600);
+    bobbing.stop();
+    for (let i = 0; i < 2; i++) {
+      await new Promise(r => scene.tweens.add({ targets: float, dip: 1.6, duration: 120, yoyo: true, onUpdate: () => { drawBob(); draw(float); }, onComplete: r }));
+      splash(scene, float.x, float.y, k * 0.6, 0.3);
+      await wait(300);
+    }
+    await sayWait({ af: 'Hy byt! Hy’s swaar…', en: "A bite! It's heavy…" });
+    // reeling in: the catch comes up out of the water towards him
+    bob.clear();
+    const shoe = scene.add.image(float.x, float.y, shoeTexture(scene)).setScale(k * 0.6).setDepth(7);
+    splash(scene, float.x, float.y, k, 0.3);
+    await new Promise(r => scene.tweens.add({
+      targets: shoe, x: tip.x, y: tip.y + 26 * k, scale: k * 3.2, duration: 1400, ease: 'Quad.easeIn',
+      onUpdate: () => draw({ x: shoe.x, y: shoe.y - 5 * shoe.scale }),
+      onComplete: r,
+    }));
+    scene.tweens.add({ targets: shoe, angle: { from: -8, to: 8 }, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    scene.time.addEvent({
+      delay: 260, loop: true,
+      callback: () => {
+        const d = scene.add.rectangle(shoe.x + (Math.random() - 0.5) * 30 * k, shoe.y + 12 * k, k, 2 * k, 0xbfe4f8).setDepth(7);
+        scene.tweens.add({ targets: d, y: d.y + 30 * k, alpha: 0, duration: 600, onComplete: () => d.destroy() });
+      },
+    });
+    setFlag('shoe');
+    scene.busy = false;
+    scene.say({ af: '’n Ou skoen?! Wie gooi nou ’n skoen in my dam?', en: 'An old shoe?! Who throws a shoe in my pond?' }, () => {
+      scene.say(line('shoeCaught'), () => scene.close());
+    });
+  })();
 }
 
 function splash(scene, x, y, size, flat) {

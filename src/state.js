@@ -19,8 +19,9 @@
 // long bike ride), not just after coffee ('wired'); each night is a new day
 // (`day` below). Wednesday's farm work before bed (src/chores.js): the
 // tractor's keys on the bookshelf ('tractorKeys'), ploughing ('plowed'), a
-// bucket from each well ('wellTop'; 'wellBottom', which is dry); all done
-// ('choresDone'). Thursday, Derik's braai at his place: Johan pays him back
+// bucket from each well ('wellTop'; 'wellBottom', which is dry); the fishing
+// rod ('rod'), an old shoe hooked in the pond ('shoe'), and the bottom well
+// works again ('wellFixed'); all done ('choresDone'). Thursday, Derik's braai at his place: Johan pays him back
 // ('repaid'); Derik has no meat ('needMeat') → the knife in the tool shed
 // ('knife') → two hens from the hen house (`hens`, then 'chickens') → on
 // Derik's grill ('meatBrought') → no salt ('needSalt'), none at home either
@@ -54,7 +55,7 @@ try {
 const MONDAY = ['key', 'read', 'picker', 'apple', 'baked', 'ate', 'slept'];
 const TUESDAY = [...MONDAY, 'metBob', 'gavePie', 'bobSat', 'pieEaten', 'sarahKnocked', 'bobHidden', 'sarahVisited',
   'chestStuck', 'crowbar', 'bobHome', 'level2', 'noCash', 'loan', 'coffee', 'exercised'];
-const WEDNESDAY = [...TUESDAY, 'tractorKeys', 'plowed', 'wellTop', 'wellBottom', 'choresDone'];
+const WEDNESDAY = [...TUESDAY, 'tractorKeys', 'plowed', 'wellTop', 'wellBottom', 'rod', 'shoe', 'wellFixed', 'choresDone'];
 
 // Start again on day `n` (0: Monday), with the story done up to then.
 export function startDay(n) {
