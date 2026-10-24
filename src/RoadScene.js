@@ -4,6 +4,7 @@ import { hasFlag, setFlag } from './state.js';
 import { asset } from './asset.js';
 import { today, THURSDAY } from './days.js';
 import { WEDNESDAY, choresLeft } from './chores.js';
+import { FRIDAY } from './weather.js';
 
 // The crossroads past the farm gate (assets/crossroads.jpg), where
 // Boer Johan comes on his way to the beach once Pieter has gone home
@@ -12,8 +13,9 @@ import { WEDNESDAY, choresLeft } from './chores.js';
 // (BeachScene). Down goes to town (TownScene), from Wednesday afternoon,
 // once the farm work's done; right to Derik's place (DerikScene), from
 // Thursday, the day of his braai; the path off the bottom left to the river
-// (RiverScene), from Friday. On Thursday it's only the farm, the beach
-// and Derik's place, not the town or the river. Till then he turns back at the
+// (RiverScene), from Saturday. On Thursday it's only the farm, the beach
+// and Derik's place, not the town or the river; on Friday, in the rain, not
+// the river either. Till then he turns back at the
 // edge, saying why in his own words. (No name boards: the roads speak for
 // themselves.)
 
@@ -44,9 +46,10 @@ function derikClosed() {
   return { af: 'Nie vandag nie: môreaand is Derik se braai, dan gaan ek soontoe.', en: "Not today: Derek's braai is tomorrow evening, I'll go then." };
 }
 
-// The river: not before Friday.
+// The river: not before Saturday (on Friday it rains).
 function riverClosed() {
   if (today() === THURSDAY) return braaiDay('Die rivier? Nie vandag nie.', 'The river? Not today.');
+  if (today() === FRIDAY) return { af: 'Die rivier? Nie in hierdie reën nie.', en: 'The river? Not in this rain.' };
   if (today() > THURSDAY) return null;
   if (today() === WEDNESDAY) return { af: 'Die rivier? Nie vandag nie: daar is werk op die plaas.', en: "The river? Not today: there's work on the farm." };
   return beachDay('Die rivier? Nie vandag nie.', 'The river? Not today.');
