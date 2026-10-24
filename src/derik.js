@@ -11,7 +11,8 @@ import { bike, park, showParked } from './bike.js';
 // src/cafe.js), Derik lends him R15 ('loan', on `loanDay`): bring it back
 // the day after tomorrow, in the evening, when he comes over for a braai.
 // Before that he just says hello; after, he reminds Johan of the braai:
-// the day after tomorrow, tomorrow, tonight (src/days.js).
+// the day after tomorrow, tomorrow, tonight (src/days.js). After the braai,
+// Johan asks him if he's caught anything.
 
 // Where Johan stands to talk to him: beside him on the jetty, behind Lientjie.
 export const BY_DERIK = { x: 346, y: 2466 };
@@ -157,6 +158,16 @@ export async function talkToDerik(scene, derik) {
   };
   scene.player.face('left');
   await scene.talk(async () => {
+    // after his braai (Saturday): how's the fishing? (and Johan in his tuxedo, src/tailor.js)
+    if (hasFlag('braaiDone') || (hasFlag('loan') && daysToBraai() < 0)) {
+      await converse(scene, cast, [
+        ['jones', { af: 'Middag, Derik! Al iets gevang?', en: 'Afternoon, Derek! Caught anything yet?' }],
+        ['derik', hasFlag('tuxedo')
+          ? { af: 'Ek het maar min geluk gehad vandag. Maar hey, soos jy aangetrek is, neem ek aan jy het baie geluk!', en: "I've had little luck today. But hey, the way you're dressed, I take it you've got lots of luck!" }
+          : { af: 'Ek het maar min geluk gehad vandag. Die visse byt nie lekker nie.', en: "I've had little luck today. The fish aren't biting." }],
+      ]);
+      return;
+    }
     if (hasFlag('loan')) {
       const days = daysToBraai();
       await converse(scene, cast, [['derik', days >= 2 ? { af: 'Onthou, oormore aand braai ons!', en: "Remember, it's a braai at ours the day after tomorrow!" }
