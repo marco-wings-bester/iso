@@ -44,6 +44,17 @@ export default class Player {
     this.marker.fillStyle(0xffffff, 0.6).fillCircle(end.x, end.y, 3 * m);
   }
 
+  // Walk the scripted `route` (waypoints), wherever it goes (not held to
+  // the walkable ground: off the path, to where a story wants him); then
+  // `onArrive`.
+  follow(route, onArrive = null) {
+    this._endAction();
+    this.marker.clear();
+    this.route = route.map(p => ({ ...p }));
+    this.onArrive = onArrive;
+    this.free = true;
+  }
+
   stop() {
     this._cancelWalk();
     this._endAction();
@@ -107,7 +118,7 @@ export default class Player {
     if (vx !== 0 || vy !== 0) {
       const nx = this.x + vx * dt;
       const ny = this.y + vy * dt;
-      if (this.grid.isWalkable(nx, ny)) {
+      if (this.free || this.grid.isWalkable(nx, ny)) {
         this.x = nx;
         this.y = ny;
         moved = true;
@@ -132,12 +143,14 @@ export default class Player {
   }
 
   _arrive() {
+    this.free = false;
     const cb = this.onArrive;
     this.onArrive = null;
     cb?.();
   }
 
   _cancelWalk() {
+    this.free = false;
     this.route = [];
     this.onArrive = null;
     this.marker.clear();

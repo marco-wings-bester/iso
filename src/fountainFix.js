@@ -1,6 +1,5 @@
 import { hasFlag, setFlag } from './state.js';
 import { think } from './bubble.js';
-import { walkSprite } from './bob.js';
 import { line } from './hints.js';
 import { asset } from './asset.js';
 import { planDate } from './datePlan.js';
@@ -46,14 +45,9 @@ export function onPatch(x, y) {
   return Math.abs(x - PATCH.x) < PATCH.w / 2 && Math.abs(y - PATCH.y) < PATCH.h / 2 + 20;
 }
 
+// (smoothly, as he walks anywhere: Player.follow)
 function walk(scene, route) {
-  const { player } = scene;
-  return new Promise(r => walkSprite(scene, player.sprite, player.texture, route.map(p => ({ ...p })), player.speed, () => {
-    const last = route[route.length - 1];
-    Object.assign(player, { x: last.x, y: last.y });
-    player.face(player.sprite.facing);
-    r();
-  }));
+  return new Promise(r => scene.player.follow(route, r));
 }
 
 // Tapping the wet patch: up the path to it, and over onto the grass.

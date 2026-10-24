@@ -1,6 +1,5 @@
 import { hasFlag, setFlag } from './state.js';
 import { think } from './bubble.js';
-import { walkSprite } from './bob.js';
 import { line } from './hints.js';
 
 // Dowsing in town (TownScene), with the forked willow stick from the river
@@ -16,27 +15,43 @@ const PATCH = { x: 730, y: 300 }; // the soggy patch on the grass
 const ACROSS = [{ x: 860, y: 340 }, { x: 760, y: 312 }]; // off the path to it
 const wait = (scene, ms) => new Promise(r => scene.time.delayedCall(ms, r));
 
-// The stick in his hands, held out just in front of him the way he's facing
-// (as if it's leading his arms), its tip dipping on `dip()`.
+// The stick in his hands, held out in front of him the way he's facing,
+// his arms reaching out to it (as if it's leading them), its tip dipping on
+// `dip()`. Always drawn over him, so it shows even with his back to us.
 function stick(scene) {
   const { sprite } = scene.player;
   const g = scene.add.graphics();
   let tilt = 0;
   const AIM = { right: [1, 0], left: [-1, 0], up: [0, -1], down: [0, 1] };
+  const SKIN = 0xf8c8a0;
+  const SLEEVE = 0xd04c3a; // (his red shirt)
   const draw = () => {
     const k = sprite.scaleX * 2; // (sprite px → picture px)
-    const [ax, ay] = AIM[sprite.facing ?? scene.player.dir] ?? AIM.down;
-    const hx = sprite.x + ax * 4 * k;
-    const hy = sprite.y - 11 * k + ay * 2 * k;
-    const len = 7 * k;
+    const [ax, ay] = AIM[scene.player.dir] ?? AIM.down;
+    const side = ax !== 0;
+    // his shoulders, and his hands reaching out from them in front of him
+    // (with his back to us: out level with his shoulders, either side)
+    const sy = sprite.y - 13 * k;
+    const hx = sprite.x + ax * 6 * k;
+    const hy = sy + (ay > 0 ? 4 : ay < 0 ? -3 : 2) * k;
+    const spread = side ? 1.2 * k : (ay < 0 ? 6 : 4) * k; // the fork's two ends, in his two hands
+    const hands = side ? [[hx, hy - spread], [hx + ax * k, hy + spread]] : [[hx - spread, hy], [hx + spread, hy]];
+    const len = (ay < 0 ? 15 : 9) * k; // (held up and out ahead, past his hat, with his back to us)
     const tx = hx + ax * len;
-    const ty = hy + ay * len * 0.5 - 2 * k + tilt * 5 * k;
-    const px = -ay * 2 * k; // the fork's two ends, either side of his hands
-    const py = ax * 2 * k;
-    g.clear().setDepth(sprite.depth + (ay < 0 ? -0.5 : 0.5));
-    [[5, 0x2e1d0c], [2.5, 0xb08a50]].forEach(([w, c]) => {
-      g.lineStyle(w * k / 4, c).lineBetween(hx + px, hy + py, tx, ty).lineBetween(hx - px, hy - py, tx, ty);
+    const ty = hy + (ay < 0 ? -len : ay > 0 ? len * 0.5 : -2 * k) + tilt * 5 * k;
+    g.clear().setDepth(sprite.depth + 0.5);
+    // his arms, out to the stick (red sleeves)
+    hands.forEach(([x, y], i) => {
+      const shx = sprite.x + (side ? ax * 1.5 : i ? 4.5 : -4.5) * k;
+      g.lineStyle(2.6 * k, 0x2e1d0c).lineBetween(shx, sy, x, y);
+      g.lineStyle(1.6 * k, SLEEVE).lineBetween(shx, sy, x, y);
     });
+    [[8, 0x2e1d0c], [4, 0xb08a50]].forEach(([w, c]) => {
+      g.lineStyle(w * k / 4, c);
+      hands.forEach(([x, y]) => g.lineBetween(x, y, tx, ty));
+    });
+    // his fists round the fork's ends
+    hands.forEach(([x, y]) => g.fillStyle(0x2e1d0c).fillCircle(x, y, 1.4 * k).fillStyle(SKIN).fillCircle(x, y, 0.9 * k));
   };
   scene.events.on('update', draw);
   const off = () => { scene.events.off('update', draw); g.destroy(); };
@@ -69,15 +84,9 @@ export function leak(scene) {
   });
 }
 
-// Walk him along `route` (picture px) at his speed, keeping Player in step.
+// Walk him along `route` (picture px), smoothly, as he walks anywhere.
 function walk(scene, route) {
-  const { player } = scene;
-  return new Promise(r => walkSprite(scene, player.sprite, player.texture, route.map(p => ({ ...p })), player.speed, () => {
-    const last = route[route.length - 1];
-    Object.assign(player, { x: last.x, y: last.y, dir: player.sprite.facing });
-    player.face(player.sprite.facing);
-    r();
-  }));
+  return new Promise(r => scene.player.follow(route, r));
 }
 
 // At the fountain with the stick: off he goes, following the water.
