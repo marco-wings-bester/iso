@@ -3,15 +3,16 @@ import { obj } from '../pixelArt.js';
 import { hash, band, pixels, ellipse, rgb, limb, OUTLINE } from './art.js';
 
 // Boer Johan at the cafe's back window, looking out at the garden behind it:
-// through the panes, the sea far off under the sky, a hedge and a white
-// picket fence, flower beds along it, a lemon tree, a bird bath and a stone
-// path across the lawn; the window's wooden frame, its red curtains and the
+// through the panes, woods all along the back under the sky, a lawn in
+// front of them with a lemon tree, a bird bath, two flower beds and a stone
+// path into the trees; the window's wooden frame, its red curtains and the
 // striped wall round it. Clouds drift by, a butterfly flits about, a bird
-// hops on the bird bath. With his coffee (ViewScene `spot` 'coffee'), the cup
+// hops on the bird bath, and two squirrels scamper about the lawn and up
+// the lemon tree. With his coffee (ViewScene `spot` 'coffee'), the cup
 // on the sill in front of him, steaming, lifted for a sip now and then.
 
 const SKY = [[118, 178, 232], [146, 196, 240], [184, 218, 246]];
-const SEA = [[64, 134, 196], [92, 162, 214]];
+const WOODS = [[30, 70, 38], [44, 92, 46], [62, 116, 54], [86, 140, 66]];
 const HEDGE = [[34, 82, 40], [50, 108, 50], [72, 136, 62]];
 const LAWN = [[104, 164, 64], [120, 178, 72], [138, 192, 84]];
 const WOOD = { lt: [196, 140, 86], mid: [168, 112, 64], dk: [120, 76, 40] };
@@ -24,8 +25,8 @@ function geometry(w, h) {
   const gx1 = w - Math.round(18 * k);
   const gy0 = Math.round(20 * k);
   const gy1 = Math.round(h * 0.7); // the sill
-  const hz = Math.round(gy0 + (gy1 - gy0) * 0.3); // the sea's far edge
-  const fence = Math.round(hz + 16 * k);           // the fence's foot
+  const hz = Math.round(gy0 + (gy1 - gy0) * 0.3); // where the woods start, above the treetops' tips
+  const fence = Math.round(hz + 16 * k);           // the woods' foot, where the lawn starts
   return { k, gx0, gx1, gy0, gy1, hz, fence, mid: Math.round((gx0 + gx1) / 2), my: Math.round(gy0 + (gy1 - gy0) * 0.42) };
 }
 
@@ -33,19 +34,19 @@ function draw(ctx, w, h) {
   const g = geometry(w, h);
   const { k, gx0, gx1, gy0, gy1, hz, fence } = g;
   const glass = (x, y) => x >= gx0 && x < gx1 && y >= gy0 && y < gy1;
-  const hedgeTop = x => hz + Math.round(5 * k - 2.5 * k * Math.abs(Math.sin(x / (7 * k))));
+  // the woods' crowns, big and small, against the sky
+  const treeTop = x => hz - Math.round(14 * k + 7 * k * Math.abs(Math.sin(x / (11 * k))) + 4 * k * Math.abs(Math.sin(x / (4.3 * k + 1))));
 
   pixels(ctx, w, h, (x, y) => {
     if (glass(x, y)) {
-      if (y < hz - 6 * k) return band(SKY, (y - gy0) / (hz - gy0), x, y);
-      if (y < hz) return hash(x >> 1, y) > 0.93 ? [220, 236, 248] : band(SEA, (y - hz + 6 * k) / (6 * k), x, y);
-      if (y < hz + 2 * k) return [236, 220, 172]; // the dunes
-      if (y < hedgeTop(x) + 9 * k && y >= hedgeTop(x)) {
-        const l = 1 - (y - hedgeTop(x)) / (9 * k) + (hash(x >> 1, y >> 1) - 0.5) * 0.5;
-        return band(HEDGE, l, x, y);
+      const top = treeTop(x);
+      if (y < top) return band(SKY, (y - gy0) / (hz - gy0), x, y);
+      if (y < fence) {
+        // the woods: crowns lit from above, darker down among the trunks
+        if (y > fence - 4 * k && hash(x >> 2, 7) > 0.8) return [70, 46, 28]; // a trunk
+        const l = 0.95 - (y - top) / (fence - top) * 0.75 + (hash(x >> 1, y >> 1) - 0.5) * 0.35;
+        return band(WOODS, l, x, y);
       }
-      if (y < hz + 2 * k) return [236, 220, 172];
-      if (y < hedgeTop(x)) return [236, 220, 172];
       // the lawn, mown in stripes, darker under the hedge
       const stripe = Math.floor((x + (y - fence) * 0.6) / (10 * k)) % 2;
       const l = 0.45 + stripe * 0.25 + (y - fence) / (gy1 - fence) * 0.25 + (hash(x >> 1, y >> 1) - 0.5) * 0.25;
@@ -62,27 +63,6 @@ function draw(ctx, w, h) {
   ctx.rect(gx0, gy0, gx1 - gx0, gy1 - gy0);
   ctx.clip();
 
-  // the picket fence along the hedge, a gap with a gate in the middle
-  const pw = Math.round(3 * k);
-  for (let x = gx0 - pw; x < gx1; x += Math.round(6 * k)) {
-    obj(ctx, x, fence - Math.round(9 * k), pw, Math.round(9 * k), (r) => {
-      r(0, 1, pw, 9 * k, '#f4f0e6');
-      r(1, 0, Math.max(1, pw - 2), 1, '#f4f0e6');
-      r(pw - 1, 1, 1, 9 * k, '#c8c0b0');
-    });
-  }
-  ctx.fillStyle = '#e8e2d4';
-  ctx.fillRect(gx0, fence - Math.round(7 * k), gx1 - gx0, Math.max(1, Math.round(k)));
-  ctx.fillRect(gx0, fence - Math.round(3 * k), gx1 - gx0, Math.max(1, Math.round(k)));
-
-  // flower beds along the fence's foot
-  for (let x = gx0; x < gx1; x++) {
-    for (let y = fence; y < fence + 6 * k; y++) {
-      const n = hash(x, y);
-      ctx.fillStyle = n > 0.8 ? rgb(FLOWERS[Math.floor(hash(y, x) * FLOWERS.length)]) : n > 0.4 ? rgb([62, 118, 52]) : rgb([82, 140, 62]);
-      ctx.fillRect(x, y, 1, 1);
-    }
-  }
   const L = gy1 - fence; // the lawn's depth
   // round flower beds in the lawn: a rim of soil, leaves, flowers in clumps
   const bed = (cx, cy, rx, ry) => ellipse(ctx, cx, cy, rx, ry, (u, v, x, y) => {
@@ -95,7 +75,7 @@ function draw(ctx, w, h) {
   bed(gx0 + 32 * k, fence + L * 0.8, 24 * k, 9 * k);
   bed(gx1 - 30 * k, fence + L * 0.58, 22 * k, 8 * k);
 
-  // the stone path, from below the window to the gate
+  // the stone path, from below the window into the trees
   const pathPts = 10;
   for (let i = 0; i < pathPts; i++) {
     const f = i / (pathPts - 1);
@@ -104,13 +84,6 @@ function draw(ctx, w, h) {
     const sz = (1 - f * 0.55) * 6.5 * k;
     ellipse(ctx, px, py, sz, sz * 0.55, (u, v) => (u * u + v * v > 0.72 ? OUTLINE : v < -0.2 ? [214, 208, 196] : [180, 174, 164]));
   }
-  // the gate in the fence, an arch over it
-  const gw = Math.round(14 * k);
-  obj(ctx, g.mid - Math.round(gw / 2), fence - Math.round(12 * k), gw, Math.round(12 * k), (r) => {
-    r(0, 0, 2 * k, 12 * k, '#f4f0e6'); r(gw - 2 * k, 0, 2 * k, 12 * k, '#f4f0e6');
-    r(0, 0, gw, 2 * k, '#f4f0e6'); r(2 * k, 2 * k, gw - 4 * k, 1, '#c8c0b0');
-  });
-
   // a lemon tree on the left: trunk and a round crown, lemons in it
   const tx = gx0 + 22 * k;
   const ty = fence + L * 0.42;
@@ -191,7 +164,7 @@ function animate(scene, w, h) {
     obj(ctx, 1, 2, 22, 7, (r) => { r(2, 2, 18, 5, '#ffffff'); r(5, 0, 8, 3, '#ffffff'); r(12, 1, 6, 2, '#ffffff'); r(2, 5, 18, 2, '#dce8f4'); });
   });
   [[0.2, 0.3, 0], [0.75, 0.55, 1]].forEach(([fx, fy, i]) => {
-    const c = scene.add.image(gx0 + (gx1 - gx0) * fx, gy0 + (hz - gy0) * fy, cloud).setScale(k * (i ? 0.8 : 1.1)).setMask(mask);
+    const c = scene.add.image(gx0 + (gx1 - gx0) * fx, gy0 + 4 * k + (hz - 30 * k - gy0) * fy, cloud).setScale(k * (i ? 0.8 : 1.1)).setMask(mask);
     scene.tweens.add({ targets: c, x: gx1 + 20 * k, duration: 60000 * (1 - fx), onComplete: () => {
       c.x = gx0 - 20 * k;
       scene.tweens.add({ targets: c, x: gx1 + 20 * k, duration: 60000, repeat: -1 });
@@ -250,6 +223,47 @@ function animate(scene, w, h) {
       callback: () => scene.tweens.add({ targets: m, y: h + 6 * k, scale: k * 2.4, duration: 600, yoyo: true, hold: 700, ease: 'Sine.easeInOut' }),
     });
   }
+
+  // two squirrels: a dash across the lawn, a sit up and a look about, and
+  // now and then up the lemon tree and down again
+  const squirrel = texture(scene, 'garden-squirrel', 11, 9, (ctx) => {
+    obj(ctx, 1, 1, 9, 7, (r) => {
+      r(6, 0, 3, 5, '#b8642a'); r(7, 0, 2, 2, '#d88a48'); // the tail, up
+      r(1, 2, 5, 4, '#a85a24'); r(0, 1, 3, 3, '#a85a24'); r(1, 0, 1, 1, '#a85a24'); // body, head, ear
+      r(2, 4, 3, 1, '#e8c8a0'); r(0, 2, 1, 1, '#2e1d0c'); r(1, 6, 1, 1, '#6a3a1e'); r(4, 6, 1, 1, '#6a3a1e');
+    });
+  });
+  const L = gy1 - fence;
+  const trunk = { x: gx0 + 23 * k, y: fence + L * 0.42 };
+  const lawn = () => ({ x: gx0 + (gx1 - gx0) * (0.15 + Math.random() * 0.7), y: fence + L * (0.25 + Math.random() * 0.65) });
+  [0, 1].forEach((i) => {
+    const at = lawn();
+    const sq = scene.add.image(at.x, at.y, squirrel).setOrigin(0.5, 1).setScale(k * 1.3).setMask(mask);
+    const hop = (to, done) => {
+      sq.setFlipX(to.x > sq.x);
+      const d = Math.hypot(to.x - sq.x, to.y - sq.y);
+      const steps = Math.max(2, Math.round(d / (8 * k)));
+      scene.tweens.add({ targets: sq, x: to.x, y: to.y, duration: steps * 160, ease: 'Linear', onComplete: done });
+      scene.tweens.add({ targets: sq, scaleY: k * 1.05, duration: 80, yoyo: true, repeat: steps - 1 });
+    };
+    const next = () => scene.time.delayedCall(800 + Math.random() * 2200, () => {
+      if (!sq.active) return;
+      if (Math.random() < 0.25) {
+        // up the tree and back down
+        hop({ x: trunk.x + 2 * k, y: trunk.y }, () => scene.tweens.add({
+          targets: sq, y: trunk.y - 22 * k, angle: -80, duration: 700, yoyo: true, hold: 1200, ease: 'Sine.easeInOut',
+          onComplete: () => { sq.setAngle(0); next(); },
+        }));
+      } else {
+        hop(lawn(), () => {
+          // sitting up for a look about
+          scene.tweens.add({ targets: sq, scaleY: k * 1.5, duration: 160, yoyo: true, hold: 700 });
+          next();
+        });
+      }
+    });
+    scene.time.delayedCall(i * 1200, next);
+  });
 
   scene.time.delayedCall(1100, () => {
     if (scene.caption) return;
