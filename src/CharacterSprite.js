@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { FRAME_W, FRAME_H, ART_PX } from './constants.js';
 import { OUTLINE, grid, outline, blit } from './pixelArt.js';
+import { hasFlag } from './state.js';
 
 // Farmer sprite, drawn as pixel art to match the map: dark outline, three-tone
 // shading lit from the top-left, warm palette sampled from the map.
@@ -255,9 +256,18 @@ let look = FARMER; // the character being drawn
 const LEG = ['OOo', 'OOo', 'ooo', 'BBd', 'BBd', 'ddd'];
 const LEG_TOP = 20;
 
+// (sleeves, A/a, are the shirt's colours unless the look says otherwise: a
+// jacket over a white shirt)
+const SLEEVE = { A: 'C', a: 'c' };
+
 function put(grid, x, y, ch) {
   if (ch === '.' || y < 0 || y >= grid.length || x < 0 || x >= grid[0].length) return;
-  grid[y][x] = look.palette[ch];
+  grid[y][x] = look.palette[ch] ?? look.palette[SLEEVE[ch]];
+}
+
+// An anim, unless it's there already (the player's sheets get redrawn when he changes)
+function anim(scene, config) {
+  if (!scene.anims.exists(config.key)) scene.anims.create(config);
 }
 
 function stamp(grid, rows, x0, y0) {
@@ -277,9 +287,9 @@ function leg(grid, x, lift, offsets, back = false) {
 
 // Arms: sleeve + hand. The side-view arm carries its own outline so it reads
 // against the body. Offsets shift each row horizontally to swing the arm.
-const ARM_L = ['.C', 'CC', 'Cc', 'SS'];
-const ARM_R = ['c.', 'cc', 'cc', 'ss'];
-const ARM_SIDE = ['.Cc.', 'xCcx', 'xCcx', 'xSsx', '.xx.'];
+const ARM_L = ['.A', 'AA', 'Aa', 'SS'];
+const ARM_R = ['a.', 'aa', 'aa', 'ss'];
+const ARM_SIDE = ['.Aa.', 'xAax', 'xAax', 'xSsx', '.xx.'];
 
 function arm(grid, rows, x, y, offsets) {
   rows.forEach((row, r) => [...row].forEach((ch, c) => put(grid, x + c + (offsets ? offsets[r] : 0), y + r, ch)));
@@ -336,8 +346,8 @@ function buildFrame(dir, frame) {
 
 // Reading: facing down, eyes lowered, holding an open book at waist height
 // (seen from above, like everything else, so the pages face the camera).
-const READ_HEAD = FARMER_UPPER.down.map((row, i) => (i === 8 ? '....SSSSSSSs....' : i === 9 ? '....sSeSSeSs....' : row));
-const BLINK_HEAD = READ_HEAD.map((row, i) => (i === 9 ? '....sSsSSsSs....' : row));
+const readHead = () => look.upper.down.map((row, i) => (i === 8 ? '....SSSSSSSs....' : i === 9 ? '....sSeSSeSs....' : row));
+const blinkHead = () => readHead().map((row, i) => (i === 9 ? '....sSsSSsSs....' : row));
 const BOOK = [
   'KPPPPPpPPPPK',
   'KPttPPpPtttK',
@@ -356,9 +366,9 @@ function buildReadFrame(frame) {
   const g = grid(FRAME_W, FRAME_H);
   leg(g, 5, 0, null);
   leg(g, 8, 0, null);
-  stamp(g, frame === 3 ? BLINK_HEAD : READ_HEAD, 0, 1);
-  arm(g, ['.C', 'CC', 'Cc'], 2, 13);
-  arm(g, ['c.', 'cc', 'cc'], 12, 13);
+  stamp(g, frame === 3 ? blinkHead() : readHead(), 0, 1);
+  arm(g, ['.A', 'AA', 'Aa'], 2, 13);
+  arm(g, ['a.', 'aa', 'aa'], 12, 13);
   stamp(g, BOOK, BOOK_X, BOOK_Y);
   stamp(g, ['x'.repeat(BOOK[0].length)], BOOK_X, BOOK_Y - 1); // dark edge against the shirt
   put(g, BOOK_X - 1, BOOK_Y + 1, 'S');
@@ -379,8 +389,8 @@ function buildWaveFrame(frame) {
   arm(g, ARM_L, 2, 13);
   const dx = frame ? 1 : 0;
   stamp(g, ['SS', 'Ss'], 13 + dx, 8);
-  stamp(g, ['cc'], 13 + Math.round(dx / 2), 10);
-  stamp(g, ['cc', 'cc', 'c.'], 12, 11);
+  stamp(g, ['aa'], 13 + Math.round(dx / 2), 10);
+  stamp(g, ['aa', 'aa', 'a.'], 12, 11);
   return outline(g);
 }
 
@@ -401,15 +411,15 @@ function buildSeatFrame(kind) {
   });
   stamp(g, head, 0, 1);
   if (content) {
-    arm(g, ['.C', 'CC', 'Cc'], 2, 13);
-    arm(g, ['c.', 'cc', 'cc'], 12, 13);
+    arm(g, ['.A', 'AA', 'Aa'], 2, 13);
+    arm(g, ['a.', 'aa', 'aa'], 12, 13);
     stamp(g, ['SS'], 4, 15);
     stamp(g, ['ss'], 10, kind === 'pat' ? 14 : 15);
     return outline(g);
   }
-  arm(g, ['.C', 'CC', 'Cc', 'Cc', 'cc', 'SS'], 2, 13); // resting on the table
-  if (kind === 'up') arm(g, ['ss', 'Ss', 'cc', 'cc'], 12, 10); // hand by his face
-  else arm(g, ['c.', 'cc', 'cc', 'cc', 'cc', 'ss'], 12, 13);   // hand at the plate
+  arm(g, ['.A', 'AA', 'Aa', 'Aa', 'aa', 'SS'], 2, 13); // resting on the table
+  if (kind === 'up') arm(g, ['ss', 'Ss', 'aa', 'aa'], 12, 10); // hand by his face
+  else arm(g, ['a.', 'aa', 'aa', 'aa', 'aa', 'ss'], 12, 13);   // hand at the plate
   const out = outline(g);
   const fork = kind === 'up' ? [[9, 11], [10, 11], [11, 11]] : [[11, 19], [10, 20]];
   fork.forEach(([x, y]) => { out[y][x] = FORK; });
@@ -438,13 +448,13 @@ function directionRows(scene, key, ctx, fw, fh, p, cols) {
       scene.textures.get(key).add(row * cols + frame, 0, frame * fw, row * fh, fw, fh);
     }
     const base = row * cols;
-    scene.anims.create({
+    anim(scene, {
       key: `${key}-walk-${dir}`,
       frames: [0, 1, 2, 3].map(f => ({ key, frame: base + f })),
       frameRate: 8,
       repeat: -1,
     });
-    scene.anims.create({
+    anim(scene, {
       key: `${key}-idle-${dir}`,
       frames: [{ key, frame: base }],
       frameRate: 1,
@@ -459,14 +469,17 @@ function directionRows(scene, key, ctx, fw, fh, p, cols) {
 // `${key}-idle-${dir}`, `${key}-read`, seated at the table `${key}-eat` and
 // `${key}-full`, and sitting on a chair `${key}-sit-${dir}`.
 export function createCharacter(scene) {
-  look = FARMER;
+  look = farmer();
+  const redraw = worn !== look; // (he's changed: the same sheets, drawn again)
+  worn = look;
   [['player', ART_PX], ['player-px', 1]].forEach(([key, p]) => {
-    if (scene.textures.exists(key)) return;
+    if (scene.textures.exists(key) && !redraw) return;
     const cols = 4; // walk frames
     const fw = FRAME_W * p;
     const fh = FRAME_H * p;
-    const tex = scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 4));
+    const tex = scene.textures.exists(key) ? scene.textures.get(key) : scene.textures.createCanvas(key, fw * cols, fh * (DIRECTIONS.length + 4));
     const ctx = tex.getContext();
+    ctx.clearRect(0, 0, tex.width, tex.height);
     directionRows(scene, key, ctx, fw, fh, p, cols);
 
     // Reading row: read for a while, turn a page, read, blink, ...
@@ -476,7 +489,7 @@ export function createCharacter(scene) {
       tex.add(readRow * cols + frame, 0, frame * fw, readRow * fh, fw, fh);
     }
     const rf = (f, duration = 0) => ({ key, frame: readRow * cols + f, duration });
-    scene.anims.create({
+    anim(scene, {
       key: `${key}-read`,
       frames: [rf(0, 2200), rf(1, 60), rf(2, 60), rf(0, 1500), rf(3, 40), rf(0, 1800), rf(1, 60), rf(2, 60), rf(0, 900), rf(3, 40)],
       frameRate: 10,
@@ -489,12 +502,14 @@ export function createCharacter(scene) {
     DIRECTIONS.forEach((dir, i) => {
       drawFrame(ctx, i * fw, sitRow * fh, buildSitFrame(dir), p);
       tex.add(`sit-${dir}`, 0, i * fw, sitRow * fh, fw, fh);
-      scene.anims.create({ key: `${key}-sit-${dir}`, frames: [{ key, frame: `sit-${dir}` }], frameRate: 1, repeat: -1 });
+      anim(scene, { key: `${key}-sit-${dir}`, frames: [{ key, frame: `sit-${dir}` }], frameRate: 1, repeat: -1 });
     });
 
     tex.refresh();
     if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   });
+  look = FARMER;
+  createBike(scene, redraw);
 }
 
 // Seated at the table (two rows of the sheet from `row`): frames
@@ -510,13 +525,13 @@ function seatRows(scene, key, tex, ctx, row, fw, fh, p, cols) {
     tex.add(`seat-${kind}`, 0, x, y, fw, fh);
   });
   const sf = (kind, duration) => ({ key, frame: `seat-${kind}`, duration }); // ms on screen
-  scene.anims.create({
+  anim(scene, {
     key: `${key}-eat`,
     frames: [sf('down', 600), sf('up', 500), sf('chew', 160), sf('down', 160), sf('chew', 160), sf('down', 160), sf('chew', 160)],
     frameRate: 10,
     repeat: -1,
   });
-  scene.anims.create({
+  anim(scene, {
     key: `${key}-full`,
     frames: [sf('full', 2200), sf('pat', 160), sf('full', 160), sf('pat', 160), sf('full', 1400)],
     frameRate: 10,
@@ -576,6 +591,32 @@ HEADS.long = {
   up: [...HEADS.bob.up.slice(0, 11), '...RRRRRRRRRR...', '...rCRRRRRRCr...', '....CrRRRRrc....'],
   left: [...HEADS.bob.left.slice(0, 11), '.......ssRRRR...', '......CCCRRRr...', '......CCCCRr....'],
 };
+// Farmer Jones in the tuxedo he rents for his date with Steffi (src/tailor.js,
+// 'tuxedo'): no hat, his hair combed; a black jacket, its lapels over a
+// white shirt with a black bow tie, black trousers and polished black shoes.
+const TUX_PALETTE = {
+  ...FARMER_PALETTE,
+  J: '#2e2e38', j: '#1a1a20',              // the jacket
+  A: '#2e2e38', a: '#1a1a20',              // its sleeves
+  W: '#f8f6f0', T: '#141418',              // white shirt, black bow tie
+  O: '#26262e', o: '#141418',              // trousers
+  B: '#202024', d: '#0e0e12',              // polished shoes
+};
+const TUX_TORSO = {
+  down: ['....JJWTTWJj....', '....JJWWWWJj....', '....jJJWWJJj....', '....jJJWWJJj....', '.....JJJJJj.....', '.....OOOOOo.....', '.....oOOOoo.....'],
+  up: ['....JJJJJJJj....', '....JJJJJJJj....', '....jJJJJJJj....', '....jJJJJJJj....', '.....JJJJJj.....', '.....OOOOOo.....', '.....oOOOoo.....'],
+  left: ['......WJJJj.....', '......WJJJj.....', '......JJJJj.....', '......JJJJj.....', '......JJJJj.....', '......OOOOo.....', '......oOOoo.....'],
+};
+const TUX_UPPER = {
+  down: [...HAIR_TOP.down, ...FARMER_UPPER.down.slice(6, 12), ...TUX_TORSO.down],
+  up: [...HAIR_TOP.up, ...FARMER_UPPER.up.slice(6, 12), ...TUX_TORSO.up],
+  left: [...HAIR_TOP.left, ...FARMER_UPPER.left.slice(6, 12), ...TUX_TORSO.left],
+};
+const TUX = { palette: TUX_PALETTE, upper: TUX_UPPER };
+// What he's wearing now, and what his sheets were last drawn in.
+const farmer = () => (hasFlag('tuxedo') ? TUX : FARMER);
+let worn = null;
+
 const TORSO = {
   down: ['....CCCCCCCc....', '....CCCCCCCc....', '....cCCCCCCc....', '....cCCCCCCc....', '.....OOOOOo.....', '.....OOOOOo.....', '.....oOOOoo.....'],
   up: ['....CCCCCCCc....', '....CCCCCCCc....', '....cCCCCCCc....', '....cCCCCCCc....', '.....OOOOOo.....', '.....OOOOOo.....', '.....oOOOoo.....'],
@@ -646,7 +687,7 @@ export function createVillager(scene, key, spec, p = ART_PX) {
   DIRECTIONS.forEach((dir, i) => {
     drawFrame(ctx, i * fw, sitRow * fh, buildSitFrame(dir), p);
     tex.add(`sit-${dir}`, 0, i * fw, sitRow * fh, fw, fh);
-    scene.anims.create({ key: `${key}-sit-${dir}`, frames: [{ key, frame: `sit-${dir}` }], frameRate: 1, repeat: -1 });
+    anim(scene, { key: `${key}-sit-${dir}`, frames: [{ key, frame: `sit-${dir}` }], frameRate: 1, repeat: -1 });
   });
   tex.refresh();
   if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
@@ -673,7 +714,7 @@ export function createBob(scene) {
       tex.add(waveRow * cols + frame, 0, frame * fw, waveRow * fh, fw, fh);
     }
     const wf = f => ({ key, frame: waveRow * cols + f });
-    scene.anims.create({ key: `${key}-wave`, frames: [wf(0), wf(1), wf(0), wf(1), wf(0), wf(1)], frameRate: 6, repeat: 0 });
+    anim(scene, { key: `${key}-wave`, frames: [wf(0), wf(1), wf(0), wf(1), wf(0), wf(1)], frameRate: 6, repeat: 0 });
 
     seatRows(scene, key, tex, ctx, waveRow + 1, fw, fh, p, cols);
 
@@ -773,8 +814,8 @@ function buildBikeFrame(dir, frame) {
     const upper = look.upper.left;
     stamp(g, upper.slice(0, 12), 6, 0);   // head, leaning into it
     stamp(g, upper.slice(12), 7, 12);     // body over the saddle
-    line(g, 13, 13, 8, 16, 'C');          // arm out to the handlebar
-    line(g, 13, 14, 9, 16, 'c');
+    line(g, 13, 13, 8, 16, 'A');          // arm out to the handlebar
+    line(g, 13, 14, 9, 16, 'a');
     stamp(g, ['SS'], 6, 16);
   } else {
     // end on: the front (or back) wheel, the handlebar across, his legs
@@ -814,22 +855,25 @@ function drawBikeFrame(ctx, ox, oy, pixels, p, shadow) {
   blit(ctx, pixels, ox, oy, p);
 }
 
-export function createBike(scene) {
-  look = { ...FARMER, palette: { ...FARMER_PALETTE, ...BIKE_COLOURS } };
+// (`redraw`: he's changed his clothes, so he's drawn on it again)
+export function createBike(scene, redraw = false) {
+  const rider = farmer();
+  look = { ...rider, palette: { ...rider.palette, ...BIKE_COLOURS } };
   [['player-bike', ART_PX], ['player-bike-px', 1]].forEach(([key, p]) => {
-    if (scene.textures.exists(key)) return;
+    if (scene.textures.exists(key) && !redraw) return;
     const fw = BIKE_W * p;
     const fh = FRAME_H * p;
-    const tex = scene.textures.createCanvas(key, fw * 4, fh * DIRECTIONS.length);
+    const tex = scene.textures.exists(key) ? scene.textures.get(key) : scene.textures.createCanvas(key, fw * 4, fh * DIRECTIONS.length);
     const ctx = tex.getContext();
+    ctx.clearRect(0, 0, tex.width, tex.height);
     DIRECTIONS.forEach((dir, row) => {
       const side = dir === 'left' || dir === 'right';
       for (let f = 0; f < 4; f++) {
         drawBikeFrame(ctx, f * fw, row * fh, buildBikeFrame(dir, f), p, BIKE_SHADOW[side ? 'side' : 'end']);
         tex.add(row * 4 + f, 0, f * fw, row * fh, fw, fh);
       }
-      scene.anims.create({ key: `${key}-walk-${dir}`, frames: [0, 1, 2, 3].map(f => ({ key, frame: row * 4 + f })), frameRate: 10, repeat: -1 });
-      scene.anims.create({ key: `${key}-idle-${dir}`, frames: [{ key, frame: row * 4 }], frameRate: 1, repeat: -1 });
+      anim(scene, { key: `${key}-walk-${dir}`, frames: [0, 1, 2, 3].map(f => ({ key, frame: row * 4 + f })), frameRate: 10, repeat: -1 });
+      anim(scene, { key: `${key}-idle-${dir}`, frames: [{ key, frame: row * 4 }], frameRate: 1, repeat: -1 });
     });
     tex.refresh();
     if (p === 1) tex.setFilter(Phaser.Textures.FilterMode.NEAREST);

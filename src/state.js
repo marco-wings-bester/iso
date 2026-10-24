@@ -29,9 +29,16 @@
 // → they eat on the log by the fire as night falls, then Johan's off to bed
 // ('braaiDone', and 'tired'). Friday, rain: coffee at Derik's with Abraham
 // ('metAbraham'), who ask him to look at the town's dry fountain ('fixFountain').
+// Saturday: the fountain fixed ('fountainFixed') and a date with Steffi
+// tonight ('dateSteffi'): he needs a tuxedo and a table ('datePlan',
+// src/datePlan.js) → Faan the tailor wants two hens and tomatoes for it
+// ('tuxAsked') → two hens caught ('faanHens') and a basket of tomatoes picked
+// ('tomatoes') → into the tuxedo ('tuxedo') → a table for two booked with
+// Ilse at the restaurant ('tableBooked') → all set ('dateReady').
 // Numbers kept with them: `day`, the day of the week (0 = Monday, the day
 // the story starts; one on each night he sleeps: src/days.js), and
-// `loanDay`, the day Derik lent him the R15 (his braai is two days later).
+// `loanDay`, the day Derik lent him the R15 (his braai is two days later);
+// `hens`, `faanCaught` and `tomatoesPicked`, how many so far.
 // (v2: progress saved under the old order — read, sleep, Bob — is dropped.)
 const KEY = 'farm-walk-story-v2';
 let flags = {};

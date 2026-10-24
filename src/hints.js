@@ -275,6 +275,24 @@ const LINES = {
     none: { af: 'Dalk het dit in die pyp na die onderste put vasgesit…', en: 'Maybe it was stuck in the pipe down to the bottom well…' },
     explicit: { af: 'Dalk het dit in die pyp na die onderste put vasgesit! Kom ek gaan kyk of die put nou werk.', en: "Maybe it was stuck in the pipe down to the bottom well! Let's go and see if the well works now." },
   },
+  // Saturday: what he needs for his date with Steffi (src/datePlan.js)
+  datePlan: {
+    none: null,
+    subtle: { af: 'Iewers in die dorp is daar sekerlik ’n kleremaker…', en: "Somewhere in town there's bound to be a tailor…" },
+    explicit: { af: 'Die kleremaker is in die huis regs onder die fontein, en die restaurant is bo die fontein. Albei in die dorp!', en: "The tailor's in the house down to the right of the fountain, and the restaurant's up from the fountain. Both in town!" },
+  },
+  // Faan wants two hens and a basket of tomatoes for the tuxedo (src/tailor.js)
+  tuxTrade: {
+    none: null,
+    subtle: { af: 'Hoenders is in die hoenderhok… en tamaties in die groentetuin.', en: 'Hens are in the hen house… and tomatoes in the vegetable garden.' },
+    explicit: { af: 'Twee hoenders uit die hoenderhok en tamaties uit die groentetuin by die plaas, dan terug na Faan toe.', en: 'Two hens from the hen house and tomatoes from the vegetable garden on the farm, then back to Faan.' },
+  },
+  // both in hand for Faan
+  tradeReady: {
+    none: null,
+    subtle: { af: 'Faan sal bly wees!', en: 'Faan will be pleased!' },
+    explicit: { af: 'Ek het die hoenders en die tamaties: nou terug na Faan in die dorp!', en: 'I have the hens and the tomatoes: now back to Faan in town!' },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },

@@ -763,6 +763,120 @@ function cafeTable(ctx, x, y) {
   obj(ctx, x + 7, y + 2, 4, 3, r => { r(0, 0, 4, 3, '#f8f0e0'); r(1, 0, 2, 1, '#6a3a1e'); });
 }
 
+// ── Faan's tailor shop, and the restaurant (in town) ──────────────────────
+
+// A jacket on a hanger, `c` and its shade `d`: 8 wide, 20 tall.
+function jacket(ctx, x, y, c, d) {
+  obj(ctx, x + 3, y, 2, 2, r => r(0, 0, 2, 2, C.metal)); // the hook
+  obj(ctx, x, y + 2, 8, 18, r => {
+    r(0, 0, 8, 18, c);
+    r(6, 0, 2, 18, d);
+    r(3, 0, 2, 7, C.linen); r(3, 3, 1, 2, d); // shirt collar and lapel
+    r(0, 17, 8, 1, d);
+  });
+}
+
+// The clothes rail along the wall, hung with suits and jackets.
+function clothesRail(ctx, x, y, w, seed) {
+  const R = rng(seed);
+  const SUITS = [['#2e2e38', '#1a1a20'], ['#34507a', '#243a5a'], ['#7a7a80', '#5a5a60'], ['#6a4a2a', '#4a3018'], ['#2e2e38', '#1a1a20'], ['#5a2a3a', '#3e1a28']];
+  obj(ctx, x, y + 2, w, 2, r => { r(0, 0, w, 2, C.metal); r(0, 0, w, 1, C.metalHi); });
+  obj(ctx, x, y + 2, 2, 32, r => r(0, 0, 2, 32, C.metalDk));
+  obj(ctx, x + w - 2, y + 2, 2, 32, r => r(0, 0, 2, 32, C.metalDk));
+  for (let jx = x + 3; jx + 8 < x + w - 2; jx += 7) {
+    const [c, d] = SUITS[Math.floor(R() * SUITS.length)];
+    jacket(ctx, jx, y + 3, c, d);
+  }
+}
+
+// A tailor's dummy in a tuxedo, on its stand: 12 wide, 30 tall.
+function dummy(ctx, x, y) {
+  drop(ctx, x + 2, y + 26, 8, 4);
+  obj(ctx, x + 5, y + 22, 2, 6, r => r(0, 0, 2, 6, C.woodDk));
+  obj(ctx, x + 2, y + 27, 8, 2, r => r(0, 0, 8, 2, C.woodDk));
+  obj(ctx, x, y, 12, 22, r => {
+    r(2, 0, 8, 2, '#e8d8b8');                    // its neck
+    r(0, 2, 12, 20, '#2e2e38'); r(9, 2, 3, 20, '#1a1a20');
+    r(4, 2, 4, 12, C.linen); r(5, 3, 2, 1, '#141418'); // shirt and bow tie
+    r(5, 6, 1, 1, '#141418'); r(5, 9, 1, 1, '#141418');
+  });
+}
+
+// The counter, with a tape measure, scissors and a roll of cloth on it: 40×16.
+function tailorCounter(ctx, x, y) {
+  drop(ctx, x, y, 40, 16);
+  obj(ctx, x, y, 40, 16, r => {
+    r(0, 0, 40, 5, C.woodLt); r(0, 0, 40, 1, C.woodHi);
+    r(0, 5, 40, 11, C.woodDk); r(0, 5, 40, 1, C.dark);
+    for (let px = 3; px < 37; px += 12) { r(px, 8, 9, 6, C.wood); r(px, 13, 9, 1, C.woodDkr); }
+  });
+  obj(ctx, x + 4, y - 3, 12, 4, r => { r(0, 0, 12, 4, '#34507a'); r(0, 0, 12, 1, '#5a7aa8'); r(11, 0, 1, 4, '#243a5a'); }); // cloth
+  obj(ctx, x + 20, y + 1, 5, 3, r => { r(0, 0, 5, 3, C.strawHi); r(2, 1, 1, 1, C.strawDk); }); // tape measure
+  ctx.fillStyle = C.strawHi; ctx.fillRect(x + 25, y + 2, 6, 1);
+  obj(ctx, x + 31, y + 1, 6, 3, r => { r(0, 0, 3, 3, C.red); r(3, 1, 3, 1, C.metal); }); // scissors
+}
+
+// The changing cubicle in the corner, its curtain drawn back (or `shut`): 26×46.
+function cubicle(ctx, x, y, shut = false) {
+  obj(ctx, x, y, 26, 2, r => { r(0, 0, 26, 2, C.woodDk); r(0, 0, 26, 1, C.wood); }); // curtain rail
+  if (!shut) {
+    fill(ctx, x + 1, y + 2, 24, 44, '#e8dcc0');
+    obj(ctx, x + 1, y + 2, 6, 44, r => { r(0, 0, 6, 44, '#a8282a'); r(2, 0, 1, 44, '#7a1a1c'); r(4, 0, 1, 44, '#c84a3a'); });
+    return;
+  }
+  obj(ctx, x + 1, y + 2, 24, 44, r => {
+    r(0, 0, 24, 44, '#a8282a');
+    for (let i = 2; i < 24; i += 4) { r(i, 0, 1, 44, '#7a1a1c'); r(i + 2, 0, 1, 44, '#c84a3a'); }
+  });
+}
+
+// A tall mirror on its stand: 10×30.
+function mirror(ctx, x, y) {
+  drop(ctx, x, y + 26, 10, 4);
+  obj(ctx, x, y, 10, 30, r => {
+    r(0, 0, 10, 30, C.woodDk); r(0, 0, 10, 1, C.wood);
+    r(1, 1, 8, 26, C.glass); r(1, 16, 8, 11, C.glassDk);
+    r(2, 3, 1, 6, C.glint); r(3, 2, 2, 1, C.glint);
+    r(1, 28, 2, 2, C.woodDkr); r(7, 28, 2, 2, C.woodDkr);
+  });
+}
+
+// A restaurant table for two: a long white cloth, a candle, two plates and
+// glasses; a chair each side. (x, y): the cloth's top left; 22×16.
+function dinnerTable(ctx, x, y) {
+  chair(ctx, x - 10, y + 1, false);
+  chair(ctx, x + 22, y + 1, true);
+  drop(ctx, x, y, 22, 16);
+  obj(ctx, x, y, 22, 16, r => {
+    r(0, 0, 22, 12, C.white); r(0, 10, 22, 6, C.linen); r(0, 15, 22, 1, C.linenDk);
+    for (let i = 3; i < 22; i += 5) r(i, 11, 1, 5, C.linenDk);
+    r(2, 3, 5, 4, C.linenDk); r(3, 4, 3, 2, C.white);   // plates
+    r(15, 3, 5, 4, C.linenDk); r(16, 4, 3, 2, C.white);
+  });
+  obj(ctx, x + 10, y - 3, 2, 6, r => { r(0, 0, 2, 6, C.linen); r(1, 0, 1, 6, C.linenDk); }); // the candle
+  obj(ctx, x + 7, y + 2, 1, 2, r => r(0, 0, 1, 2, C.glass));
+  obj(ctx, x + 14, y + 2, 1, 2, r => r(0, 0, 1, 2, C.glass));
+}
+
+// The host's stand by the door, the bookings book open on it: 14×18.
+function lectern(ctx, x, y) {
+  drop(ctx, x, y, 14, 18);
+  obj(ctx, x, y, 14, 18, r => {
+    r(0, 0, 14, 4, C.woodLt); r(0, 0, 14, 1, C.woodHi);
+    r(1, 4, 12, 14, C.woodDk); r(1, 4, 12, 1, C.dark); r(3, 7, 8, 8, C.wood);
+  });
+  obj(ctx, x + 2, y - 2, 10, 4, r => { r(0, 0, 10, 4, C.linen); r(5, 0, 1, 4, C.linenDk); r(1, 1, 3, 1, C.linenDk); r(7, 2, 2, 1, C.linenDk); });
+}
+
+// A painting in a gilt frame: the town's fountain, running.
+function painting(ctx, x, y) {
+  obj(ctx, x, y, 22, 16, r => {
+    r(0, 0, 22, 16, C.strawDk); r(0, 0, 22, 1, C.strawHi);
+    r(2, 2, 18, 12, '#9cc8e4'); r(2, 9, 18, 5, C.leaf);
+    r(8, 7, 6, 4, C.stone); r(10, 4, 2, 3, C.stone); r(9, 3, 4, 1, C.glass);
+  });
+}
+
 // ── Rooms ─────────────────────────────────────────────────────────────────
 
 const OAK = { base: '#b07a48', hi: '#c88f5a', seam: '#5a3418', grain: '#9a6a3c' };
@@ -996,6 +1110,121 @@ export const ROOMS = {
       // their coffee
       this.cups.forEach(({ x, y }) => obj(ctx, x - 2, y - 3, 4, 3, r => { r(0, 0, 4, 3, '#f8f0e0'); r(1, 0, 2, 1, '#6a3a1e'); }));
       plant(ctx, 120, 130);
+    },
+  },
+
+  // Faan's tailor shop in town, up from the square (src/tailor.js): suits
+  // to rent on a rail along the wall, a dummy in a tuxedo, Faan at his
+  // counter, and a changing cubicle in the corner. Out of the door is back to
+  // the town, on the path by its steps.
+  tailor: {
+    w: 144, h: 150, wallH: 44,
+    name: { af: 'Faan se Kleremakery', en: "Faan's Tailor" },
+    door: { x: 60, w: 24 },
+    exit: { to: 'Town', data: { at: { x: 1204, y: 1752 } } },
+    spots: {
+      // tap the counter (or Faan behind it): talk to him (src/tailor.js)
+      faan: {
+        area: { x: 52, y: 22, w: 54, h: 46 },
+        stand: { x: 74, y: 74 },
+      },
+      // tap the cubicle: where he changes into the tuxedo
+      cubicle: {
+        area: { x: 110, y: 4, w: 30, h: 50 },
+        stand: { x: 124, y: 60 },
+      },
+      // tap the tuxedo on the dummy, or the rail
+      suits: {
+        area: { x: 6, y: 4, w: 46, h: 46 },
+        stand: { x: 30, y: 60 },
+      },
+    },
+    faan: { x: 79, y: 52 },
+    cubicle: { x: 112, y: 8, shut: { x: 111, y: 7, w: 28, h: 49, draw: ctx => cubicle(ctx, 2, 1, true) } },
+    solid: [
+      { x: 8, y: 40, w: 42, h: 8 },    // the rail
+      { x: 56, y: 54, w: 40, h: 14 },  // the counter
+      { x: 70, y: 44, w: 18, h: 10 },  // Faan behind it
+      { x: 18, y: 76, w: 12, h: 20 },  // the dummy
+      { x: 124, y: 94, w: 12, h: 16 }, // the mirror
+      { x: 8, y: 126, w: 14, h: 20 },  // plant
+    ],
+    draw(ctx) {
+      const { w, h, wallH } = this;
+      planks(ctx, 0, wallH, w, h - wallH, OAK, 53);
+      rug(ctx, 52, 82, 44, 30);
+      doormat(ctx, this);
+      // back wall: dark green with gold stripes, over a wainscot
+      fill(ctx, 0, 0, w, wallH, '#3e6a4a');
+      for (let x = 4; x < w; x += 10) fill(ctx, x, 0, 1, wallH - 14, '#c8a850');
+      fill(ctx, 0, wallH - 14, w, 12, C.woodDk);
+      for (let x = 4; x < w; x += 12) fill(ctx, x, wallH - 12, 1, 10, C.woodDeep);
+      fill(ctx, 0, wallH - 15, w, 2, C.woodLt);
+      fill(ctx, 0, wallH - 2, w, 2, C.woodDeep);
+      frame(ctx, this);
+      clothesRail(ctx, 8, 8, 42, 61);
+      // a sign over the counter: a needle and thread
+      obj(ctx, 66, 8, 20, 10, r => { r(0, 0, 20, 10, C.woodDk); r(2, 2, 16, 6, C.linen); r(4, 4, 10, 1, C.metalDk); r(14, 3, 1, 3, C.metalDk); r(5, 6, 9, 1, C.red); });
+      tailorCounter(ctx, 56, 54);
+      cubicle(ctx, 112, 8);
+      dummy(ctx, 18, 68);
+      mirror(ctx, 124, 80);
+      plant(ctx, 8, 126);
+    },
+  },
+
+  // The restaurant on the town square (src/restaurant.js): tables laid for
+  // dinner with white cloths and candles, Ilse at her stand by the door with
+  // the bookings book. Out of the door is back to the town, at the foot of its patio's steps.
+  restaurant: {
+    w: 160, h: 160, wallH: 44,
+    name: { af: 'Die Restaurant', en: 'The Restaurant' },
+    door: { x: 64, w: 24 },
+    exit: { to: 'Town', data: { at: { x: 1010, y: 1316 } } },
+    spots: {
+      // tap the stand by the door (or Ilse): talk to her (src/restaurant.js)
+      ilse: {
+        area: { x: 102, y: 106, w: 36, h: 32 },
+        stand: { x: 99, y: 132 }, // (the stand between them)
+      },
+      // tap the table by the window: the one he's booked
+      ourTable: {
+        area: { x: 98, y: 46, w: 46, h: 34 },
+        stand: { x: 108, y: 88 },
+      },
+    },
+    ilse: { x: 130, y: 132 },
+    solid: [
+      { x: 14, y: 56, w: 40, h: 20 },   // tables and their chairs
+      { x: 100, y: 56, w: 40, h: 20 },
+      { x: 14, y: 100, w: 40, h: 20 },
+      { x: 108, y: 120, w: 14, h: 14 }, // the stand
+      { x: 124, y: 122, w: 12, h: 10 }, // Ilse beside it
+      { x: 140, y: 136, w: 14, h: 20 }, // plant
+    ],
+    draw(ctx) {
+      const { w, h, wallH } = this;
+      // a checked floor, black and white
+      for (let y = wallH; y < h; y += 6) for (let x = 0; x < w; x += 6) fill(ctx, x, y, 6, 6, ((x + y - wallH) / 6) % 2 ? '#e8e0d0' : '#4a4038');
+      windowLight(ctx, 26, wallH, 20, 26);
+      windowLight(ctx, 112, wallH, 20, 26);
+      doormat(ctx, this);
+      // back wall: wine red, with a gold rail, over dark wood
+      fill(ctx, 0, 0, w, wallH, '#7a2a30');
+      for (let x = 2; x < w; x += 8) fill(ctx, x, 0, 4, wallH - 14, '#6a2228');
+      fill(ctx, 0, wallH - 16, w, 2, '#c8a850');
+      fill(ctx, 0, wallH - 14, w, 12, C.woodDkr);
+      for (let x = 4; x < w; x += 12) fill(ctx, x, wallH - 12, 1, 10, C.woodDeep);
+      fill(ctx, 0, wallH - 2, w, 2, C.woodDeep);
+      frame(ctx, this);
+      windowPane(ctx, 26, 8);
+      windowPane(ctx, 112, 8);
+      painting(ctx, 68, 8);
+      dinnerTable(ctx, 24, 58);
+      dinnerTable(ctx, 110, 58);
+      dinnerTable(ctx, 24, 102);
+      lectern(ctx, 108, 118);
+      plant(ctx, 140, 136);
     },
   },
 

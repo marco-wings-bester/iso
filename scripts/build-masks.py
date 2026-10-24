@@ -101,11 +101,17 @@ MAPS = [
             ((1280, 110, 130, 80), None),
             ((580, 270, 470, 60), None),        # the open grass at the top of the town (where the
             ((740, 330, 260, 100), None),       # fountain's pipe leaked), joined to the path
+            # the wide, paler path right of the square, over the top of Faan's shop (the house below
+            # the restaurant), and on the grass down its right side and along its front to its door
+            ((900, 1290, 500, 300), lambda R, G, B: dirt(R, G, B) | light_path(R, G, B)),
+            ((1316, 1470, 44, 300), None),
+            ((1170, 1734, 190, 36), None),
         ],
         'exclude': [
             # the houses, the cafe, the restaurant (their walls share the paths' colour) and the fountain
             (370, 330, 370, 395), (80, 600, 360, 405), (520, 750, 340, 340), (120, 1030, 360, 355),
-            (1020, 400, 460, 370), (980, 880, 490, 420), (130, 1430, 460, 370), (930, 1410, 400, 380),
+            (1020, 400, 460, 370), (980, 880, 490, 420), (130, 1430, 460, 370),
+            (930, 1560, 386, 174), (1000, 1500, 316, 60), (1080, 1462, 230, 38), (1205, 1440, 60, 22),  # (Faan's: stepped, along its roof)
             (130, 1870, 480, 420), (1020, 1980, 400, 400), (655, 1270, 230, 205),
             # paths off the sides, which the screen cuts off: only the road out at the top right leaves
             (0, 0, 140, 2752), (1396, 300, 140, 2452),
