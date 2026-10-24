@@ -1174,7 +1174,7 @@ export const ROOMS = {
   },
 
   // The restaurant on the town square (src/restaurant.js): tables laid for
-  // dinner with white cloths and candles, Ilse at her stand by the door with
+  // dinner with white cloths and candles, Lize at her stand by the door with
   // the bookings book. Out of the door is back to the town, at the foot of its patio's steps.
   restaurant: {
     w: 160, h: 160, wallH: 44,
@@ -1182,8 +1182,8 @@ export const ROOMS = {
     door: { x: 64, w: 24 },
     exit: { to: 'Town', data: { at: { x: 1010, y: 1316 } } },
     spots: {
-      // tap the stand by the door (or Ilse): talk to her (src/restaurant.js)
-      ilse: {
+      // tap the stand by the door (or Lize): talk to her (src/restaurant.js)
+      lize: {
         area: { x: 102, y: 106, w: 36, h: 32 },
         stand: { x: 99, y: 132 }, // (the stand between them)
       },
@@ -1193,13 +1193,13 @@ export const ROOMS = {
         stand: { x: 108, y: 88 },
       },
     },
-    ilse: { x: 130, y: 132 },
+    lize: { x: 130, y: 132 },
     solid: [
       { x: 14, y: 56, w: 40, h: 20 },   // tables and their chairs
       { x: 100, y: 56, w: 40, h: 20 },
       { x: 14, y: 100, w: 40, h: 20 },
       { x: 108, y: 120, w: 14, h: 14 }, // the stand
-      { x: 124, y: 122, w: 12, h: 10 }, // Ilse beside it
+      { x: 124, y: 122, w: 12, h: 10 }, // Lize beside it
       { x: 140, y: 136, w: 14, h: 20 }, // plant
     ],
     draw(ctx) {

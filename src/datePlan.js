@@ -6,7 +6,7 @@ import { line } from './hints.js';
 // said yes to going out with him tonight (src/steffi.js), whichever comes
 // last, Johan thinks about the evening: he'll need a tuxedo, and a table
 // booked ('datePlan'). The tuxedo he rents from Faan in town, paying in
-// hens and tomatoes (src/tailor.js); the table he books with Ilse at the
+// hens and tomatoes (src/tailor.js); the table he books with Lize at the
 // restaurant (src/restaurant.js). Both done: all set for tonight ('dateReady').
 
 export async function planDate(scene) {
