@@ -3,6 +3,7 @@ import { hash, smooth, shade, GRASS, GRASS_HI, FLOWERS } from './art.js';
 import { hasFlag, setFlag } from '../state.js';
 import { today } from '../days.js';
 import { WEDNESDAY } from '../chores.js';
+import { line } from '../hints.js';
 
 // Farmer Jones's view straight down a well: the underside of his hat brim at
 // the top, the stone rim, the shaft's stone courses vanishing into
@@ -12,10 +13,11 @@ import { WEDNESDAY } from '../chores.js';
 // From Wednesday he checks the wells (src/chores.js): down goes the bucket and
 // up it comes, full from the top well ('wellTop'), empty from the bottom one
 // by the orchard ('wellBottom'), which has run dry: no water down there, just
-// cracked mud.
+// cracked mud. Once he's fished the old shoe out of the pond (src/views/pond.js:
+// 'shoe'), it gives water again ('wellFixed').
 
 // The bottom well, from Wednesday (until he's put it right): dry.
-const isDry = spot => spot === 'wellBottom' && today() >= WEDNESDAY && !hasFlag('wellFixed');
+const isDry = spot => spot === 'wellBottom' && today() >= WEDNESDAY && !hasFlag('shoe') && !hasFlag('wellFixed');
 
 const STONES = [[128, 122, 110], [110, 106, 96], [140, 132, 118], [100, 98, 90]];
 const RIM_STONES = [[184, 178, 164], [168, 162, 148], [196, 190, 174]];
@@ -229,12 +231,16 @@ function drawWater(scene, g, dry) {
       scene.tweens.add({
         targets: bucket, scale: top * 1.1, duration: 1800, delay: 700, ease: 'Quad.easeOut', onUpdate: () => dim(bucket.scale),
         onComplete: () => {
-          setFlag(dry ? 'wellBottom' : 'wellTop');
+          const fixed = !dry && scene.spot === 'wellBottom';
+          setFlag(dry ? 'wellBottom' : fixed ? 'wellFixed' : 'wellTop');
           scene.busy = false;
+          const hint = dry ? line('wellDry') : null;
           scene.say(dry
             ? { af: 'Leeg?! Daar is geen water in hierdie put nie. Iets is fout…', en: "Empty?! There's no water in this well. Something's wrong…" }
-            : { af: '’n Volle emmer! Hierdie put werk goed. Ek sit dit langs die put neer.', en: "A full bucket! This well works fine. I'll leave it beside the well." },
-          () => scene.close());
+            : fixed
+              ? { af: '’n Volle emmer! Wat ’n geluk dat ek daai ou skoen uitgevis het: dit het die pyp toegestop. Nou werk die put weer!', en: "A full bucket! What luck that I fished out that old shoe: it was blocking the pipe. Now the well works again!" }
+              : { af: '’n Volle emmer! Hierdie put werk goed. Ek sit dit langs die put neer.', en: "A full bucket! This well works fine. I'll leave it beside the well." },
+          () => (hint ? scene.say(hint, () => scene.close()) : scene.close()));
         },
       });
     },
@@ -246,7 +252,7 @@ function drawWater(scene, g, dry) {
 function animate(scene, w, h) {
   const g = wellGeometry(w, h);
   const dry = isDry(scene.spot);
-  const flag = scene.spot === 'wellBottom' ? 'wellBottom' : 'wellTop';
+  const flag = scene.spot === 'wellBottom' ? (hasFlag('shoe') ? 'wellFixed' : 'wellBottom') : 'wellTop';
   if (today() >= WEDNESDAY && !hasFlag(flag)) {
     scene.time.delayedCall(900, () => {
       if (!scene.caption) scene.say({ af: 'Kom ek kyk of die put werk: ’n emmer water.', en: "Let's see that the well works: a bucket of water." }, () => drawWater(scene, g, dry));

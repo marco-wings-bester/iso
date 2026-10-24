@@ -384,6 +384,12 @@ function crowbar(ctx, x, y) {
   });
 }
 
+// A fishing rod lying on two pegs: a long thin pole, its reel and cork grip. 40×3.
+function fishingRod(ctx, x, y) {
+  obj(ctx, x, y + 1, 40, 1, r => { r(0, 0, 40, 1, C.woodDk); r(28, 0, 12, 1, C.strawDk); });
+  obj(ctx, x + 30, y, 4, 3, r => { r(0, 0, 4, 3, C.metalDk); r(1, 1, 2, 1, C.metal); });
+}
+
 // A spade, standing on its blade: a wooden shaft with a D-grip. 6×26.
 function spade(ctx, x, y) {
   obj(ctx, x + 1, y, 4, 3, r => { r(0, 0, 4, 1, C.woodDk); r(0, 0, 1, 3, C.woodDk); r(3, 0, 1, 3, C.woodDk); r(0, 2, 4, 1, C.woodDk); });
@@ -1054,6 +1060,15 @@ export const ROOMS = {
         stand: { x: 42, y: 45 },
         gap: { x: 11, y: 11, w: 16, h: 10 }, // where it hung, once it's taken
       },
+      // the fishing rod on its pegs up on the wall (for Wednesday's dry well: src/views/pond.js)
+      rod: {
+        area: { x: 52, y: 3, w: 46, h: 10 },
+        stand: { x: 76, y: 56 },
+        prop: { x: 54, y: 7, w: 42, h: 5, draw: ctx => fishingRod(ctx, 1, 1) },
+        need: () => hasFlag('wellBottom'),
+        flag: 'rod',
+        found: 'rodFound',
+      },
       // the spade leaning in the corner, once he's found the leak in town (src/fountainFix.js)
       shovel: {
         area: { x: 92, y: 92, w: 14, h: 32 },
@@ -1064,7 +1079,7 @@ export const ROOMS = {
         found: 'shovelFound',
       },
       knife: {
-        area: { x: 66, y: 10, w: 24, h: 12 }, // tap the knife hanging on the wall over the workbench…
+        area: { x: 66, y: 13, w: 24, h: 10 }, // tap the knife hanging on the wall over the workbench…
         stand: { x: 78, y: 56 },              // …to take it (once Derik's asked for meat)
         prop: { x: 71, y: 15, w: 13, h: 5, draw: ctx => knife(ctx, 1, 1) },
         need: () => hasFlag('needMeat'),

@@ -5,8 +5,10 @@ import { today } from './days.js';
 // land (the tractor's keys are lost: they're on the bookshelf in the house;
 // 'tractorKeys', then 'plowed') and see that the wells are working, a bucket
 // of water from each ('wellTop'; the bottom one, by the orchard, has run dry:
-// 'wellBottom'). All done ('choresDone'), he's tired out, ready for bed.
-// (On Thursday he'll see to the dry well.)
+// 'wellBottom'). Fishing off the jetty with the rod from his shed ('rod') he
+// hooks an old shoe ('shoe'), which must have been blocking the pipe down to
+// that well; then it gives water again ('wellFixed'). All done ('choresDone'),
+// he's tired out, ready for bed.
 
 export const WEDNESDAY = 2;
 
@@ -15,7 +17,7 @@ export function chores() {
   if (today() !== WEDNESDAY) return [];
   return [
     { text: { af: 'Ploeg die land met die trekker', en: 'Plough the land with the tractor' }, done: hasFlag('plowed') },
-    { text: { af: 'Tap ’n emmer water uit albei putte', en: 'Draw a bucket of water from both wells' }, done: hasFlag('wellTop') && hasFlag('wellBottom') },
+    { text: { af: 'Tap ’n emmer water uit albei putte', en: 'Draw a bucket of water from both wells' }, done: hasFlag('wellTop') && hasFlag('wellFixed') },
   ];
 }
 
@@ -26,8 +28,8 @@ export function choresLeft() {
 // Why he can't go to bed yet: what's still to do.
 export function notYet() {
   const plough = !hasFlag('plowed');
-  const wells = !(hasFlag('wellTop') && hasFlag('wellBottom'));
-  const one = hasFlag('wellTop') || hasFlag('wellBottom');
+  const wells = !(hasFlag('wellTop') && hasFlag('wellFixed'));
+  const one = hasFlag('wellTop') || hasFlag('wellFixed');
   const af = [plough && 'die land ploeg', wells && (one ? 'die ander put nagaan' : 'die putte nagaan')].filter(Boolean).join(' en ');
   const en = [plough && 'plough the land', wells && (one ? 'check the other well' : 'check the wells')].filter(Boolean).join(' and ');
   return { af: `Nog nie! Daar is nog werk op die plaas: ek moet eers ${af}.`, en: `Not yet! There's still work on the farm: first I have to ${en}.` };

@@ -260,6 +260,21 @@ const LINES = {
     subtle: { af: 'Die pyp lê hier onder… as ek net iets gehad het om mee te grawe.', en: 'The pipe is down there… if only I had something to dig with.' },
     explicit: { af: 'Ek moet hier grawe om by die pyp te kom: daar staan ’n graaf in my gereedskapskuur.', en: "I need to dig here to get at the pipe: there's a spade in my tool shed." },
   },
+  // the bottom well's dry (Wednesday: src/views/well.js)
+  wellDry: {
+    none: null,
+    subtle: { af: 'Ek moet my kop skoonmaak en oor die put dink… ’n Bietjie visvang sal help.', en: "I need to clear my head and think about the well… A spot of fishing would help." },
+    explicit: { af: 'Kom ek gaan visvang by die dam en dink oor die put: my visstok is in die gereedskapskuur.', en: "Let me go fishing at the pond and think about the well: my fishing rod is in the tool shed." },
+  },
+  rodFound: {
+    none: { af: 'My visstok.', en: 'My fishing rod.' },
+    explicit: { af: 'My visstok! Kom ek gaan visvang aan die einde van die pier by die dam.', en: "My fishing rod! Let's go fishing off the end of the jetty at the pond." },
+  },
+  // the shoe hooked in the pond
+  shoeCaught: {
+    none: { af: 'Dalk het dit in die pyp na die onderste put vasgesit…', en: 'Maybe it was stuck in the pipe down to the bottom well…' },
+    explicit: { af: 'Dalk het dit in die pyp na die onderste put vasgesit! Kom ek gaan kyk of die put nou werk.', en: "Maybe it was stuck in the pipe down to the bottom well! Let's go and see if the well works now." },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },

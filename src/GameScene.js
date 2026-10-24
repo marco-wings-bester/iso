@@ -223,8 +223,8 @@ export default class GameScene extends Phaser.Scene {
     setFlag('choresDone');
     setFlag('tired');
     this.time.delayedCall(400, () => think(this, this.player.sprite, {
-      af: 'So, dis klaar vir vandag. Nou is ek moeg! Môre kyk ek wat met die onderste put fout is.',
-      en: "There, that's today's work done. Now I'm tired! Tomorrow I'll see what's wrong with the bottom well.",
+      af: 'So, dis klaar vir vandag. Albei putte werk. Nou is ek moeg!',
+      en: "There, that's today's work done. Both wells work. Now I'm tired!",
     }));
   }
 
