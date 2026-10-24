@@ -6,6 +6,7 @@ import { think } from './bubble.js';
 import { setFlag, hasFlag } from './state.js';
 import { dowse, leak, hasLeak } from './dowsing.js';
 import { preloadFountain, fountainRuns, onPatch, atPatch } from './fountainFix.js';
+import { park } from './bike.js';
 
 // The town (assets/town.jpg), down the road from the crossroads: houses
 // round a square with a fountain, a cafe and a restaurant, the paths
@@ -16,12 +17,22 @@ import { preloadFountain, fountainRuns, onPatch, atPatch } from './fountainFix.j
 // liven it up (src/townLife.js). Tapping the fountain (dry: it's stopped
 // working), he walks up to it, looks it over and wonders where its water
 // comes from ('fountainLooked'); with the willow stick, he follows the water
-// up to where it's leaking away (src/dowsing.js).
+// up to where it's leaking away (src/dowsing.js). Two of its buildings he
+// can go into: Faan's tailor shop, the house down to the right of the
+// fountain (ROOMS.tailor, src/tailor.js), and the restaurant up from it
+// (ROOMS.restaurant, src/restaurant.js): tapping one walks him to its door
+// and in (his bike left outside).
 
 const HERE = { af: 'Die dorp', en: 'The town' };
 // The fountain on the square, and where he stands in front of it.
 const FOUNTAIN = { x: 680, y: 1270, w: 190, h: 175 };
 const AT_FOUNTAIN = { x: 770, y: 1492 };
+// The buildings he can go into: tap `area`, he walks to `door` and goes in.
+const DOORS = {
+  tailor: { area: { x: 950, y: 1430, w: 350, h: 300 }, door: { x: 1204, y: 1752 } },
+  restaurant: { area: { x: 1000, y: 900, w: 270, h: 300 }, door: { x: 1010, y: 1316 } }, // (the foot of its patio's steps)
+};
+const inside = (x, y, a) => x >= a.x && x < a.x + a.w && y >= a.y && y < a.y + a.h;
 
 export default class TownScene extends MapScene {
   constructor() {
@@ -53,10 +64,26 @@ export default class TownScene extends MapScene {
   // Tapping the fountain: over to it, a look round it, and his thoughts.
   tapThing(x, y) {
     if (onPatch(x, y) && atPatch(this)) return true; // the wet patch (src/fountainFix.js)
-    const f = FOUNTAIN;
-    if (x < f.x || x >= f.x + f.w || y < f.y || y >= f.y + f.h) return false;
+    const id = Object.keys(DOORS).find(k => inside(x, y, DOORS[k].area));
+    if (id) {
+      const { door } = DOORS[id];
+      this.player.walkTo(door.x, door.y, () => this.enter(id));
+      return true;
+    }
+    if (!inside(x, y, FOUNTAIN)) return false;
     this.player.walkTo(AT_FOUNTAIN.x, AT_FOUNTAIN.y, () => this.lookAtFountain());
     return true;
+  }
+
+  // In at a door (his bike left outside it).
+  enter(building) {
+    const { door } = DOORS[building];
+    park(this, { x: door.x - 40, y: door.y });
+    this.leaving = true;
+    this.player.stop();
+    const cam = this.cameras.main;
+    cam.fadeOut(250);
+    cam.once('camerafadeoutcomplete', () => this.scene.start('Interior', { building }));
   }
 
   lookAtFountain() {

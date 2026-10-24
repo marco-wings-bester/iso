@@ -3,6 +3,7 @@ import { think } from './bubble.js';
 import { walkSprite } from './bob.js';
 import { line } from './hints.js';
 import { asset } from './asset.js';
+import { planDate } from './datePlan.js';
 
 // Fixing the town's fountain (TownScene). Once Johan has found where its
 // water leaks away under the grass at the top of the town (src/dowsing.js:
@@ -11,7 +12,8 @@ import { asset } from './asset.js';
 // joint. He fits it back together, packs the earth round it and fills the
 // hole; the puddle's gone, and the fountain runs again ('fountainFixed'): its
 // water back in the basin (public/assets/fountain-water.png, cut from the
-// picture before it dried) and jets splashing.
+// picture before it dried) and jets splashing. Then, if Steffi's said yes,
+// his thoughts turn to tonight (src/datePlan.js).
 
 export const PATCH = { x: 730, y: 300, w: 170, h: 80 }; // the wet patch (its middle, and how far round)
 const STAND = { x: 790, y: 312 }; // where he digs from
@@ -124,4 +126,5 @@ async function dig(scene) {
   setFlag('fountainFixed');
   fountainRuns(scene);
   await think(scene, player.sprite, { af: 'So! Die pyp sit weer reg. Hoor net… die fontein loop weer!', en: "There! The pipe's back in place. Just listen… the fountain's running again!" });
+  await planDate(scene); // (and now for tonight, with Steffi: src/datePlan.js)
 }

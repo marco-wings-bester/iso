@@ -5,13 +5,17 @@ import { grid, outline, blit } from './pixelArt.js';
 import { hasFlag, setFlag } from './state.js';
 import { converse } from './dialog.js';
 import { think } from './bubble.js';
+import { planDate } from './datePlan.js';
 
 // Steffi, at the river (RiverScene): ankle-deep in the shallows off the near
 // sandbar, panning for gold, the pan swirling in her hands, a glint of gold
 // in it now and then. Tapping her, Johan walks over, quite taken with her
 // (hearts), and they talk: what's she doing, does she know anything about
-// the town's dry fountain, and would she go out with him on Saturday night?
-// ('metSteffi', 'dateSteffi').
+// the town's dry fountain (or: he's just fixed it), and would she go out
+// with him tonight?
+// ('metSteffi', 'dateSteffi'). (The river's open from Saturday: RoadScene.)
+// If the fountain's running again by then, his thoughts turn to the
+// evening (src/datePlan.js).
 
 const LOOK = {
   hair: 'long', shorts: true,
@@ -90,7 +94,7 @@ async function chat(scene, steffi) {
   sprite.play('steffi-idle-right');
   await scene.talk(async () => {
     if (hasFlag('dateSteffi')) {
-      await converse(scene, cast, [['steffi', { af: 'Sien jou Saterdagaand, Johan!', en: 'See you on Saturday night, Jones!' }]]);
+      await converse(scene, cast, [['steffi', { af: 'Sien jou vanaand, Johan!', en: 'See you tonight, Jones!' }]]);
       return;
     }
     hearts(scene, scene.player.sprite);
@@ -101,13 +105,21 @@ async function chat(scene, steffi) {
       ['jones', { af: 'Steffi… wat ’n mooi naam. En wat doen jy hier in die rivier?', en: 'Steffi… what a lovely name. And what are you doing here in the river?' }],
       ['steffi', { af: 'Ek pan vir goud! Kyk, daar blink ’n paar korreltjies in die pan.', en: "I'm panning for gold! Look, there are a few little grains shining in the pan." }],
       () => hearts(scene, scene.player.sprite),
-      ['jones', { af: 'Sjoe! Sê, weet jy dalk iets van die fontein in die dorp? Hy het opgedroog.', en: "Wow! Say, do you happen to know anything about the fountain in town? It's dried up." }],
-      ['steffi', { af: 'Die fontein? Nee, jammer, ek weet nie veel daarvan nie. Ek is meestal hier by die rivier.', en: "The fountain? No, sorry, I don't know much about it. I'm mostly here by the river." }],
-      ['jones', { af: 'Ag, toe maar. Steffi… sal jy Saterdagaand saam met my uitgaan?', en: 'Oh, never mind. Steffi… would you go out with me on Saturday night?' }],
+      // (the fountain in town: still dry, or he's just fixed it)
+      ...(hasFlag('fountainFixed') ? [
+        ['jones', { af: 'Sjoe! Ek het vandag self ’n bietjie skat gevind: die fontein in die dorp se water. Hy loop weer!', en: "Wow! I found a bit of treasure myself today: the water for the fountain in town. It's running again!" }],
+        ['steffi', { af: 'Was dit jy? Die hele dorp praat daarvan! Slim boer.', en: 'Was that you? The whole town is talking about it! Clever farmer.' }],
+        ['jones', { af: 'Ag, dis niks. Steffi… sal jy vanaand saam met my uitgaan?', en: "Oh, it's nothing. Steffi… would you go out with me tonight?" }],
+      ] : [
+        ['jones', { af: 'Sjoe! Sê, weet jy dalk iets van die fontein in die dorp? Hy het opgedroog.', en: "Wow! Say, do you happen to know anything about the fountain in town? It's dried up." }],
+        ['steffi', { af: 'Die fontein? Nee, jammer, ek weet nie veel daarvan nie. Ek is meestal hier by die rivier.', en: "The fountain? No, sorry, I don't know much about it. I'm mostly here by the river." }],
+        ['jones', { af: 'Ag, toe maar. Steffi… sal jy vanaand saam met my uitgaan?', en: 'Oh, never mind. Steffi… would you go out with me tonight?' }],
+      ]),
       ['steffi', { af: 'Hmm… ja, dit sal lekker wees, Johan!', en: "Hmm… yes, that would be lovely, Jones!" }],
       () => { setFlag('metSteffi'); setFlag('dateSteffi'); hearts(scene, scene.player.sprite); },
     ]);
     await think(scene, scene.player.sprite, { af: 'Sy het ja gesê!', en: 'She said yes!' });
+    await planDate(scene);
   });
   sprite.play('steffi-idle-down');
   steffi.swirl.resume();

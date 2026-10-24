@@ -9,12 +9,15 @@ import { line } from '../hints.js';
 // hens pecking about in the straw. Tapping a hen: she clucks and hops. Once
 // Derik has asked for meat for his braai ('needMeat', src/derik.js), with the
 // knife from the tool shed ('knife') Johan takes two of them for it (`hens`,
-// then 'chickens'); without it, he can't. Tapping anywhere else looks away.
+// then 'chickens'); without it, he can't. On Saturday, for the tuxedo he
+// rents from Faan in town ('tuxAsked', src/tailor.js), he catches two of
+// them, alive, to take him (`faanCaught`, then 'faanHens'). Tapping anywhere
+// else looks away.
 
 const WALL = [[96, 60, 36], [122, 80, 48], [148, 102, 62], [172, 124, 78]];
 const STRAW = [[150, 112, 48], [184, 142, 64], [214, 176, 86], [236, 204, 118]];
 const SEAM = [62, 38, 22];
-const NEED = 2; // hens for the braai
+const NEED = 2; // hens for the braai (and for Faan)
 
 // The hens: three in the nest boxes, three about the floor (fx, fy: where
 // her feet are, as parts of the view; nest: sitting, no legs).
@@ -117,7 +120,7 @@ function henTexture(scene, key, legs) {
 
 function animate(scene, w, h) {
   const { k, hens } = geometry(w, h);
-  const taken = getValue('hens') ?? 0;
+  const taken = (getValue('hens') ?? 0) + (getValue('faanCaught') ?? 0);
   const standing = henTexture(scene, 'pov-hen', true);
   const sitting = henTexture(scene, 'pov-hen-nest', false);
   // the ones taken for the braai are gone (floor ones first)
@@ -153,6 +156,10 @@ function tap(scene, x, y) {
   const hen = scene.hens.find(hn => hn.img.getBounds().contains(x, y));
   if (!hen) return false;
   const hop = () => scene.tweens.add({ targets: hen.img, y: hen.y - 4 * k, duration: 110, yoyo: true, ease: 'Quad.easeOut' });
+  if (hasFlag('tuxAsked') && !hasFlag('faanHens')) {
+    catchHen(scene, hen, k);
+    return true;
+  }
   if (!hasFlag('needMeat') || hasFlag('chickens')) {
     hop();
     return true;
@@ -178,6 +185,29 @@ function tap(scene, x, y) {
     scene.say(line('chickens'), () => scene.close());
   });
   return true;
+}
+
+// One for Faan: she flaps, and he has her under his arm (gone from view).
+function catchHen(scene, hen, k) {
+  scene.hens = scene.hens.filter(hn => hn !== hen);
+  feathers(scene, hen.img.x, hen.img.y - 6 * k, k);
+  scene.tweens.add({ targets: hen.img, y: scene.pov.h + 20 * k, angle: 30, duration: 400, ease: 'Quad.easeIn', onComplete: () => hen.img.destroy() });
+  const caught = (getValue('faanCaught') ?? 0) + 1;
+  setValue('faanCaught', caught);
+  if (caught < NEED) {
+    scene.say({ af: 'Gevang! Een hoender vir Faan… nog een.', en: 'Caught her! One hen for Faan… one more.' });
+    return;
+  }
+  setFlag('faanHens');
+  scene.busy = true;
+  scene.time.delayedCall(500, () => {
+    scene.busy = false;
+    scene.say({ af: 'Twee mooi vet hoenders vir Faan!', en: 'Two nice plump hens for Faan!' }, () => {
+      const hint = hasFlag('tomatoes') && line('tradeReady');
+      if (hint) scene.say(hint, () => scene.close());
+      else scene.close();
+    });
+  });
 }
 
 export default { draw, animate, tap };
