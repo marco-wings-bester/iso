@@ -34,7 +34,7 @@
 // src/datePlan.js) → Faan the tailor wants two hens and tomatoes for it
 // ('tuxAsked') → two hens caught ('faanHens') and a basket of tomatoes picked
 // ('tomatoes') → into the tuxedo ('tuxedo') → a table for two booked with
-// Ilse at the restaurant ('tableBooked') → all set ('dateReady').
+// Lize at the restaurant ('tableBooked') → all set ('dateReady').
 // Numbers kept with them: `day`, the day of the week (0 = Monday, the day
 // the story starts; one on each night he sleeps: src/days.js), and
 // `loanDay`, the day Derik lent him the R15 (his braai is two days later);

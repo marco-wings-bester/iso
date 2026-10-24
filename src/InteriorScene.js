@@ -19,7 +19,7 @@ import { knock, hideBob, bobWaiting, bobInChest, sarahVisits, sarahWaiting, open
 import { setUpCafe, atCounter, atTable, atWindow } from './cafe.js';
 import { setUpDerikHouse, atDerikTable, atDerikBooks } from './derikHouse.js';
 import { setUpTailor, atFaan, atCubicle, atSuits } from './tailor.js';
-import { setUpRestaurant, atIlse, atOurTable } from './restaurant.js';
+import { setUpRestaurant, atLize, atOurTable } from './restaurant.js';
 import { isRaining } from './weather.js';
 import { bike, pedal, SPEED as BIKE_SPEED, BODY as BIKE_BODY } from './bike.js';
 
@@ -164,7 +164,7 @@ export default class InteriorScene extends Phaser.Scene {
           tableA: () => atTable(this, 'tableA'), tableB: () => atTable(this, 'tableB'), window: () => atWindow(this),
           derikTable: () => atDerikTable(this), derikBooks: () => atDerikBooks(this), saw: () => this.takeSaw(),
           faan: () => atFaan(this), cubicle: () => atCubicle(this), suits: () => atSuits(this),
-          ilse: () => atIlse(this), ourTable: () => atOurTable(this),
+          lize: () => atLize(this), ourTable: () => atOurTable(this),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
