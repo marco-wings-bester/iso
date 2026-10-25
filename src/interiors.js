@@ -877,6 +877,60 @@ function painting(ctx, x, y) {
   });
 }
 
+// ── Steffi's beach house ─────────────────────────────────────────────────
+
+// A photo in a frame: Steffi as a little girl, red pigtails, with her oupa
+// at the river, a gold pan between them. 26×22.
+function portrait(ctx, x, y) {
+  obj(ctx, x, y, 26, 22, r => {
+    r(0, 0, 26, 22, C.woodDk); r(0, 0, 26, 1, C.wood);
+    r(2, 2, 22, 18, '#b8d8e8'); r(2, 12, 22, 8, '#6aa8d0'); r(2, 11, 22, 1, '#e8d8a8'); // sky, the river
+    r(4, 5, 4, 3, '#d8d8d8'); r(4, 8, 4, 7, '#7a6a5a'); r(5, 6, 2, 2, '#e8b080');          // oupa: white hair, brown jacket
+    r(15, 9, 4, 3, '#c8482a'); r(14, 10, 1, 2, '#c8482a'); r(19, 10, 1, 2, '#c8482a');    // her, red pigtails
+    r(16, 10, 2, 2, '#f8d0b0'); r(15, 12, 4, 4, '#e86a6a');
+    r(9, 14, 6, 2, '#5a5e68'); r(11, 14, 1, 1, C.strawHi);                                 // the gold pan, a glint
+  });
+}
+
+// A shelf on the wall, with shells, a starfish, and a jar of gold flakes. 32×14.
+function shellShelf(ctx, x, y) {
+  obj(ctx, x, y + 10, 32, 3, r => { r(0, 0, 32, 3, C.wood); r(0, 0, 32, 1, C.woodLt); });
+  obj(ctx, x + 2, y + 5, 6, 5, r => { r(0, 1, 6, 4, '#f8e0d0'); r(1, 0, 4, 1, '#f8e0d0'); r(1, 2, 1, 3, '#e0b8a8'); r(3, 2, 1, 3, '#e0b8a8'); });
+  obj(ctx, x + 10, y + 4, 7, 6, r => { r(3, 0, 1, 6, '#f08a4a'); r(0, 2, 7, 1, '#f08a4a'); r(1, 4, 5, 1, '#f08a4a'); });
+  obj(ctx, x + 20, y, 8, 10, r => { r(0, 2, 8, 8, '#cfe8f0'); r(1, 0, 6, 2, C.woodDk); r(1, 6, 6, 3, C.strawHi); r(2, 5, 2, 1, C.straw); r(5, 7, 1, 1, '#fff8c0'); });
+}
+
+// A surfboard, standing on its tail in the corner. 9×40.
+function surfboard(ctx, x, y) {
+  drop(ctx, x, y + 36, 9, 4);
+  obj(ctx, x, y, 9, 40, r => {
+    r(2, 0, 5, 2, '#f8f4ec'); r(1, 2, 7, 36, '#f8f4ec'); r(2, 38, 5, 2, '#f8f4ec');
+    r(4, 1, 1, 38, '#2a9ad0'); r(1, 10, 7, 2, '#f08a4a'); r(6, 2, 1, 36, '#d8d0c0');
+  });
+}
+
+// A sofa against the wall, cushions plumped. 40×18.
+function sofa(ctx, x, y) {
+  drop(ctx, x, y, 40, 18);
+  obj(ctx, x, y, 40, 18, r => {
+    r(0, 0, 40, 9, '#4a8ab0'); r(0, 0, 40, 1, '#6aaad0');            // its back
+    r(0, 9, 40, 7, '#5a9ac0'); r(0, 9, 40, 1, '#8ac0e0');            // the seat
+    r(0, 2, 5, 14, '#3a7aa0'); r(35, 2, 5, 14, '#3a7aa0');           // arms
+    r(7, 3, 9, 6, '#f8d870'); r(24, 3, 9, 6, '#f0a8b8');             // cushions
+    r(2, 16, 3, 2, C.woodDkr); r(35, 16, 3, 2, C.woodDkr);
+  });
+}
+
+// A round coffee table: a bottle of red wine on it. 22×14.
+function wineTable(ctx, x, y) {
+  drop(ctx, x, y, 22, 14);
+  obj(ctx, x, y, 22, 14, r => {
+    r(2, 0, 18, 9, C.woodLt); r(0, 2, 22, 5, C.woodLt); r(2, 0, 18, 1, C.woodHi);
+    r(2, 8, 18, 2, C.woodDk); r(9, 10, 4, 4, C.woodDk);
+  });
+  obj(ctx, x + 9, y - 6, 4, 9, r => { r(1, 0, 2, 3, '#2a4a2a'); r(0, 3, 4, 6, '#3a1a2a'); r(0, 5, 4, 2, C.linen); });
+}
+
 // ── Rooms ─────────────────────────────────────────────────────────────────
 
 const OAK = { base: '#b07a48', hi: '#c88f5a', seam: '#5a3418', grain: '#9a6a3c' };
@@ -1225,6 +1279,52 @@ export const ROOMS = {
       dinnerTable(ctx, 24, 102);
       lectern(ctx, 108, 118);
       plant(ctx, 140, 136);
+    },
+  },
+
+  // Steffi's beach house, the pink one at the top of the beach road
+  // (src/steffiHouse.js): a sofa under the window, a coffee table with the
+  // wine, her photo with her oupa on the wall, a shelf of shells and a jar
+  // of gold, her surfboard in the corner. Out of the door is back to the
+  // beach, at her front door.
+  steffi: {
+    w: 144, h: 140, wallH: 44,
+    name: { af: 'Steffi se huis', en: "Steffi's house" },
+    door: { x: 60, w: 24 },
+    exit: { to: 'Beach', data: { at: { x: 884, y: 1036 } } },
+    spots: {
+      portrait: { area: { x: 58, y: 4, w: 30, h: 30 }, stand: { x: 72, y: 54 } },
+      shelf: { area: { x: 96, y: 6, w: 34, h: 24 }, stand: { x: 112, y: 54 } },
+      surfboard: { area: { x: 124, y: 38, w: 16, h: 48 }, stand: { x: 116, y: 74 } },
+      sofa: { area: { x: 6, y: 46, w: 44, h: 22 }, stand: { x: 28, y: 74 }, seat: { x: 28, y: 62 } },
+      seaWindow: { area: { x: 8, y: 4, w: 28, h: 26 }, stand: { x: 52, y: 54 } },
+      wine: { area: { x: 52, y: 78, w: 30, h: 22 }, stand: { x: 66, y: 106 } },
+    },
+    steffi: { x: 92, y: 98 },
+    glass: { x: 64, y: 82 }, // (the bottle's beside it, on the table)
+    solid: [
+      { x: 8, y: 48, w: 40, h: 16 },   // the sofa
+      { x: 56, y: 82, w: 22, h: 12 },  // the coffee table
+      { x: 126, y: 76, w: 10, h: 8 },  // the surfboard's tail
+      { x: 122, y: 116, w: 14, h: 20 }, // plant
+      { x: 86, y: 90, w: 12, h: 10 },  // Steffi, by the table
+    ],
+    draw(ctx) {
+      const { w, h, wallH } = this;
+      planks(ctx, 0, wallH, w, h - wallH, { base: '#d8c8a8', hi: '#e8dcc0', seam: '#a8987a', grain: '#c8b898' }, 71);
+      windowLight(ctx, 14, wallH, 20, 30);
+      rug(ctx, 44, 74, 50, 34);
+      doormat(ctx, this);
+      boardWall(ctx, w, wallH, ['#f4ecdc', '#e8e0d0', '#b8c8d0'], 29);
+      fill(ctx, 0, wallH - 3, w, 3, '#7ab0c8');
+      frame(ctx, this);
+      windowPane(ctx, 12, 8);
+      portrait(ctx, 60, 8);
+      shellShelf(ctx, 98, 10);
+      sofa(ctx, 8, 46);
+      wineTable(ctx, 56, 82);
+      surfboard(ctx, 127, 40);
+      plant(ctx, 122, 116);
     },
   },
 

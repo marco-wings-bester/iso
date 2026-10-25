@@ -7,7 +7,8 @@ import { setFlag, hasFlag } from './state.js';
 import { dowse, leak, hasLeak } from './dowsing.js';
 import { preloadFountain, fountainRuns, onPatch, atPatch } from './fountainFix.js';
 import { park } from './bike.js';
-import { houseAt, visit } from './townDoors.js';
+import { townHouseAt } from './townDoors.js';
+import { visit } from './doors.js';
 
 // The town (assets/town.jpg), down the road from the crossroads: houses
 // round a square with a fountain, a cafe and a restaurant, the paths
@@ -72,7 +73,7 @@ export default class TownScene extends MapScene {
       this.player.walkTo(door.x, door.y, () => this.enter(id));
       return true;
     }
-    const house = houseAt(x, y); // any other house: up to its door, and a knock (src/townDoors.js)
+    const house = townHouseAt(x, y); // any other house: up to its door, and a knock (src/townDoors.js)
     if (house) {
       visit(this, house);
       return true;

@@ -35,6 +35,10 @@
 // ('tuxAsked') → two hens caught ('faanHens') and a basket of tomatoes picked
 // ('tomatoes') → into the tuxedo ('tuxedo') → a table for two booked with
 // Lize at the restaurant ('tableBooked') → all set ('dateReady').
+// That evening: Steffi's at her beach house: a glass of wine there
+// ('hadWine') → her photo on the wall, and it's nearly seven ('dateGo'): she
+// walks with him ('withSteffi') → dinner at the restaurant, and she goes home
+// ('dateDone'; he's 'tired').
 // Numbers kept with them: `day`, the day of the week (0 = Monday, the day
 // the story starts; one on each night he sleeps: src/days.js), and
 // `loanDay`, the day Derik lent him the R15 (his braai is two days later);

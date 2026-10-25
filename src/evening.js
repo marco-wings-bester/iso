@@ -1,12 +1,13 @@
 import { hasFlag } from './state.js';
-import { today, THURSDAY } from './days.js';
+import { today, THURSDAY, SATURDAY } from './days.js';
 
 // Thursday evening, after Derik's braai ('braaiDone', src/derik.js): it's
 // dark out everywhere (the farm, the crossroads, the beach…; at Derik's the
 // night falls as they eat: src/derikLife.js), and all that's left is bed.
-// Sleeping, it's Friday.
+// Sleeping, it's Friday. And Saturday evening, from seven, when Johan and
+// Steffi set off from her house for their dinner ('dateGo', src/steffiHouse.js).
 export function isEvening() {
-  return today() === THURSDAY && hasFlag('braaiDone');
+  return (today() === THURSDAY && hasFlag('braaiDone')) || (today() === SATURDAY && hasFlag('dateGo'));
 }
 
 // Dark over a w × h picture (in its own px), the same night as at Derik's.

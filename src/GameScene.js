@@ -16,6 +16,7 @@ import { WEDNESDAY, choresLeft } from './chores.js';
 import { asset } from './asset.js';
 import { UI } from './screen.js';
 import { isEvening, dusk } from './evening.js';
+import { followMe } from './follower.js';
 import { isRaining, rain, umbrella } from './weather.js';
 
 const SPAWN = { x: 387, y: 1265 }; // farm gate, image px
@@ -61,10 +62,11 @@ export default class GameScene extends Phaser.Scene {
     });
     showParked(this); // his bike, if he left it outside a door here
     this.leaving = false;
-    // Thursday evening, after Derik's braai: dark, and time for bed
+    followMe(this); // Steffi, on their date (src/follower.js)
+    // Thursday evening, after Derik's braai (or Saturday's date): dark, and time for bed
     if (isEvening()) {
       dusk(this, IMG_W, IMG_H);
-      if (data.from === 'road') this.time.delayedCall(700, () => think(this, this.player.sprite, { af: 'Sjoe, dis al donker. Tyd om te gaan slaap.', en: "Phew, it's dark already. Time for bed." }));
+      if (data.from === 'road' && !this.follower) this.time.delayedCall(700, () => think(this, this.player.sprite, { af: 'Sjoe, dis al donker. Tyd om te gaan slaap.', en: "Phew, it's dark already. Time for bed." }));
     }
     if (isRaining()) {
       rain(this, IMG_W, IMG_H); // Friday (src/weather.js)

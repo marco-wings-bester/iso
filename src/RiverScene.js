@@ -4,6 +4,7 @@ import { asset } from './asset.js';
 import { flowRiver, flowSluice } from './riverFlow.js';
 import { placeSteffi, isSteffi, talkToSteffi } from './steffi.js';
 import { placeWillow, isWillow, atWillow } from './willow.js';
+import { hasFlag } from './state.js';
 
 // The river (assets/river.jpg), down the path off the bottom left of the
 // crossroads: a gold diggers' camp in the woods, a tent and crates, pans
@@ -11,7 +12,8 @@ import { placeWillow, isWillow, atWillow } from './willow.js';
 // on the far one, across the river (which he can't wade: it flows, ripples
 // drifting downstream, src/riverFlow.js). Boer Johan comes in by the track
 // at the top, which is the way back to the crossroads. Steffi is in the
-// shallows off the near sandbar, panning for gold (src/steffi.js).
+// shallows off the near sandbar, panning for gold (src/steffi.js), till he
+// has his tuxedo for their date: then she's home (src/beachDoors.js).
 
 const HERE = { af: 'Die rivier', en: 'The river' };
 
@@ -33,14 +35,15 @@ export default class RiverScene extends MapScene {
     this.place(at, at ? null : 'crossroads');
     flowRiver(this); // (src/riverFlow.js)
     flowSluice(this);
-    this.steffi = placeSteffi(this); // panning for gold (src/steffi.js)
+    // panning for gold (src/steffi.js); once he has his tuxedo, she's gone home to get ready (src/steffiHouse.js)
+    this.steffi = hasFlag('tuxedo') ? null : placeSteffi(this);
     this.willow = placeWillow(this); // (src/willow.js)
     if (!at) this.game.events.emit('location', { name: HERE });
   }
 
   // Tapping Steffi: over to her for a chat; the willow: over to it.
   tapThing(x, y) {
-    if (isSteffi(this.steffi, x, y)) {
+    if (this.steffi && isSteffi(this.steffi, x, y)) {
       talkToSteffi(this, this.steffi);
       return true;
     }
