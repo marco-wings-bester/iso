@@ -1,5 +1,5 @@
 import { FRAME_H, FEET_Y } from './constants.js';
-import { hasFlag } from './state.js';
+import { hasFlag, setFlag } from './state.js';
 import { converse } from './dialog.js';
 import { think } from './bubble.js';
 import { park } from './bike.js';
@@ -20,6 +20,7 @@ export const HOUSES = [
     id: 'steffi', area: { x: 700, y: 750, w: 245, h: 300 },
     via: [{ x: 884, y: 1036 }], door: { x: 885, y: 1012 }, rect: { x: 871, y: 937, w: 28, h: 76 }, stand: { x: 885, y: 1036 },
     answer: atSteffis,
+    ownDoor: () => hasFlag('walkHome') && !hasFlag('dateDone'), // (walking her home: no knocking)
   },
   // the little light blue one beside it
   {
@@ -48,7 +49,8 @@ export const HOUSES = [
 export const beachHouseAt = (x, y) => inHouse(HOUSES, x, y);
 
 // Steffi's door: before Saturday she's down at the river; dressed for their
-// date, she opens up and asks him in (once he's booked their table); on the date she's with him already;
+// date, she opens up and asks him in (once he's booked their table);
+// walking her home after dinner, they say goodnight at her door; on the date she's with him already;
 // after it, she calls goodnight through the door.
 async function atSteffis(scene, house) {
   const { door, rect } = house;
@@ -60,6 +62,7 @@ async function atSteffis(scene, house) {
     hearts(scene, who);
     return null;
   }
+  if (hasFlag('walkHome')) return goodnight(scene, house);
   if (hasFlag('withSteffi')) {
     await think(scene, who, { af: 'Ons is op pad restaurant toe!', en: "We're on our way to the restaurant!" });
     return null;
@@ -99,4 +102,36 @@ async function atSteffis(scene, house) {
   cam.fadeOut(250);
   cam.once('camerafadeoutcomplete', () => scene.scene.start('Interior', { building: 'steffi' }));
   return 'in';
+}
+
+// Walked home after dinner: goodnight on her doorstep, and in she goes
+// ('dateDone'); Johan's tired out.
+async function goodnight(scene, house) {
+  const { player, follower } = scene;
+  const steffi = follower?.sprite;
+  if (!steffi) return null;
+  follower.pause();
+  const { door } = house;
+  // she steps up beside him at her door
+  await new Promise(r => scene.tweens.add({ targets: steffi, x: door.x + 30 * scene.map.scale, y: door.y + 10, duration: 500, onComplete: r }));
+  steffi.setDepth(steffi.y);
+  follower.face('left');
+  player.face('right');
+  const cast = { jones: jones(scene), steffi: { sprite: steffi, ...STEFFI } };
+  await converse(scene, cast, [
+    ['steffi', { af: 'Hier’s ek tuis. Dankie dat jy my huis toe gestap het, Johan.', en: "Here's home. Thank you for walking me home, Jones." }],
+    ['jones', { af: 'Dit was ’n plesier. Dankie vir ’n wonderlike aand, Steffi.', en: 'It was a pleasure. Thank you for a wonderful evening, Steffi.' }],
+    () => { hearts(scene, steffi); hearts(scene, player.sprite); },
+    ['steffi', { af: 'Nag, Johan. Ek hoop ons sien mekaar gou weer.', en: 'Goodnight, Jones. I hope we see each other again soon.' }],
+    ['jones', { af: 'Ek ook. Nag, Steffi.', en: 'Me too. Goodnight, Steffi.' }],
+  ]);
+  setFlag('dateDone');
+  setFlag('tired');
+  // in she goes
+  await new Promise(r => scene.tweens.add({ targets: steffi, x: door.x, y: door.y, duration: 400, onComplete: r }));
+  await new Promise(r => scene.tweens.add({ targets: steffi, alpha: 0, duration: 300, onComplete: r }));
+  steffi.destroy();
+  scene.follower = null;
+  await think(scene, player.sprite, { af: 'Wat ’n aand… Nou is ek moeg. Tyd vir bed.', en: "What an evening… Now I'm tired. Time for bed." });
+  return null;
 }

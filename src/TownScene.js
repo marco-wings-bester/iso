@@ -9,6 +9,8 @@ import { preloadFountain, fountainRuns, onPatch, atPatch } from './fountainFix.j
 import { park } from './bike.js';
 import { townHouseAt } from './townDoors.js';
 import { visit } from './doors.js';
+import { isEvening } from './evening.js';
+import { eveningTown, atGuitarist } from './townEvening.js';
 
 // The town (assets/town.jpg), down the road from the crossroads: houses
 // round a square with a fountain, a cafe and a restaurant, the paths
@@ -24,7 +26,9 @@ import { visit } from './doors.js';
 // fountain (ROOMS.tailor, src/tailor.js), and the restaurant up from it
 // (ROOMS.restaurant, src/restaurant.js): tapping one walks him to its door
 // and in (his bike left outside). At the other houses he can knock
-// (src/townDoors.js): Tokkie, at the house furthest left, opens up.
+// (src/townDoors.js): Tokkie, at the house furthest left, opens up. In the
+// evening its street lamps are lit, and a man plays his guitar outside the
+// restaurant (src/townEvening.js).
 
 const HERE = { af: 'Die dorp', en: 'The town' };
 // The fountain on the square, and where he stands in front of it.
@@ -59,6 +63,8 @@ export default class TownScene extends MapScene {
   create({ at } = {}) {
     this.place(at, at ? null : 'crossroads');
     animateTown(this); // people, pigeons and cats (src/townLife.js)
+    this.guitarist = null;
+    if (isEvening()) eveningTown(this); // its lamps lit, and a guitarist (src/townEvening.js)
     if (hasFlag('fountainFixed')) fountainRuns(this); // (fixed: src/fountainFix.js)
     else if (hasLeak()) leak(this); // (the soggy patch where the fountain's water goes: src/dowsing.js)
     if (!at) this.game.events.emit('location', { name: HERE });
@@ -67,6 +73,10 @@ export default class TownScene extends MapScene {
   // Tapping the fountain: over to it, a look round it, and his thoughts.
   tapThing(x, y) {
     if (onPatch(x, y) && atPatch(this)) return true; // the wet patch (src/fountainFix.js)
+    if (this.guitarist?.contains(x, y)) {
+      atGuitarist(this);
+      return true;
+    }
     const id = Object.keys(DOORS).find(k => inside(x, y, DOORS[k].area));
     if (id) {
       const { door } = DOORS[id];
