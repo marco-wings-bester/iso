@@ -14,8 +14,9 @@ import { hearts } from './steffi.js';
 // (She mentions they dress up for dinner here: a tuxedo would be just the
 // thing, src/tailor.js.) That evening, Johan comes in with Steffi
 // (src/follower.js): Lize shows them to their table, they sit down to dinner
-// and a glass of wine, and talk; then Steffi thanks him for a lovely evening
-// and goes home, and Johan is tired out ('dateDone', 'tired').
+// and a glass of wine, and talk; then Steffi thanks him for a lovely evening,
+// and Johan offers to walk her home ('walkHome'): to her door at the beach,
+// where they say goodnight (src/beachDoors.js).
 
 const LIZE = {
   name: { af: 'Lize', en: 'Lize' }, color: '#7a2a30',
@@ -119,24 +120,23 @@ async function dinner(scene) {
   await talk([
     ['steffi', { af: 'Dankie vir ’n wonderlike aand, Johan.', en: 'Thank you for a wonderful evening, Jones.' }],
     ['jones', { af: 'Nee, dankie vir jóú. Ek het dit baie geniet.', en: 'No, thank yóú. I really enjoyed it.' }],
-    ['steffi', { af: 'Ek ook. Ek stap sommer self huis toe; dis ’n pragtige aand vir ’n stappie. Nag, Johan!', en: "Me too. I'll walk myself home; it's a beautiful evening for a stroll. Goodnight, Jones!" }],
+    ['jones', { af: 'Dis al donker buite… Kan ek saam met jou huis toe stap?', en: "It's dark out already… May I walk you home?" }],
+    ['steffi', { af: 'Dis baie gaaf van jou, Johan. Ja, graag!', en: "That's very sweet of you, Jones. Yes, please!" }],
     () => hearts(scene, player.sprite),
   ]);
-  setFlag('dateDone');
-  setFlag('tired');
+  setFlag('walkHome');
   glasses.destroy();
-  // she goes, out of the door
+  // up from the table, and off they go together (src/follower.js)
   const { room } = scene;
-  await new Promise(r => walkSprite(scene, steffi, follower.key, [...S.via].reverse().concat({ x: room.door.x + room.door.w / 2, y: room.h - 2 }), player.speed, r));
-  steffi.destroy();
-  scene.follower = null;
-  // and Johan up from the table
   const { stand } = room.spots.ourTable;
   player.stop();
   Object.assign(player, { x: stand.x, y: stand.y });
   player.sprite.setPosition(stand.x, stand.y).setDepth(stand.y);
   player.face('down');
-  await think(scene, player.sprite, { af: 'Wat ’n aand… Nou is ek moeg. Tyd vir bed.', en: "What an evening… Now I'm tired. Time for bed." });
+  steffi.setPosition(S.via[2].x, S.via[2].y + 6).setDepth(S.via[2].y + 6);
+  follower.face('left');
+  follower.resume();
+  await think(scene, player.sprite, { af: 'Kom ons stap Steffi huis toe, strand toe.', en: "Let's walk Steffi home, down to the beach." });
   lock(scene, false);
 }
 

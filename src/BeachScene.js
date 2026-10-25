@@ -11,6 +11,8 @@ import { line } from './hints.js';
 import { park } from './bike.js';
 import { beachHouseAt } from './beachDoors.js';
 import { visit } from './doors.js';
+import { isEvening } from './evening.js';
+import { lampPost } from './nightLights.js';
 
 // The beach (assets/seaside.jpg), down the left-hand road from the crossroads:
 // a little seaside village (houses, a bakery, the Cozy Seaside Cafe, a
@@ -22,13 +24,16 @@ import { visit } from './doors.js';
 // (or its deck) walks him to the foot of its steps and in (ROOMS.cafe,
 // src/cafe.js); he comes out there again. His bike stays out, by the steps.
 // Tapping one of the houses along the road, he knocks (src/beachDoors.js):
-// the pink one is Steffi's.
+// the pink one is Steffi's. There's a street lamp by the road, lit in the
+// evening (src/nightLights.js).
 
 const HERE = { af: 'Die strand', en: 'The beach' };
 // The cafe and its deck in the picture, and the foot of the deck's steps.
 const CAFE = [{ x: 890, y: 1290, w: 410, h: 340 }, { x: 670, y: 1610, w: 560, h: 160 }];
 const CAFE_STEPS = { x: 776, y: 1806 };
 const CAFE_PARK = { x: 700, y: 1830 };
+// The street lamp by the road, opposite the blue house (lit in the evening).
+const LAMP = { x: 800, y: 1385 };
 
 export default class BeachScene extends MapScene {
   constructor() {
@@ -55,6 +60,7 @@ export default class BeachScene extends MapScene {
   create({ at, out } = {}) {
     this.place(at, at ? null : 'crossroads');
     animateSeaside(this);
+    lampPost(this, LAMP.x, LAMP.y, this.map.scale, isEvening()); // (src/nightLights.js)
     // (not Derik on Thursday: he's at home, getting the braai going: src/DerikScene.js)
     const here = today() === THURSDAY ? BEACH_VILLAGERS.filter(v => v.id !== 'derik') : BEACH_VILLAGERS;
     this.villagers = placeVillagers(this, here, this.map.scale);

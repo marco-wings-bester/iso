@@ -26,7 +26,7 @@ export function visit(scene, house) {
     const { player } = scene;
     await new Promise(r => player.follow([...rest, house.stand], r));
     player.face('up');
-    await knock(scene);
+    if (!house.ownDoor?.()) await knock(scene); // (not at the door he's come home to)
     if (await house.answer(scene, house) === 'in') return;
     await new Promise(r => player.follow([...rest].reverse().concat(first), r));
   }));

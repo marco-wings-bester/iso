@@ -5,6 +5,8 @@ import { asset } from './asset.js';
 import { today, THURSDAY } from './days.js';
 import { WEDNESDAY, choresLeft } from './chores.js';
 import { FRIDAY } from './weather.js';
+import { isEvening } from './evening.js';
+import { torch } from './nightLights.js';
 
 // The crossroads past the farm gate (assets/crossroads.jpg), where
 // Boer Johan comes on his way to the beach once Pieter has gone home
@@ -77,6 +79,7 @@ export default class RoadScene extends MapScene {
   // Derik's or the river).
   create({ at, from = 'farm' } = {}) {
     this.place(at, from);
+    if (isEvening()) torch(this); // (no street lamps out here: src/nightLights.js)
     if (at) return;
     if (from === 'farm') setFlag('level2');
     this.game.events.emit('location', { name: HERE });
