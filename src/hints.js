@@ -293,6 +293,12 @@ const LINES = {
     subtle: { af: 'Faan sal bly wees!', en: 'Faan will be pleased!' },
     explicit: { af: 'Ek het die hoenders en die tamaties: nou terug na Faan in die dorp!', en: 'I have the hens and the tomatoes: now back to Faan in town!' },
   },
+  // in Steffi's house, glass in hand (src/steffiHouse.js)
+  steffiLook: {
+    none: null,
+    subtle: { af: 'Wat ’n oulike huisie. Daai foto teen die muur lyk interessant…', en: 'What a cute little house. That photo on the wall looks interesting…' },
+    explicit: { af: 'Kom ek kyk rond. Wie is op daai foto teen die muur?', en: "Let me look around. Who's in that photo on the wall?" },
+  },
   pickerFound: {
     none: { af: '’n Appelplukker.', en: 'An apple picker.' },
     subtle: { af: '’n Appelplukker… handig vir hoë takke.', en: 'An apple picker… handy for high branches.' },

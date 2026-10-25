@@ -20,6 +20,8 @@ import { setUpCafe, atCounter, atTable, atWindow } from './cafe.js';
 import { setUpDerikHouse, atDerikTable, atDerikBooks } from './derikHouse.js';
 import { setUpTailor, atFaan, atCubicle, atSuits } from './tailor.js';
 import { setUpRestaurant, atLize, atOurTable } from './restaurant.js';
+import { setUpSteffiHouse, atPortrait, atSofa, lookAround, stayForWine } from './steffiHouse.js';
+import { followMe } from './follower.js';
 import { isRaining } from './weather.js';
 import { bike, pedal, SPEED as BIKE_SPEED, BODY as BIKE_BODY } from './bike.js';
 
@@ -93,6 +95,7 @@ export default class InteriorScene extends Phaser.Scene {
       speed: INTERIOR_SPEED * (bike.riding ? BIKE_SPEED : 1),
       grid,
     });
+    followMe(this); // Steffi, on their date (src/follower.js)
     this.exitY = room.h - 3;
     this.leaving = false;
     this.busy = false;  // baking, eating, talking: taps and keys only move speech along
@@ -165,6 +168,9 @@ export default class InteriorScene extends Phaser.Scene {
           derikTable: () => atDerikTable(this), derikBooks: () => atDerikBooks(this), saw: () => this.takeSaw(),
           faan: () => atFaan(this), cubicle: () => atCubicle(this), suits: () => atSuits(this),
           lize: () => atLize(this), ourTable: () => atOurTable(this),
+          portrait: () => atPortrait(this), sofa: () => atSofa(this),
+          shelf: () => lookAround(this, 'shelf'), surfboard: () => lookAround(this, 'surfboard'),
+          seaWindow: () => lookAround(this, 'seaWindow'), wine: () => lookAround(this, 'wine'),
         }[id];
         this.player.walkTo(s.stand.x, s.stand.y, use);
       } else if (y > room.h - WALL) this.player.walkTo(doorX, room.h - 1);
@@ -204,6 +210,7 @@ export default class InteriorScene extends Phaser.Scene {
     if (building === 'derik') setUpDerikHouse(this);
     if (building === 'tailor') setUpTailor(this);
     if (building === 'restaurant') setUpRestaurant(this);
+    if (building === 'steffi') setUpSteffiHouse(this);
     // home for salt for Derik's braai (src/derik.js): the salt pot's empty
     if (house && hasFlag('needSalt') && !hasFlag('salt') && !hasFlag('noSaltHome')) {
       setFlag('noSaltHome');
@@ -492,7 +499,11 @@ export default class InteriorScene extends Phaser.Scene {
     const side = { left: -4, right: 4 }[dir] ?? 0;
     this.carry?.setPosition(x + side, y - 7).setDepth(y + (dir === 'up' ? -0.5 : 0.5));
     if (y < this.exitY) return;
-    if (!this.mustHideBob() && !this.needUmbrella()) {
+    // (not out yet: Bob to hide, his umbrella to fetch, Steffi's wine to finish)
+    const stay = this.mustHideBob() ? () => this.think(line('notNow'))
+      : this.needUmbrella() ? () => this.think(line('needUmbrella'))
+        : this.building === 'steffi' ? stayForWine(this) : null;
+    if (!stay) {
       this.leave();
       return;
     }
@@ -500,7 +511,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.player.stop();
     this.player.y = this.room.h - WALL - 10;
     this.player.face('up');
-    this.think(line(this.mustHideBob() ? 'notNow' : 'needUmbrella'));
+    stay();
   }
 
   leave() {

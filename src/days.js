@@ -10,6 +10,7 @@ const NAMES = {
 };
 
 export const THURSDAY = 3; // Derik's braai (src/DerikScene.js)
+export const SATURDAY = 5; // Johan's date with Steffi (src/steffiHouse.js)
 export const SUNDAY = 6;
 
 // Days since the story started (0: Monday).

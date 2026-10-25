@@ -21,6 +21,21 @@ const LOOK = {
   hair: 'long', shorts: true,
   palette: { S: '#f8d0b0', s: '#e0a888', B: '#6a4a2a', d: '#4a2a14', R: '#c8482a', r: '#8a2c18', C: '#e86a6a', c: '#c04a4a', O: '#4a7ab8', o: '#345a90' },
 };
+// Dressed up for their date (src/steffiHouse.js): a green dress, her red
+// hair down, little dark shoes.
+const DATE_LOOK = {
+  hair: 'long', skirt: true,
+  palette: { ...LOOK.palette, C: '#2a9a6a', c: '#1e7450', O: '#2a9a6a', o: '#1e7450', B: '#3a1a22', d: '#24100e' },
+};
+
+// Her sheet in her dress: at the maps' resolution, or crisp (`px`) indoors;
+// returns its key.
+export function steffiDressed(scene, px = false) {
+  const key = px ? 'steffi-date-px' : 'steffi-date';
+  createVillager(scene, key, DATE_LOOK, px ? 1 : ART_PX);
+  return key;
+}
+
 const AT = { x: 586, y: 1482 };       // where she stands, in the water
 const BY_HER = { x: 632, y: 1474 };   // where Johan stands to talk to her
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -36,13 +51,17 @@ function heartTexture(scene) {
   tex.refresh();
 }
 
-// A few hearts floating up from over Johan's head.
-function hearts(scene, who) {
+// A few hearts floating up from over someone's head (sized to them: out on
+// the maps, or crisp and small indoors).
+export function hearts(scene, who) {
   heartTexture(scene);
+  const h0 = who.displayHeight; // (his height, here)
+  const k = h0 / (FRAME_H * ART_PX); // (picture px per heart texel / ART_PX)
   for (let i = 0; i < 3; i++) {
     scene.time.delayedCall(i * 260, () => {
-      const h = scene.add.image(who.x + rand(-20, 20), who.y - 130, 'heart').setScale(scene.map.scale * 0.8).setDepth(1e4);
-      scene.tweens.add({ targets: h, y: h.y - 90, x: h.x + rand(-20, 20), alpha: 0, duration: 1600, ease: 'Sine.easeOut', onComplete: () => h.destroy() });
+      if (!who.active) return;
+      const h = scene.add.image(who.x + rand(-0.25, 0.25) * h0, who.y - h0 * 0.9, 'heart').setScale(k * 0.8).setDepth(1e4);
+      scene.tweens.add({ targets: h, y: h.y - h0 * 0.6, x: h.x + rand(-0.25, 0.25) * h0, alpha: 0, duration: 1600, ease: 'Sine.easeOut', onComplete: () => h.destroy() });
     });
   }
 }

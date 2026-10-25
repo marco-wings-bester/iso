@@ -3,13 +3,19 @@ import { hasFlag, setFlag } from './state.js';
 import { converse } from './dialog.js';
 import { createVillager } from './CharacterSprite.js';
 import { dateReady } from './datePlan.js';
+import { think } from './bubble.js';
+import { walkSprite } from './bob.js';
+import { hearts } from './steffi.js';
 
 // The restaurant on the town square (ROOMS.restaurant): tables laid for
 // dinner, and Lize at her stand by the door with the bookings book. On
 // Saturday, with his date with Steffi tonight ('datePlan', src/datePlan.js),
 // Johan books the table for two by the window, at seven ('tableBooked').
 // (She mentions they dress up for dinner here: a tuxedo would be just the
-// thing, src/tailor.js.)
+// thing, src/tailor.js.) That evening, Johan comes in with Steffi
+// (src/follower.js): Lize shows them to their table, they sit down to dinner
+// and a glass of wine, and talk; then Steffi thanks him for a lovely evening
+// and goes home, and Johan is tired out ('dateDone', 'tired').
 
 const LIZE = {
   name: { af: 'Lize', en: 'Lize' }, color: '#7a2a30',
@@ -44,6 +50,94 @@ export function setUpRestaurant(scene) {
     const flame = scene.add.rectangle(cx, cy, 1, 2, 0xffc040).setOrigin(0).setDepth(200);
     scene.tweens.add({ targets: flame, alpha: 0.5, scaleY: 0.7, duration: 200 + Math.random() * 200, yoyo: true, repeat: -1 });
   });
+  if (scene.follower) scene.time.delayedCall(500, () => dinner(scene)); // (with Steffi, on their date)
+}
+
+const wait = (scene, ms) => new Promise(r => scene.time.delayedCall(ms, r));
+
+// Their seats, either side of the table by the window, facing each other,
+// and the way there from the door; their plates and glasses on it.
+const SEATS = {
+  johan: { x: 105, y: 72, via: [{ x: 92, y: 120 }, { x: 94, y: 88 }] },
+  steffi: { x: 138, y: 72, via: [{ x: 112, y: 120 }, { x: 148, y: 100 }, { x: 146, y: 80 }] },
+};
+const PLATES = [{ x: 114, y: 63 }, { x: 127, y: 63 }];
+
+// Dinner with Steffi: to the table, sit, eat and talk, a toast; then she
+// goes home.
+async function dinner(scene) {
+  const { player, follower } = scene;
+  const steffi = follower.sprite;
+  lock(scene, true);
+  const cast2 = { ...cast(scene), steffi: { sprite: steffi, name: { af: 'Steffi', en: 'Steffi' }, color: '#c04a7a' } };
+  const talk = steps => converse(scene, cast2, steps);
+  scene.lize.play('lize-px-idle-down');
+  await talk([
+    ['lize', { af: 'Goeienaand, Johan en Steffi! Julle tafel by die venster is gereed. Kom maar saam.', en: 'Good evening, Jones and Steffi! Your table by the window is ready. Come this way.' }],
+  ]);
+  scene.lize.play('lize-px-idle-left');
+  // to their chairs
+  follower.pause();
+  const { johan: J, steffi: S } = SEATS;
+  await Promise.all([
+    new Promise(r => player.follow([...J.via, J], r)),
+    new Promise(r => walkSprite(scene, steffi, follower.key, [...S.via, { x: S.x, y: S.y }], player.speed, r)),
+  ]);
+  player.sprite.setPosition(J.x, J.y).setDepth(J.y);
+  player.act('player-px-sit-right');
+  steffi.setPosition(S.x, S.y).setDepth(S.y).play(`${follower.key}-sit-left`);
+  await wait(scene, 600);
+  // the food comes: a steak, veg, and a glass of red each
+  const food = scene.add.graphics().setDepth(80);
+  PLATES.forEach(({ x, y }) => {
+    food.fillStyle(0x6a3a1e).fillRect(x - 2, y - 1, 3, 2);
+    food.fillStyle(0x5f9e38).fillRect(x + 1, y - 1, 1, 1);
+    food.fillStyle(0xf08a30).fillRect(x + 1, y, 1, 1);
+  });
+  const glasses = scene.add.graphics().setDepth(81);
+  [[118, 62], [123, 62]].forEach(([x, y]) => glasses.fillStyle(0x2e1d0c).fillRect(x - 1, y - 3, 3, 4).fillStyle(0x8a1a2a).fillRect(x, y - 2, 1, 2));
+  // now and then a bite
+  const nibble = scene.time.addEvent({
+    delay: 1300, loop: true,
+    callback: () => scene.tweens.add({ targets: Math.random() < 0.5 ? player.sprite : steffi, y: '-=1', duration: 120, yoyo: true }),
+  });
+  await talk([
+    ['lize', { af: 'Smaaklike ete!', en: 'Enjoy your meal!' }],
+    ['steffi', { af: 'Mmm, die kos is heerlik!', en: 'Mmm, the food is delicious!' }],
+    ['jones', { af: 'Amper so lekker soos Derik se braaihoender.', en: "Almost as good as Derek's braai chicken." }],
+    ['steffi', { af: 'Vertel my, hoe het jy die fontein reggekry?', en: 'Tell me, how did you fix the fountain?' }],
+    ['jones', { af: 'Met ’n wilgerstok van die rivier! Hy het my reguit na die lek gelei.', en: 'With a willow stick from the river! It led me straight to the leak.' }],
+    ['steffi', { af: '’n Boer, ’n loodgieter, én ’n towenaar!', en: 'A farmer, a plumber, and a wizard!' }],
+    () => hearts(scene, player.sprite),
+    ['jones', { af: 'Op jou, Steffi.', en: 'To you, Steffi.' }],
+    ['steffi', { af: 'Op ons. Gesondheid!', en: 'To us. Cheers!' }],
+    () => { hearts(scene, steffi); hearts(scene, player.sprite); },
+  ]);
+  nibble.remove();
+  await wait(scene, 800);
+  food.clear(); // (all eaten)
+  await talk([
+    ['steffi', { af: 'Dankie vir ’n wonderlike aand, Johan.', en: 'Thank you for a wonderful evening, Jones.' }],
+    ['jones', { af: 'Nee, dankie vir jóú. Ek het dit baie geniet.', en: 'No, thank yóú. I really enjoyed it.' }],
+    ['steffi', { af: 'Ek ook. Ek stap sommer self huis toe; dis ’n pragtige aand vir ’n stappie. Nag, Johan!', en: "Me too. I'll walk myself home; it's a beautiful evening for a stroll. Goodnight, Jones!" }],
+    () => hearts(scene, player.sprite),
+  ]);
+  setFlag('dateDone');
+  setFlag('tired');
+  glasses.destroy();
+  // she goes, out of the door
+  const { room } = scene;
+  await new Promise(r => walkSprite(scene, steffi, follower.key, [...S.via].reverse().concat({ x: room.door.x + room.door.w / 2, y: room.h - 2 }), player.speed, r));
+  steffi.destroy();
+  scene.follower = null;
+  // and Johan up from the table
+  const { stand } = room.spots.ourTable;
+  player.stop();
+  Object.assign(player, { x: stand.x, y: stand.y });
+  player.sprite.setPosition(stand.x, stand.y).setDepth(stand.y);
+  player.face('down');
+  await think(scene, player.sprite, { af: 'Wat ’n aand… Nou is ek moeg. Tyd vir bed.', en: "What an evening… Now I'm tired. Time for bed." });
+  lock(scene, false);
 }
 
 // At the stand: talk to Lize.
@@ -52,7 +146,9 @@ export async function atLize(scene) {
   scene.lize.play('lize-px-idle-down');
   lock(scene, true);
   const talk = steps => converse(scene, cast(scene), steps);
-  if (hasFlag('tableBooked')) {
+  if (hasFlag('dateDone')) {
+    await talk([['lize', { af: 'Dankie dat julle by ons kom eet het! Nag, Johan.', en: 'Thanks for dining with us! Goodnight, Jones.' }]]);
+  } else if (hasFlag('tableBooked')) {
     await talk([['lize', { af: 'Sien julle vanaand om seweuur, Johan!', en: 'See you both tonight at seven, Jones!' }]]);
   } else if (!hasFlag('datePlan')) {
     await talk([

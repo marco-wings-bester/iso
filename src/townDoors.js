@@ -3,6 +3,7 @@ import { hasFlag, setFlag } from './state.js';
 import { converse } from './dialog.js';
 import { think } from './bubble.js';
 import { createVillager } from './CharacterSprite.js';
+import { voice, jones, nobody, inHouse } from './doors.js';
 
 // The other houses in town (TownScene): tapping one, Johan walks up its
 // path to the front door and knocks. Mostly nobody wants a visitor: in the
@@ -12,8 +13,6 @@ import { createVillager } from './CharacterSprite.js';
 // behind another door they think he's selling something; one has only a
 // dog at home; an old man can't hear him; and two have nobody home.
 // (Faan's tailor shop and the restaurant he goes into: TownScene.)
-
-const wait = (scene, ms) => new Promise(r => scene.time.delayedCall(ms, r));
 
 // Tokkie: short hair, a green and gold rugby jersey, shorts.
 const TOKKIE = {
@@ -27,14 +26,8 @@ const TOKKIE = {
   },
 };
 
-// A voice from behind a door (its top: where the bubble points).
-const voice = (door, name, color) => ({ x: door.x, y: door.y - 70, name, color });
-
-const jones = scene => ({ get sprite() { return scene.player.sprite; }, name: { af: 'Johan', en: 'Jones' }, color: '#b8402e' });
-
-// Each house: `area` to tap, `via` the way up to its door (the first point
-// on the path, the rest over its own garden path), `door` (its foot, middle;
-// `rect`, the doorway itself, if it opens), and what happens when he knocks.
+// Each house (src/doors.js): `area` to tap, `via` the way up to its door,
+// `door`, and what happens when he knocks.
 export const HOUSES = [
   // the house furthest left (blue roof, up the path left of the square): Tokkie's
   {
@@ -97,39 +90,6 @@ export const HOUSES = [
   },
 ];
 
-export function houseAt(x, y) {
-  return HOUSES.find(({ area: a }) => x >= a.x && x < a.x + a.w && y >= a.y && y < a.y + a.h);
-}
-
-// Up the path to its door, a knock, whoever answers (or not), and back
-// down to the path.
-export function visit(scene, house) {
-  const [first, ...rest] = house.via;
-  scene.player.walkTo(first.x, first.y, () => scene.talk(async () => {
-    const { player } = scene;
-    await new Promise(r => player.follow([...rest, house.stand], r));
-    player.face('up');
-    await knock(scene);
-    await house.answer(scene, house);
-    await new Promise(r => player.follow([...rest].reverse().concat(first), r));
-  }));
-}
-
-async function knock(scene) {
-  const { sprite } = scene.player;
-  for (let i = 0; i < 3; i++) {
-    scene.tweens.add({ targets: sprite, y: sprite.y - 3, duration: 70, yoyo: true });
-    await wait(scene, 220);
-  }
-  await think(scene, sprite, { af: 'Klop, klop!', en: 'Knock, knock!' });
-  await wait(scene, 500);
-}
-
-async function nobody(scene) {
-  await wait(scene, 800);
-  await think(scene, scene.player.sprite, { af: 'Niemand maak oop nie. Seker nie tuis nie.', en: "Nobody's answering. Probably not home." });
-}
-
 // Tokkie opens the door, his mates cheering the rugby inside; he can't see
 // why Johan would come visiting now. The second time, he doesn't open.
 async function atTokkie(scene, house) {
@@ -174,3 +134,5 @@ async function atTokkie(scene, house) {
   cheer.remove();
   await think(scene, scene.player.sprite, { af: 'Nou ja. Dis seker ’n privaat kuier.', en: "Oh well. It's a private party, I suppose." });
 }
+
+export const townHouseAt = (x, y) => inHouse(HOUSES, x, y);

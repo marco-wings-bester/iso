@@ -6,6 +6,8 @@ import { UI } from './screen.js';
 import { bike, pedal, showParked, tapParked, SPEED as BIKE_SPEED } from './bike.js';
 import { think } from './bubble.js';
 import { isEvening, dusk } from './evening.js';
+import { followMe } from './follower.js';
+import { today, THURSDAY } from './days.js';
 import { isRaining, rain, umbrella } from './weather.js';
 
 // A place drawn as one picture (the crossroads, the beach). The
@@ -83,11 +85,13 @@ export default class MapScene extends Phaser.Scene {
       markerScale: UI / z,
     });
     this.player.sprite.setScale(scale);
-    // Thursday evening after the braai: dark (Derik's place darkens itself)
-    if (isEvening() && this.scene.key !== 'Derik') dusk(this, MW, MH);
+    // evening (Thursday after the braai, Saturday's date): dark (Derik's place
+    // darkens itself on Thursday)
+    if (isEvening() && !(this.scene.key === 'Derik' && today() === THURSDAY)) dusk(this, MW, MH);
     if (isRaining()) rain(this, MW, MH); // Friday (src/weather.js)
     umbrella(this); // (his umbrella up, in it)
     showParked(this, scale);
+    followMe(this); // Steffi, on their date (src/follower.js)
     this.leaving = false;
     this.armed = {};    // roads he's been far enough off to leave by (edges)
     this.busy = false;  // talking: taps and keys only move it along
