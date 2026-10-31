@@ -278,8 +278,14 @@ const LINES = {
   // Saturday: what he needs for his date with Steffi (src/datePlan.js)
   datePlan: {
     none: null,
+    subtle: { af: 'Die dorp het mos ’n restaurant…', en: 'The town has a restaurant, after all…' },
+    explicit: { af: 'Die restaurant is net bo die fontein in die dorp.', en: "The restaurant's just up from the fountain in town." },
+  },
+  // booked, and the restaurant's formal: where to get a tuxedo? (src/restaurant.js)
+  tuxWhere: {
+    none: null,
     subtle: { af: 'Iewers in die dorp is daar sekerlik ’n kleremaker…', en: "Somewhere in town there's bound to be a tailor…" },
-    explicit: { af: 'Die kleremaker is in die huis regs onder die fontein, en die restaurant is bo die fontein. Albei in die dorp!', en: "The tailor's in the house down to the right of the fountain, and the restaurant's up from the fountain. Both in town!" },
+    explicit: { af: 'Die kleremaker is in die huis regs onder die fontein.', en: "The tailor's in the house down to the right of the fountain." },
   },
   // Faan wants two hens and a basket of tomatoes for the tuxedo (src/tailor.js)
   tuxTrade: {

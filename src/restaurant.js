@@ -4,6 +4,7 @@ import { converse } from './dialog.js';
 import { createVillager } from './CharacterSprite.js';
 import { dateReady } from './datePlan.js';
 import { think } from './bubble.js';
+import { line } from './hints.js';
 import { walkSprite } from './bob.js';
 import { hearts } from './steffi.js';
 
@@ -175,7 +176,11 @@ export async function atLize(scene) {
         ? { af: 'Klaar bespreek! En mag ek sê, meneer, jy lyk baie deftig.', en: 'All booked! And may I say, sir, you look very smart.' }
         : { af: 'Klaar bespreek! O, en net een ding: vir aandete trek ons gaste formeel aan.', en: 'All booked! Oh, and just one thing: our dinner guests dress formally.' }],
     ]);
-    if (!hasFlag('tuxedo')) await scene.think({ af: 'Formeel… nog ’n rede vir daai tuxedo.', en: 'Formal… another reason for that tuxedo.' });
+    if (!hasFlag('tuxedo')) {
+      await scene.think({ af: 'Formeel… In my oorpak sal ek nie inkom nie. Ek het ’n tuxedo nodig!', en: "Formal… They won't let me in in my overalls. I need a tuxedo!" });
+      const hint = line('tuxWhere');
+      if (hint) await scene.think(hint);
+    }
     await dateReady(scene);
   }
   scene.lize.play('lize-px-idle-left');
