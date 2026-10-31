@@ -9,6 +9,7 @@ import { preloadDerik, animateDerik } from './derikLife.js';
 import { FRIDAY } from './weather.js';
 import { park } from './bike.js';
 import { think } from './bubble.js';
+import { saturdayAtDerik } from './derikHouse.js';
 
 // Derik's place (assets/derik.jpg), right from the crossroads: his
 // farmhouse with its long stoep and a water tower behind, cattle and sheep
@@ -81,10 +82,12 @@ export default class DerikScene extends MapScene {
     return true;
   }
 
-  // In at the door, on Friday (his bike left outside); any other day, nobody's home.
+  // In at the door, on Friday (his bike left outside), or on Saturday morning
+  // if he's still to read the book there (src/derikHouse.js); any other day,
+  // nobody's home.
   enterHouse() {
     this.player.face('right');
-    if (today() !== FRIDAY) {
+    if (today() !== FRIDAY && !saturdayAtDerik()) {
       think(this, this.player.sprite, today() === THURSDAY
         ? { af: 'Derik is buite by sy vuur.', en: "Derek's outside by his fire." }
         : { af: 'Daar is niemand tuis nie.', en: "There's nobody home." });
