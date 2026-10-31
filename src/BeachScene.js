@@ -6,6 +6,7 @@ import { asset } from './asset.js';
 import { talkToDerik, BY_DERIK } from './derik.js';
 import { hasFlag, setFlag } from './state.js';
 import { today, THURSDAY } from './days.js';
+import { saturdayAtDerik } from './derikHouse.js';
 import { think } from './bubble.js';
 import { line } from './hints.js';
 import { park } from './bike.js';
@@ -61,8 +62,9 @@ export default class BeachScene extends MapScene {
     this.place(at, at ? null : 'crossroads');
     animateSeaside(this);
     lampPost(this, LAMP.x, LAMP.y, this.map.scale, isEvening()); // (src/nightLights.js)
-    // (not Derik on Thursday: he's at home, getting the braai going: src/DerikScene.js)
-    const here = today() === THURSDAY ? BEACH_VILLAGERS.filter(v => v.id !== 'derik') : BEACH_VILLAGERS;
+    // (not Derik on Thursday: he's at home, getting the braai going: src/DerikScene.js;
+    // nor on Saturday morning while Johan's still to read his book: src/derikHouse.js)
+    const here = today() === THURSDAY || saturdayAtDerik() ? BEACH_VILLAGERS.filter(v => v.id !== 'derik') : BEACH_VILLAGERS;
     this.villagers = placeVillagers(this, here, this.map.scale);
     if (!at || out) this.game.events.emit('location', { name: HERE });
     // out of the cafe, his coffee finished: wide awake now

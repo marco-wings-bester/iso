@@ -5,6 +5,8 @@ import { converse } from './dialog.js';
 import { createVillager } from './CharacterSprite.js';
 import { BEACH_VILLAGERS } from './villagers.js';
 import { line } from './hints.js';
+import { today } from './days.js';
+import { FRIDAY } from './weather.js';
 
 // Inside Derik's farmhouse (ROOMS.derik), on Friday, the day it rains:
 // Derik and his friend Abraham at the kitchen table over coffee. They're
@@ -18,6 +20,12 @@ import { line } from './hints.js';
 // is at the hint level). By then Derik and
 // Abraham are on to beer; he thanks them, says he's off to bed, and has a
 // plan to find the fountain's water tomorrow ('dowsePlan', and he's tired).
+// If he slept on Friday without reading the book, Derik's at home on Saturday
+// morning too (on his own, Abraham gone home; not off fishing yet:
+// src/BeachScene.js), and the book is still there for him.
+
+// Derik's at home on Saturday morning till Johan's read the book.
+export const saturdayAtDerik = () => today() === FRIDAY + 1 && !hasFlag('readDowsing');
 
 const ABRAM = {
   name: { af: 'Abraham', en: 'Abraham' }, color: '#7a4a9a',
@@ -52,8 +60,9 @@ export function setUpDerikHouse(scene) {
   createVillager(scene, 'abraham-px', ABRAM.look, 1);
   const sit = (key, { x, y, face }) => scene.add.sprite(x, y, key).setOrigin(0.5, FEET_Y / FRAME_H).setDepth(y).play(`${key}-sit-${face}`);
   scene.derik = sit('derik-px', room.seats.derik);
-  scene.abraham = sit('abraham-px', room.seats.abraham);
-  if (hasFlag('readDowsing')) beer(scene);
+  const friday = today() === FRIDAY;
+  scene.abraham = friday ? sit('abraham-px', room.seats.abraham) : null;
+  if (friday && hasFlag('readDowsing')) beer(scene);
   scene.time.addEvent({
     delay: 600, loop: true,
     callback: () => {
@@ -63,6 +72,21 @@ export function setUpDerikHouse(scene) {
       scene.tweens.add({ targets: wisp, y: y - 12, alpha: 0, duration: 1200, onComplete: () => wisp.destroy() });
     },
   });
+  if (!friday) {
+    // Saturday morning: just Derik, over his coffee
+    scene.time.delayedCall(700, async () => {
+      lock(scene, true);
+      await converse(scene, cast(scene), [
+        ['derik', { af: 'Môre, Johan! Kom in. Wat bring jou so vroeg hier?', en: 'Morning, Jones! Come in. What brings you here so early?' }],
+        ['jones', { af: 'Die fontein in die dorp. Ek wil uitvind waar sy water vandaan kom.', en: "The fountain in town. I want to find out where its water comes from." }],
+        ['derik', hasFlag('fountainLooked')
+          ? { af: 'Kyk gerus in my boekrak. Daar’s dalk iets wat help.', en: "Have a look in my bookshelf. There might be something that helps." }
+          : { af: 'Gaan kyk eers mooi na die fontein, dan kan ons verder dink.', en: "Go and have a good look at the fountain first, then we can think further." }],
+      ]);
+      lock(scene, false);
+    });
+    return;
+  }
   if (!hasFlag('metAbraham')) {
     scene.time.delayedCall(700, async () => {
       lock(scene, true);
@@ -92,6 +116,11 @@ export async function atDerikTable(scene) {
     player.face('down');
   });
   lock(scene, true);
+  if (today() !== FRIDAY) {
+    await converse(scene, cast(scene), [['derik', { af: 'Lekker om jou te sien, Johan. Nog koffie?', en: 'Nice to see you, Jones. More coffee?' }]]);
+    lock(scene, false);
+    return;
+  }
   if (hasFlag('metAbraham')) {
     await converse(scene, cast(scene), [['derik', { af: 'Nog ’n koppie, Johan? Dis mos weer reënweer.', en: "Another cup, Jones? It's that rainy weather again." }]]);
     lock(scene, false);
@@ -187,6 +216,16 @@ export async function atDerikBooks(scene) {
   await wait(300);
   player.face('left');
   setFlag('readDowsing');
+  if (today() !== FRIDAY) {
+    // (Saturday morning: off to do it right away)
+    await converse(scene, cast(scene), [
+      ['jones', { af: 'Dankie, Derik! Nou weet ek wat om te doen.', en: 'Thanks, Derek! Now I know what to do.' }],
+      ['derik', { af: 'Sterkte met die fontein, Johan! Ek gaan nou visvang.', en: "Good luck with the fountain, Jones! I'm off fishing now." }],
+      () => setFlag('dowsePlan'),
+    ]);
+    lock(scene, false);
+    return;
+  }
   beer(scene);
   await converse(scene, cast(scene), [
     ['abraham', { af: 'Gesondheid! Kom, Johan, ’n biertjie?', en: 'Cheers! Come on, Jones, a beer?' }],
