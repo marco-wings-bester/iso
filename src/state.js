@@ -30,11 +30,11 @@
 // ('braaiDone', and 'tired'). Friday, rain: coffee at Derik's with Abraham
 // ('metAbraham'), who ask him to look at the town's dry fountain ('fixFountain').
 // Saturday: the fountain fixed ('fountainFixed') and a date with Steffi
-// tonight ('dateSteffi'): he needs a tuxedo and a table ('datePlan',
-// src/datePlan.js) → Faan the tailor wants two hens and tomatoes for it
-// ('tuxAsked') → two hens caught ('faanHens') and a basket of tomatoes picked
-// ('tomatoes') → into the tuxedo ('tuxedo') → a table for two booked with
-// Lize at the restaurant ('tableBooked') → all set ('dateReady').
+// tonight ('dateSteffi'): he'd better book a table ('datePlan',
+// src/datePlan.js) → booked with Lize at the restaurant ('tableBooked'), who
+// says it's formal → Faan the tailor wants two hens and tomatoes for a
+// tuxedo ('tuxAsked') → two hens caught ('faanHens') and a basket of tomatoes
+// picked ('tomatoes') → into the tuxedo ('tuxedo') → all set ('dateReady').
 // That evening: Steffi's at her beach house: a glass of wine there
 // ('hadWine') → her photo on the wall, and it's nearly seven ('dateGo'): she
 // walks with him ('withSteffi') → dinner at the restaurant → he walks her
