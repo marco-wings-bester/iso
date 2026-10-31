@@ -62,17 +62,31 @@ try {
 // The story done by the start of each day, for the day select (src/menu.js):
 // Tuesday begins the morning after the pie (Bob at the gate); Wednesday after
 // Tuesday's trip to the beach (Derik's loan, the coffee, a bike ride);
-// Thursday and on after Wednesday's farm work.
+// Thursday after Wednesday's farm work; Friday after Derik's braai; Saturday
+// after Friday's rainy day (Derik and Abraham ask about the fountain, the
+// book on dowsing); Sunday after Saturday (the fountain fixed, and the date
+// with Steffi).
 const MONDAY = ['key', 'read', 'picker', 'apple', 'baked', 'ate', 'slept'];
 const TUESDAY = [...MONDAY, 'metBob', 'gavePie', 'bobSat', 'pieEaten', 'sarahKnocked', 'bobHidden', 'sarahVisited',
   'chestStuck', 'crowbar', 'bobHome', 'level2', 'noCash', 'loan', 'coffee', 'exercised'];
 const WEDNESDAY = [...TUESDAY, 'tractorKeys', 'plowed', 'wellTop', 'wellBottom', 'rod', 'shoe', 'wellFixed', 'choresDone'];
+const THURSDAY = [...WEDNESDAY, 'repaid', 'needMeat', 'knife', 'chickens', 'meatBrought', 'needSalt', 'noSaltHome',
+  'salt', 'salted', 'braaiDone'];
+const FRIDAY = [...THURSDAY, 'umbrella', 'rainOut', 'metAbraham', 'fixFountain', 'fountainLooked', 'readDowsing', 'dowsePlan'];
+const SATURDAY = [...FRIDAY, 'saw', 'willowStick', 'foundLeak', 'shovel', 'fountainFixed', 'metSteffi', 'dateSteffi',
+  'datePlan', 'tuxAsked', 'faanHens', 'tomatoes', 'tuxedo', 'tableBooked', 'dateReady', 'hadWine', 'dateGo',
+  'withSteffi', 'walkHome', 'dateDone'];
 
 // Start again on day `n` (0: Monday), with the story done up to then.
 export function startDay(n) {
   resetFlags();
-  ([[], MONDAY, TUESDAY][n] ?? WEDNESDAY).forEach(setFlag);
+  [[], MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY][n].forEach(setFlag);
   if (n >= 2) setValue('loanDay', 1); // Derik lent him the R15 on Tuesday
+  if (n >= 4) setValue('hens', 2); // (two for the braai…
+  if (n >= 6) {
+    setValue('faanCaught', 2); // …two for Faan,
+    setValue('tomatoesPicked', 6); // and his tomatoes)
+  }
   setValue('day', n);
 }
 
